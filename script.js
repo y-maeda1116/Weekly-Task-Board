@@ -174,6 +174,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const dayColumns = Array.from(document.querySelectorAll('#task-board .day-column'));
     const unassignedColumn = document.getElementById('unassigned-tasks');
     const idealDailyMinutesInput = document.getElementById('ideal-daily-minutes');
+    const exportDataBtn = document.getElementById('export-data-btn');
+    const importDataBtn = document.getElementById('import-data-btn');
+    const importFileInput = document.getElementById('import-file-input');
 
     let currentDate = new Date();
     let editingTaskId = null;
@@ -425,6 +428,70 @@ document.addEventListener('DOMContentLoaded', () => {
             renderWeek(); // Re-render to apply new overload limits
         }
     });
+
+    // --- Data Management ---
+    function exportData() {
+        const dataToExport = {
+            tasks: tasks,
+            settings: settings
+        };
+        const dataStr = JSON.stringify(dataToExport, null, 2);
+        const blob = new Blob([dataStr], {type: 'application/json'});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `weekly-task-board-backup-${new Date().toISOString().slice(0, 10)}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+
+    exportDataBtn.addEventListener('click', exportData);
+
+    function importData(event) {
+        const file = event.target.files[0];
+        if (!file) {
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const data = JSON.parse(e.target.result);
+                if (data && data.tasks && data.settings) {
+                    if (confirm('現在のデータを上書きして、インポートしたデータに置き換えますか？この操作は元に戻せません。')) {
+                        tasks = data.tasks;
+                        settings = data.settings;
+
+                        saveTasks();
+                        saveSettings();
+
+                        // Update UI components with new settings
+                        idealDailyMinutesInput.value = settings.ideal_daily_minutes;
+
+                        // Re-render the entire application
+                        renderWeek();
+                        alert('データが正常にインポートされました。');
+                    }
+                } else {
+                    alert('無効なファイル形式です。エクスポートされたJSONファイルを選択してください。');
+                }
+            } catch (error) {
+                alert('ファイルの読み込み中にエラーが発生しました: ' + error.message);
+            } finally {
+                // Reset file input to allow re-importing the same file
+                importFileInput.value = '';
+            }
+        };
+        reader.readAsText(file);
+    }
+
+    importDataBtn.addEventListener('click', () => {
+        importFileInput.click();
+    });
+
+    importFileInput.addEventListener('change', importData);
 
     // --- Initial Render ---
     renderWeek();
