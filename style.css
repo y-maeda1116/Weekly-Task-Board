@@ -174,3 +174,31 @@ button {
 button:hover {
     opacity: 0.9;
 }
+
+/* User settings in header */
+#user-settings {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+#user-settings label {
+    font-size: 0.9em;
+}
+
+#user-settings input {
+    width: 80px;
+    padding: 5px;
+}
+
+/* Daily total time display */
+.daily-total-time {
+    font-size: 0.9em;
+    font-weight: bold;
+    color: #333;
+    margin-left: 8px;
+}
+
+.daily-total-time.overload {
+    color: #e74c3c; /* A nice red color for warnings */
+}
