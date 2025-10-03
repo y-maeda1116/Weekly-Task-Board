@@ -1,7 +1,27 @@
 // --- Global State and LocalStorage Functions ---
 
 const TASKS_STORAGE_KEY = 'weekly-task-board.tasks';
+const SETTINGS_STORAGE_KEY = 'weekly-task-board.settings';
+
 let tasks = loadTasks();
+let settings = loadSettings();
+
+
+/**
+ * Load settings from localStorage, providing defaults if empty.
+ * @returns {object}
+ */
+function loadSettings() {
+    const settingsJson = localStorage.getItem(SETTINGS_STORAGE_KEY);
+    return settingsJson ? JSON.parse(settingsJson) : { ideal_daily_minutes: 480 }; // Default to 8 hours
+}
+
+/**
+ * Save settings to localStorage.
+ */
+function saveSettings() {
+    localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(settings));
+}
 
 /**
  * Load tasks from localStorage, adding sample data if it's empty.
@@ -110,6 +130,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const weekTitle = document.getElementById('week-title');
     const dayColumns = Array.from(document.querySelectorAll('.day-column')).filter(c => c.id !== 'unassigned-tasks');
     const unassignedColumn = document.getElementById('unassigned-tasks');
+    const idealDailyMinutesInput = document.getElementById('ideal-daily-minutes');
 
     let currentDate = new Date();
     let editingTaskId = null;
@@ -219,43 +240,80 @@ document.addEventListener('DOMContentLoaded', () => {
         const monday = getMonday(currentDate);
         monday.setHours(0, 0, 0, 0);
 
-        // Clear all task elements
-        dayColumns.forEach(col => col.querySelectorAll('.task').forEach(task => task.remove()));
+        // Clear all task elements and reset daily totals
+        dayColumns.forEach(col => {
+            col.querySelectorAll('.task').forEach(task => task.remove());
+            const totalTimeEl = col.querySelector('.daily-total-time');
+            if (totalTimeEl) {
+                totalTimeEl.textContent = '';
+                totalTimeEl.classList.remove('overload');
+            }
+        });
         unassignedColumn.querySelector('#unassigned-list').innerHTML = '';
 
         const weekDates = [];
+        const dailyTotals = {}; // { 'YYYY-MM-DD': totalMinutes }
+
         for (let i = 0; i < 7; i++) {
             const date = new Date(monday);
             date.setDate(monday.getDate() + i);
+            const dateStr = formatDate(date);
             weekDates.push(date);
+            dailyTotals[dateStr] = 0;
         }
 
         const startOfWeek = weekDates[0];
         const endOfWeek = weekDates[6];
         weekTitle.textContent = `${startOfWeek.getFullYear()}年${startOfWeek.getMonth() + 1}月${startOfWeek.getDate()}日 - ${endOfWeek.getFullYear()}年${endOfWeek.getMonth() + 1}月${endOfWeek.getDate()}日`;
 
-        const dayNames = ['月曜日', '火曜日', '水曜日', '木曜日', '金曜日', '土曜日', '日曜日'];
-
-        dayColumns.forEach((column, index) => {
-            const date = weekDates[index];
-            column.querySelector('h3').textContent = `${dayNames[index]} (${date.getMonth() + 1}/${date.getDate()})`;
-            column.dataset.date = formatDate(date);
-        });
-        unassignedColumn.dataset.date = "null";
-
         const startOfWeekStr = formatDate(startOfWeek);
         const endOfWeekStr = formatDate(endOfWeek);
 
+        // Place tasks and calculate totals
         tasks.forEach(task => {
             const taskElement = createTaskElement(task);
             if (task.assigned_date && task.assigned_date >= startOfWeekStr && task.assigned_date <= endOfWeekStr) {
                 const column = document.querySelector(`.day-column[data-date="${task.assigned_date}"]`);
-                if (column) column.appendChild(taskElement);
+                if (column) {
+                    column.appendChild(taskElement);
+                    // Add estimated time (in hours) to the daily total (in minutes)
+                    dailyTotals[task.assigned_date] += (task.estimated_time || 0) * 60;
+                }
             } else {
+                // If the task is not in the current week, it goes to unassigned
                 unassignedColumn.querySelector('#unassigned-list').appendChild(taskElement);
             }
         });
 
+        // Update DOM with daily totals and check for overload
+        const dayNames = ['月曜日', '火曜日', '水曜日', '木曜日', '金曜日', '土曜日', '日曜日'];
+        dayColumns.forEach((column, index) => {
+            const date = weekDates[index];
+            const dateStr = formatDate(date);
+            const totalMinutes = dailyTotals[dateStr];
+
+            const h3 = column.querySelector('h3');
+            // Ensure the h3 content doesn't get duplicated
+            h3.innerHTML = `${dayNames[index]} (${date.getMonth() + 1}/${date.getDate()}) <span class="daily-total-time"></span>`;
+
+            const totalTimeEl = column.querySelector('.daily-total-time');
+            if (totalTimeEl) {
+                if (totalMinutes > 0) {
+                    const hours = Math.floor(totalMinutes / 60);
+                    const minutes = totalMinutes % 60;
+                    totalTimeEl.textContent = `(${hours}h ${minutes}m)`;
+                } else {
+                    totalTimeEl.textContent = '(0h 0m)';
+                }
+
+                if (totalMinutes > settings.ideal_daily_minutes) {
+                    totalTimeEl.classList.add('overload');
+                }
+            }
+            column.dataset.date = dateStr;
+        });
+
+        unassignedColumn.dataset.date = "null";
         addDragAndDropListeners();
     }
 
@@ -274,6 +332,17 @@ document.addEventListener('DOMContentLoaded', () => {
     todayBtn.addEventListener('click', () => {
         currentDate = new Date();
         renderWeek();
+    });
+
+    // --- Settings Event Listener ---
+    idealDailyMinutesInput.value = settings.ideal_daily_minutes;
+    idealDailyMinutesInput.addEventListener('change', () => {
+        const newIdealTime = parseInt(idealDailyMinutesInput.value, 10);
+        if (!isNaN(newIdealTime) && newIdealTime > 0) {
+            settings.ideal_daily_minutes = newIdealTime;
+            saveSettings();
+            renderWeek(); // Re-render to apply new overload limits
+        }
     });
 
     // --- Initial Render ---
