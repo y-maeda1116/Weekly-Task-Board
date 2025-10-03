@@ -254,3 +254,60 @@ button:hover {
 .daily-total-time.overload {
     color: #e74c3c; /* A nice red color for warnings */
 }
+
+/* Responsive Design for Mobile */
+@media (max-width: 768px) {
+    #app-container {
+        flex-direction: column;
+    }
+
+    main#task-board {
+        grid-template-columns: 1fr;
+    }
+
+    #sidebar {
+        width: 100%;
+    }
+
+    #header-controls {
+        flex-direction: column;
+        gap: 15px;
+        align-items: stretch; /* Stretch items to fill width */
+    }
+
+    #navigation {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 10px;
+    }
+
+    header {
+        padding: 15px 20px;
+        position: static; /* Let header scroll with page on mobile */
+    }
+
+    body {
+        padding-top: 0; /* Remove padding when header is not sticky */
+    }
+
+    .modal-content {
+        width: 90%;
+        margin: 20% auto;
+    }
+}
+
+@media (max-width: 480px) {
+    h1 {
+        font-size: 1.5em;
+    }
+
+    #navigation button, #add-task-btn {
+        width: 100%;
+    }
+
+    #user-settings {
+        flex-direction: column;
+        align-items: stretch;
+    }
+}
