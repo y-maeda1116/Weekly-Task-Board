@@ -323,17 +323,20 @@ document.addEventListener('DOMContentLoaded', () => {
         // Place tasks and calculate totals
         tasks.forEach(task => {
             const taskElement = createTaskElement(task);
+
+            // Render tasks that are within the current week
             if (task.assigned_date && task.assigned_date >= startOfWeekStr && task.assigned_date <= endOfWeekStr) {
                 const column = document.querySelector(`.day-column[data-date="${task.assigned_date}"]`);
                 if (column) {
                     column.appendChild(taskElement);
-                    // Add estimated time (in hours) to the daily total (in minutes)
+                    // Add estimated time to the daily total
                     dailyTotals[task.assigned_date] += (task.estimated_time || 0) * 60;
                 }
-            } else {
-                // If the task is not in the current week, it goes to unassigned
+            // Render tasks that are unassigned (new or carried over) in the sidebar
+            } else if (task.assigned_date === null) {
                 unassignedColumn.querySelector('#unassigned-list').appendChild(taskElement);
             }
+            // Tasks from past (and completed) or future weeks are intentionally ignored
         });
 
         // Update DOM with daily totals and check for overload
