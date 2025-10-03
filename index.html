@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>週間タスクボード</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <h1>週間タスクボード</h1>
+        <button id="add-task-btn">タスクを追加</button>
+    </header>
+
+    <main id="task-board">
+        <div class="day-column" id="monday">
+            <h2>月曜日</h2>
+        </div>
+        <div class="day-column" id="tuesday">
+            <h2>火曜日</h2>
+        </div>
+        <div class="day-column" id="wednesday">
+            <h2>水曜日</h2>
+        </div>
+        <div class="day-column" id="thursday">
+            <h2>木曜日</h2>
+        </div>
+        <div class="day-column" id="friday">
+            <h2>金曜日</h2>
+        </div>
+        <div class="day-column" id="saturday">
+            <h2>土曜日</h2>
+        </div>
+        <div class="day-column" id="sunday">
+            <h2>日曜日</h2>
+        </div>
+    </main>
+
+    <!-- タスク追加モーダル -->
+    <div id="task-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <h2>タスクを新規登録</h2>
+            <form id="task-form">
+                <label for="task-name">タスク名:</label>
+                <input type="text" id="task-name" required>
+
+                <label for="estimated-time">見積もり時間 (時間):</label>
+                <input type="number" id="estimated-time" min="0" step="0.5" required>
+
+                <label for="assign-day">担当日:</label>
+                <select id="assign-day">
+                    <option value="monday">月曜日</option>
+                    <option value="tuesday">火曜日</option>
+                    <option value="wednesday">水曜日</option>
+                    <option value="thursday">木曜日</option>
+                    <option value="friday">金曜日</option>
+                    <option value="saturday">土曜日</option>
+                    <option value="sunday">日曜日</option>
+                </select>
+
+                <label for="task-details">詳細メモ:</label>
+                <textarea id="task-details"></textarea>
+
+                <button type="submit">登録</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
