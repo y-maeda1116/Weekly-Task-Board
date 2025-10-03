@@ -29,15 +29,19 @@ function saveSettings() {
  */
 function loadTasks() {
     const tasksJson = localStorage.getItem(TASKS_STORAGE_KEY);
+    let tasksData = [];
     if (!tasksJson || JSON.parse(tasksJson).length === 0) {
         // Provide sample tasks if storage is empty
-        return [
-            { id: `task-${Date.now()+1}`, name: "D&D機能を実装する", estimated_time: 8, assigned_date: null, details: "タスクをドラッグ＆ドロップで移動できるようにする" },
-            { id: `task-${Date.now()+2}`, name: "UIを修正する", estimated_time: 5, assigned_date: getNextDate(1), details: "新しいレイアウトを適用する" },
-            { id: `task-${Date.now()+3}`, name: "バグを修正する", estimated_time: 3, assigned_date: getNextDate(2), details: "報告されたバグを調査・修正" },
+        tasksData = [
+            { id: `task-${Date.now()+1}`, name: "D&D機能を実装する", estimated_time: 8, assigned_date: null, details: "タスクをドラッグ＆ドロップで移動できるようにする", completed: false },
+            { id: `task-${Date.now()+2}`, name: "UIを修正する", estimated_time: 5, assigned_date: getNextDate(1), details: "新しいレイアウトを適用する", completed: false },
+            { id: `task-${Date.now()+3}`, name: "バグを修正する", estimated_time: 3, assigned_date: getNextDate(2), details: "報告されたバグを調査・修正", completed: true },
         ];
+    } else {
+        tasksData = JSON.parse(tasksJson);
     }
-    return JSON.parse(tasksJson);
+    // Ensure all tasks have a 'completed' property for backward compatibility
+    return tasksData.map(task => ({ ...task, completed: task.completed || false }));
 }
 
 /**
@@ -183,6 +187,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             const newTask = {
                 id: `task-${Date.now()}`,
+                completed: false, // Set default completed status
                 ...taskData
             };
             tasks.push(newTask);
@@ -211,14 +216,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function createTaskElement(task) {
         const taskElement = document.createElement('div');
-        taskElement.className = 'task'; // Use .task to match the merged CSS
+        taskElement.className = 'task';
+        if (task.completed) {
+            taskElement.classList.add('completed');
+        }
         taskElement.dataset.taskId = task.id;
         taskElement.draggable = true;
 
         taskElement.innerHTML = `
+            <input type="checkbox" class="task-checkbox" ${task.completed ? 'checked' : ''}>
             <div class="task-name">${task.name}</div>
             <div class="task-time">${task.estimated_time}h</div>
         `;
+
+        const checkbox = taskElement.querySelector('.task-checkbox');
+        checkbox.addEventListener('click', (e) => {
+            e.stopPropagation(); // Stop click from opening the modal
+            task.completed = e.target.checked;
+            saveTasks();
+            renderWeek(); // Re-render to apply style changes immediately
+        });
 
         taskElement.addEventListener('click', () => openEditModal(task));
         taskElement.addEventListener('dragstart', handleDragStart);
