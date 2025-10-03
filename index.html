@@ -3,11 +3,76 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Weekly Task Board</title>
+    <title>ウィークリータスクボード</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <h1>Weekly Task Board</h1>
+    <header>
+        <h1>ウィークリータスクボード</h1>
+        <div id="header-controls">
+            <button id="add-task-btn">タスクを追加</button>
+            <div id="navigation">
+                <button id="prev-week">前週へ</button>
+                <button id="today">今週に戻る</button>
+                <button id="next-week">次週へ</button>
+            </div>
+
+        </div>
+        <h2 id="week-title"></h2>
+    </header>
+    <main id="task-board">
+        <div class="day-column" id="monday">
+            <h3>月曜日</h3>
+        </div>
+        <div class="day-column" id="tuesday">
+            <h3>火曜日</h3>
+        </div>
+        <div class="day-column" id="wednesday">
+            <h3>水曜日</h3>
+        </div>
+        <div class="day-column" id="thursday">
+            <h3>木曜日</h3>
+        </div>
+        <div class="day-column" id="friday">
+            <h3>金曜日</h3>
+        </div>
+        <div class="day-column" id="saturday">
+            <h3>土曜日</h3>
+        </div>
+        <div class="day-column" id="sunday">
+            <h3>日曜日</h3>
+        </div>
+        <div id="unassigned-tasks" class="day-column">
+            <h3>未割り当て</h3>
+            <div id="unassigned-list" class="task-list">
+                <!-- Unassigned tasks will be rendered here -->
+            </div>
+        </div>
+    </main>
+
+    <!-- タスク追加モーダル -->
+    <div id="task-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <h2>タスクを新規登録</h2>
+            <form id="task-form">
+                <label for="task-name">タスク名:</label>
+                <input type="text" id="task-name" required>
+
+                <label for="estimated-time">見積もり時間 (時間):</label>
+                <input type="number" id="estimated-time" min="0" step="0.5" required>
+
+                <label for="task-date">担当日:</label>
+                <input type="date" id="task-date" required>
+
+                <label for="task-details">詳細メモ:</label>
+                <textarea id="task-details"></textarea>
+
+                <button type="submit">登録</button>
+            </form>
+        </div>
+    </div>
+
     <script src="script.js"></script>
 </body>
 </html>
