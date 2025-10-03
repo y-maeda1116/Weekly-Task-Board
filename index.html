@@ -24,35 +24,39 @@
         </div>
         <h2 id="week-title"></h2>
     </header>
-    <main id="task-board">
-        <div class="day-column" id="monday">
-            <h3>月曜日 <span class="daily-total-time"></span></h3>
-        </div>
-        <div class="day-column" id="tuesday">
-            <h3>火曜日 <span class="daily-total-time"></span></h3>
-        </div>
-        <div class="day-column" id="wednesday">
-            <h3>水曜日 <span class="daily-total-time"></span></h3>
-        </div>
-        <div class="day-column" id="thursday">
-            <h3>木曜日 <span class="daily-total-time"></span></h3>
-        </div>
-        <div class="day-column" id="friday">
-            <h3>金曜日 <span class="daily-total-time"></span></h3>
-        </div>
-        <div class="day-column" id="saturday">
-            <h3>土曜日 <span class="daily-total-time"></span></h3>
-        </div>
-        <div class="day-column" id="sunday">
-            <h3>日曜日 <span class="daily-total-time"></span></h3>
-        </div>
-        <div id="unassigned-tasks" class="day-column">
-            <h3>未割り当て</h3>
-            <div id="unassigned-list" class="task-list">
-                <!-- Unassigned tasks will be rendered here -->
+    <div id="app-container">
+        <main id="task-board">
+            <div class="day-column" id="monday">
+                <h3>月曜日 <span class="daily-total-time"></span></h3>
             </div>
-        </div>
-    </main>
+            <div class="day-column" id="tuesday">
+                <h3>火曜日 <span class="daily-total-time"></span></h3>
+            </div>
+            <div class="day-column" id="wednesday">
+                <h3>水曜日 <span class="daily-total-time"></span></h3>
+            </div>
+            <div class="day-column" id="thursday">
+                <h3>木曜日 <span class="daily-total-time"></span></h3>
+            </div>
+            <div class="day-column" id="friday">
+                <h3>金曜日 <span class="daily-total-time"></span></h3>
+            </div>
+            <div class="day-column" id="saturday">
+                <h3>土曜日 <span class="daily-total-time"></span></h3>
+            </div>
+            <div class="day-column" id="sunday">
+                <h3>日曜日 <span class="daily-total-time"></span></h3>
+            </div>
+        </main>
+        <aside id="sidebar">
+            <div id="unassigned-tasks" class="day-column">
+                <h3>未割り当て/持ち越し</h3>
+                <div id="unassigned-list" class="task-list">
+                    <!-- Unassigned tasks will be rendered here -->
+                </div>
+            </div>
+        </aside>
+    </div>
 
     <!-- タスク追加モーダル -->
     <div id="task-modal" class="modal">
