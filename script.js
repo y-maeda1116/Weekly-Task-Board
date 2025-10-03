@@ -33,9 +33,9 @@ function loadTasks() {
     if (!tasksJson || JSON.parse(tasksJson).length === 0) {
         // Provide sample tasks if storage is empty
         tasksData = [
-            { id: `task-${Date.now()+1}`, name: "D&D機能を実装する", estimated_time: 8, assigned_date: null, details: "タスクをドラッグ＆ドロップで移動できるようにする", completed: false },
-            { id: `task-${Date.now()+2}`, name: "UIを修正する", estimated_time: 5, assigned_date: getNextDate(1), details: "新しいレイアウトを適用する", completed: false },
-            { id: `task-${Date.now()+3}`, name: "バグを修正する", estimated_time: 3, assigned_date: getNextDate(2), details: "報告されたバグを調査・修正", completed: true },
+            { id: `task-${Date.now()+1}`, name: "D&D機能を実装する", estimated_time: 8, assigned_date: null, due_date: null, details: "タスクをドラッグ＆ドロップで移動できるようにする", completed: false },
+            { id: `task-${Date.now()+2}`, name: "UIを修正する", estimated_time: 5, assigned_date: getNextDate(1), due_date: getNextDate(3) + 'T18:00', details: "新しいレイアウトを適用する", completed: false },
+            { id: `task-${Date.now()+3}`, name: "バグを修正する", estimated_time: 3, assigned_date: getNextDate(2), due_date: getNextDate(2) + 'T23:59', details: "報告されたバグを調査・修正", completed: true },
         ];
     } else {
         tasksData = JSON.parse(tasksJson);
@@ -163,11 +163,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const taskNameInput = document.getElementById('task-name');
     const estimatedTimeInput = document.getElementById('estimated-time');
     const taskDateInput = document.getElementById('task-date');
+    const dueDateInput = document.getElementById('due-date');
     const taskDetailsInput = document.getElementById('task-details');
 
     const prevWeekBtn = document.getElementById('prev-week');
     const todayBtn = document.getElementById('today');
     const nextWeekBtn = document.getElementById('next-week');
+    const datePicker = document.getElementById('date-picker');
     const weekTitle = document.getElementById('week-title');
     const dayColumns = Array.from(document.querySelectorAll('#task-board .day-column'));
     const unassignedColumn = document.getElementById('unassigned-tasks');
@@ -202,6 +204,7 @@ document.addEventListener('DOMContentLoaded', () => {
         taskNameInput.value = task.name;
         estimatedTimeInput.value = task.estimated_time;
         taskDateInput.value = task.assigned_date;
+        dueDateInput.value = task.due_date || '';
         taskDetailsInput.value = task.details || '';
         taskForm.querySelector('button').textContent = '更新';
         modal.style.display = 'block';
@@ -216,6 +219,7 @@ document.addEventListener('DOMContentLoaded', () => {
             name: taskNameInput.value,
             estimated_time: parseFloat(estimatedTimeInput.value),
             assigned_date: taskDateInput.value,
+            due_date: dueDateInput.value || null,
             details: taskDetailsInput.value,
         };
 
@@ -257,10 +261,20 @@ document.addEventListener('DOMContentLoaded', () => {
         taskElement.dataset.taskId = task.id;
         taskElement.draggable = true;
 
+        let dueDateHTML = '';
+        if (task.due_date) {
+            const dueDate = new Date(task.due_date);
+            const formattedDate = `${dueDate.getMonth() + 1}/${dueDate.getDate()} ${String(dueDate.getHours()).padStart(2, '0')}:${String(dueDate.getMinutes()).padStart(2, '0')}`;
+            dueDateHTML = `<div class="task-due-date">期限: ${formattedDate}</div>`;
+        }
+
         taskElement.innerHTML = `
-            <input type="checkbox" class="task-checkbox" ${task.completed ? 'checked' : ''}>
-            <div class="task-name">${task.name}</div>
-            <div class="task-time">${task.estimated_time}h</div>
+            <div class="task-header">
+                <input type="checkbox" class="task-checkbox" ${task.completed ? 'checked' : ''}>
+                <div class="task-name">${task.name}</div>
+                <div class="task-time">${task.estimated_time}h</div>
+            </div>
+            ${dueDateHTML}
         `;
 
         const checkbox = taskElement.querySelector('.task-checkbox');
@@ -369,6 +383,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         unassignedColumn.dataset.date = "null";
         addDragAndDropListeners();
+
+        // Update the date picker to the Monday of the current week
+        datePicker.value = formatDate(monday);
     }
 
     // Attach renderWeek to the body so it can be called from the global handleDrop function
@@ -386,6 +403,16 @@ document.addEventListener('DOMContentLoaded', () => {
     todayBtn.addEventListener('click', () => {
         currentDate = new Date();
         renderWeek();
+    });
+
+    datePicker.addEventListener('change', (e) => {
+        const selectedDate = e.target.value;
+        if (selectedDate) {
+            // The selected date is in UTC, so we create a new Date object
+            // to ensure it's interpreted in the local timezone.
+            currentDate = new Date(selectedDate + 'T00:00:00');
+            renderWeek();
+        }
     });
 
     // --- Settings Event Listener ---

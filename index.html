@@ -19,6 +19,7 @@
                 <button id="prev-week">前週へ</button>
                 <button id="today">今週に戻る</button>
                 <button id="next-week">次週へ</button>
+                <input type="date" id="date-picker" aria-label="日付を選択">
             </div>
 
         </div>
@@ -72,6 +73,9 @@
 
                 <label for="task-date">担当日:</label>
                 <input type="date" id="task-date" required>
+
+                <label for="due-date">期限:</label>
+                <input type="datetime-local" id="due-date">
 
                 <label for="task-details">詳細メモ:</label>
                 <textarea id="task-details"></textarea>
