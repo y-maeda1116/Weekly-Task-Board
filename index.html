@@ -3,36 +3,43 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>週間タスクボード</title>
+    <title>ウィークリータスクボード</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <header>
-        <h1>週間タスクボード</h1>
-        <button id="add-task-btn">タスクを追加</button>
+        <h1>ウィークリータスクボード</h1>
+        <div id="header-controls">
+            <button id="add-task-btn">タスクを追加</button>
+            <div id="navigation">
+                <button id="prev-week">前週へ</button>
+                <button id="today">今週に戻る</button>
+                <button id="next-week">次週へ</button>
+            </div>
+        </div>
+        <h2 id="week-title"></h2>
     </header>
-
     <main id="task-board">
         <div class="day-column" id="monday">
-            <h2>月曜日</h2>
+            <h3>月曜日</h3>
         </div>
         <div class="day-column" id="tuesday">
-            <h2>火曜日</h2>
+            <h3>火曜日</h3>
         </div>
         <div class="day-column" id="wednesday">
-            <h2>水曜日</h2>
+            <h3>水曜日</h3>
         </div>
         <div class="day-column" id="thursday">
-            <h2>木曜日</h2>
+            <h3>木曜日</h3>
         </div>
         <div class="day-column" id="friday">
-            <h2>金曜日</h2>
+            <h3>金曜日</h3>
         </div>
         <div class="day-column" id="saturday">
-            <h2>土曜日</h2>
+            <h3>土曜日</h3>
         </div>
         <div class="day-column" id="sunday">
-            <h2>日曜日</h2>
+            <h3>日曜日</h3>
         </div>
     </main>
 
@@ -48,16 +55,8 @@
                 <label for="estimated-time">見積もり時間 (時間):</label>
                 <input type="number" id="estimated-time" min="0" step="0.5" required>
 
-                <label for="assign-day">担当日:</label>
-                <select id="assign-day">
-                    <option value="monday">月曜日</option>
-                    <option value="tuesday">火曜日</option>
-                    <option value="wednesday">水曜日</option>
-                    <option value="thursday">木曜日</option>
-                    <option value="friday">金曜日</option>
-                    <option value="saturday">土曜日</option>
-                    <option value="sunday">日曜日</option>
-                </select>
+                <label for="task-date">担当日:</label>
+                <input type="date" id="task-date" required>
 
                 <label for="task-details">詳細メモ:</label>
                 <textarea id="task-details"></textarea>

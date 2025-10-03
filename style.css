@@ -1,29 +1,46 @@
 body {
     font-family: sans-serif;
-    background-color: #f4f7f9;
-    color: #333;
+    line-height: 1.6;
     margin: 0;
-    padding: 20px;
+    background-color: #f4f4f4;
+    color: #333;
 }
 
 header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+    background: #333;
+    color: #fff;
+    padding: 1rem;
+    text-align: center;
     margin-bottom: 20px;
 }
 
-h1 {
-    color: #0d47a1;
+header h1 {
+    margin-bottom: 1rem;
+}
+
+#header-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 900px;
+    margin: 0 auto 1rem;
+}
+
+button {
+    padding: 0.5rem 1rem;
+    border: none;
+    background: #555;
+    color: white;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+button:hover {
+    background: #777;
 }
 
 #add-task-btn {
     background-color: #1976d2;
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 5px;
-    cursor: pointer;
     font-size: 16px;
 }
 
@@ -31,59 +48,85 @@ h1 {
     background-color: #1565c0;
 }
 
+#week-title {
+    font-size: 1.2em;
+    font-weight: normal;
+}
+
 #task-board {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
     gap: 10px;
+    padding: 1rem;
 }
 
 .day-column {
-    background-color: #e3f2fd;
-    padding: 10px;
+    background: #fff;
+    padding: 1rem;
     border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     min-height: 400px;
 }
 
-.day-column h2 {
+.day-column h3 {
     text-align: center;
-    color: #0d47a1;
-    border-bottom: 2px solid #90caf9;
-    padding-bottom: 10px;
+    border-bottom: 2px solid #eee;
+    padding-bottom: 0.5rem;
     margin-top: 0;
 }
 
-/* モーダル */
+.task-card {
+    background-color: #fefefe;
+    border: 1px solid #ddd;
+    border-left: 5px solid #1976d2;
+    border-radius: 5px;
+    padding: 10px;
+    margin-top: 10px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.task-card h4 {
+    margin: 0 0 5px 0;
+    font-size: 1em;
+}
+
+.task-card p {
+    margin: 0;
+    font-size: 14px;
+    color: #555;
+}
+
 .modal {
-    display: none; /* 初期状態では非表示 */
+    display: none;
     position: fixed;
-    z-index: 1;
+    z-index: 1000;
     left: 0;
     top: 0;
     width: 100%;
     height: 100%;
     overflow: auto;
-    background-color: rgba(0,0,0,0.4);
+    background-color: rgba(0,0,0,0.5);
 }
 
 .modal-content {
     background-color: #fefefe;
     margin: 10% auto;
-    padding: 20px;
+    padding: 25px;
     border: 1px solid #888;
-    width: 80%;
+    width: 90%;
     max-width: 500px;
     border-radius: 10px;
     position: relative;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
 }
 
 .close-btn {
     color: #aaa;
-    float: right;
-    font-size: 28px;
-    font-weight: bold;
     position: absolute;
     top: 10px;
     right: 20px;
+    font-size: 28px;
+    font-weight: bold;
 }
 
 .close-btn:hover,
@@ -93,7 +136,6 @@ h1 {
     cursor: pointer;
 }
 
-/* フォーム */
 #task-form {
     display: flex;
     flex-direction: column;
@@ -112,9 +154,11 @@ h1 {
     border: 1px solid #ccc;
     border-radius: 4px;
     font-size: 16px;
+    width: 100%;
+    box-sizing: border-box;
 }
 
-#task-form button {
+#task-form button[type="submit"] {
     margin-top: 20px;
     padding: 12px;
     background-color: #28a745;
@@ -125,25 +169,6 @@ h1 {
     font-size: 18px;
 }
 
-#task-form button:hover {
+#task-form button[type="submit"]:hover {
     background-color: #218838;
-}
-
-/* タスクカード（JSで生成される） */
-.task-card {
-    background-color: white;
-    border-radius: 5px;
-    padding: 10px;
-    margin-top: 10px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-}
-
-.task-card h4 {
-    margin: 0 0 5px 0;
-}
-
-.task-card p {
-    margin: 0;
-    font-size: 14px;
-    color: #555;
 }
