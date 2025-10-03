@@ -1,1 +1,50 @@
-/* Global styles will be here */
+body {
+    font-family: sans-serif;
+    line-height: 1.6;
+    margin: 0;
+    background-color: #f4f4f4;
+}
+
+header {
+    background: #333;
+    color: #fff;
+    padding: 1rem 0;
+    text-align: center;
+}
+
+#navigation {
+    margin-bottom: 1rem;
+}
+
+button {
+    padding: 0.5rem 1rem;
+    border: none;
+    background: #555;
+    color: white;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #777;
+}
+
+#task-board {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 5px;
+    padding: 1rem;
+}
+
+.day-column {
+    background: #fff;
+    padding: 1rem;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.day-column h3 {
+    text-align: center;
+    border-bottom: 2px solid #eee;
+    padding-bottom: 0.5rem;
+    margin-top: 0;
+}

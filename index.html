@@ -3,11 +3,42 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Weekly Task Board</title>
+    <title>ウィークリータスクボード</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <h1>Weekly Task Board</h1>
+    <header>
+        <h1>ウィークリータスクボード</h1>
+        <div id="navigation">
+            <button id="prev-week">前週へ</button>
+            <button id="today">今週に戻る</button>
+            <button id="next-week">次週へ</button>
+        </div>
+        <h2 id="week-title"></h2>
+    </header>
+    <main id="task-board">
+        <div class="day-column" id="monday">
+            <h3>月曜日</h3>
+        </div>
+        <div class="day-column" id="tuesday">
+            <h3>火曜日</h3>
+        </div>
+        <div class="day-column" id="wednesday">
+            <h3>水曜日</h3>
+        </div>
+        <div class="day-column" id="thursday">
+            <h3>木曜日</h3>
+        </div>
+        <div class="day-column" id="friday">
+            <h3>金曜日</h3>
+        </div>
+        <div class="day-column" id="saturday">
+            <h3>土曜日</h3>
+        </div>
+        <div class="day-column" id="sunday">
+            <h3>日曜日</h3>
+        </div>
+    </main>
     <script src="script.js"></script>
 </body>
 </html>
