@@ -396,12 +396,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Navigation Event Listeners ---
     prevWeekBtn.addEventListener('click', () => {
-        currentDate.setDate(currentDate.getDate() - 7);
-        renderWeek();
+        const newMonday = getMonday(currentDate);
+        newMonday.setDate(newMonday.getDate() - 7);
+        datePicker.value = formatDate(newMonday);
+        datePicker.dispatchEvent(new Event('change'));
     });
+
     nextWeekBtn.addEventListener('click', () => {
-        currentDate.setDate(currentDate.getDate() + 7);
-        renderWeek();
+        const newMonday = getMonday(currentDate);
+        newMonday.setDate(newMonday.getDate() + 7);
+        datePicker.value = formatDate(newMonday);
+        datePicker.dispatchEvent(new Event('change'));
     });
     todayBtn.addEventListener('click', () => {
         // `currentDate` を直接変更する代わりに、
@@ -499,5 +504,7 @@ document.addEventListener('DOMContentLoaded', () => {
     importFileInput.addEventListener('change', importData);
 
     // --- Initial Render ---
-    renderWeek();
+    // 初回読み込み時もdatePickerのchangeイベント経由で描画し、ロジックを統一
+    datePicker.value = formatDate(getMonday(currentDate));
+    datePicker.dispatchEvent(new Event('change'));
 });
