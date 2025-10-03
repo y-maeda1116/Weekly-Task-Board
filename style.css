@@ -1,1 +1,77 @@
-/* Global styles will be here */
+body {
+    font-family: sans-serif;
+    background-color: #f4f4f4;
+    color: #333;
+    margin: 20px;
+}
+
+h1, h2 {
+    text-align: center;
+    color: #555;
+}
+
+#task-board {
+    display: flex;
+    gap: 20px;
+}
+
+#week-days {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 10px;
+    flex-grow: 1;
+}
+
+.day-column {
+    background-color: #e9e9e9;
+    border-radius: 5px;
+    padding: 10px;
+}
+
+.day-column h3 {
+    margin-top: 0;
+    text-align: center;
+    border-bottom: 1px solid #ccc;
+    padding-bottom: 10px;
+}
+
+#unassigned-tasks {
+    width: 250px;
+    background-color: #e9e9e9;
+    border-radius: 5px;
+    padding: 10px;
+}
+
+.task-list {
+    min-height: 200px;
+    background-color: #f0f0f0;
+    border-radius: 5px;
+    padding: 5px;
+}
+
+.task-card {
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+    padding: 10px;
+    margin-bottom: 8px;
+    cursor: grab;
+}
+
+.task-card .task-name {
+    font-weight: bold;
+}
+
+.task-card .task-time {
+    font-size: 0.9em;
+    color: #666;
+}
+
+.dragging {
+    opacity: 0.5;
+}
+
+.drag-over {
+    background-color: #d4e6ff;
+    border: 2px dashed #99c0ff;
+}
