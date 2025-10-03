@@ -115,6 +115,43 @@ function handleDrop(e) {
 }
 
 
+// --- Date and Rendering Logic ---
+
+/**
+ * Formats a Date object into a YYYY-MM-DD string.
+ * @param {Date} date - The date to format.
+ * @returns {string}
+ */
+function formatDate(date) {
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+}
+
+/**
+ * Moves incomplete tasks from past weeks to the unassigned list.
+ */
+function carryOverOldTasks() {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Normalize to the start of the day
+    const todayStr = formatDate(today);
+
+    let tasksModified = false;
+    tasks.forEach(task => {
+        if (task.assigned_date && task.assigned_date < todayStr && !task.completed) {
+            task.assigned_date = null;
+            tasksModified = true;
+        }
+    });
+
+    if (tasksModified) {
+        console.log("Carried over incomplete tasks from previous weeks.");
+        saveTasks();
+    }
+}
+
+
 // --- Main Application Logic ---
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -132,12 +169,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const todayBtn = document.getElementById('today');
     const nextWeekBtn = document.getElementById('next-week');
     const weekTitle = document.getElementById('week-title');
-    const dayColumns = Array.from(document.querySelectorAll('.day-column')).filter(c => c.id !== 'unassigned-tasks');
+    const dayColumns = Array.from(document.querySelectorAll('#task-board .day-column'));
     const unassignedColumn = document.getElementById('unassigned-tasks');
     const idealDailyMinutesInput = document.getElementById('ideal-daily-minutes');
 
     let currentDate = new Date();
     let editingTaskId = null;
+
+    // --- Initial Load ---
+    carryOverOldTasks(); // Carry over tasks before the first render
 
     // --- Modal Logic ---
     addTaskBtn.addEventListener('click', () => {
@@ -207,12 +247,6 @@ document.addEventListener('DOMContentLoaded', () => {
         return new Date(d.setDate(diff));
     }
 
-    function formatDate(date) {
-        const y = date.getFullYear();
-        const m = String(date.getMonth() + 1).padStart(2, '0');
-        const d = String(date.getDate()).padStart(2, '0');
-        return `${y}-${m}-${d}`;
-    }
 
     function createTaskElement(task) {
         const taskElement = document.createElement('div');
