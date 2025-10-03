@@ -404,8 +404,13 @@ document.addEventListener('DOMContentLoaded', () => {
         renderWeek();
     });
     todayBtn.addEventListener('click', () => {
-        currentDate = new Date();
-        renderWeek();
+        // `currentDate` を直接変更する代わりに、
+        // datePicker の値を更新して 'change' イベントを発火させ、
+        // 更新ロジックを一本化する
+        const today = new Date();
+        const mondayOfThisWeek = getMonday(today);
+        datePicker.value = formatDate(mondayOfThisWeek);
+        datePicker.dispatchEvent(new Event('change'));
     });
 
     datePicker.addEventListener('change', (e) => {
