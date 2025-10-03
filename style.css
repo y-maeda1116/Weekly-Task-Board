@@ -82,16 +82,35 @@ main#task-board {
     margin-bottom: 10px;
     box-shadow: 0 1px 2px rgba(0,0,0,0.05);
     cursor: grab; /* Indicate draggable */
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: background-color 0.2s ease;
+}
+
+.task.completed {
+    background-color: #f7f8fc;
+    border-left-color: #b0b0b0;
+    opacity: 0.8;
+}
+
+.task.completed .task-name {
+    text-decoration: line-through;
+    color: #888;
+}
+
+.task-checkbox {
+    cursor: pointer;
 }
 
 .task-name {
     font-weight: bold;
+    flex-grow: 1;
 }
 
 .task-time {
     font-size: 0.9em;
     color: #666;
-    margin-top: 5px;
 }
 
 /* Style for the task being dragged */
