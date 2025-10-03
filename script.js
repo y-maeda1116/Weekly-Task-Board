@@ -505,6 +505,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Initial Render ---
     // 初回読み込み時もdatePickerのchangeイベント経由で描画し、ロジックを統一
-    datePicker.value = formatDate(getMonday(currentDate));
+    datePicker.value = formatDate(getMonday(new Date()));
     datePicker.dispatchEvent(new Event('change'));
 });
