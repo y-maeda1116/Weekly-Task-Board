@@ -408,15 +408,17 @@ document.addEventListener('DOMContentLoaded', () => {
         datePicker.value = formatDate(newMonday);
         datePicker.dispatchEvent(new Event('change'));
     });
-    todayBtn.addEventListener('click', () => {
-        // `currentDate` を直接変更する代わりに、
-        // datePicker の値を更新して 'change' イベントを発火させ、
-        // 更新ロジックを一本化する
-        const today = new Date();
-        const mondayOfThisWeek = getMonday(today);
-        datePicker.value = formatDate(mondayOfThisWeek);
-        datePicker.dispatchEvent(new Event('change'));
-    });
+	todayBtn.addEventListener('click', () => {
+	    const today = new Date();
+	    const mondayOfThisWeek = getMonday(today);
+	    
+	    const newDateStr = formatDate(mondayOfThisWeek);
+	    datePicker.value = newDateStr; // UI表示を更新
+	    
+	    // currentDate を直接更新し、renderWeek を呼び出す
+	    currentDate = new Date(newDateStr + 'T00:00:00');
+	    renderWeek();
+	});
 
     datePicker.addEventListener('change', (e) => {
         const selectedDate = e.target.value;
@@ -504,7 +506,11 @@ document.addEventListener('DOMContentLoaded', () => {
     importFileInput.addEventListener('change', importData);
 
     // --- Initial Render ---
-    // 初回読み込み時もdatePickerのchangeイベント経由で描画し、ロジックを統一
-    datePicker.value = formatDate(getMonday(new Date()));
-    datePicker.dispatchEvent(new Event('change'));
+	// 変更後: currentDateを直接更新してrenderWeek()を呼び出す
+
+    const initialMonday = getMonday(new Date());
+    const initialDateStr = formatDate(initialMonday);
+    datePicker.value = initialDateStr;
+    currentDate = new Date(initialDateStr + 'T00:00:00');
+    renderWeek();
 });
