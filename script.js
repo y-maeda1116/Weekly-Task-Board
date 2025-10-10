@@ -304,8 +304,15 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    function updateAndRender(date) {
+        currentDate = getMonday(date);
+        renderWeek();
+    }
+
     function renderWeek() {
-        const monday = getMonday(currentDate);
+        // `updateAndRender`によって`currentDate`は常に月曜日に設定されていると仮定
+        // 副作用を避けるため、`currentDate`のコピーを作成して使用する
+        const monday = new Date(currentDate);
         monday.setHours(0, 0, 0, 0);
 
         // Clear all task elements and reset daily totals
@@ -396,16 +403,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Navigation Event Listeners ---
     prevWeekBtn.addEventListener('click', () => {
-        currentDate.setDate(currentDate.getDate() - 7);
-        renderWeek();
+        const newMonday = getMonday(currentDate);
+        newMonday.setDate(newMonday.getDate() - 7);
+        datePicker.value = formatDate(newMonday);
+        datePicker.dispatchEvent(new Event('change'));
     });
+
     nextWeekBtn.addEventListener('click', () => {
-        currentDate.setDate(currentDate.getDate() + 7);
-        renderWeek();
+        const newMonday = getMonday(currentDate);
+        newMonday.setDate(newMonday.getDate() + 7);
+        datePicker.value = formatDate(newMonday);
+        datePicker.dispatchEvent(new Event('change'));
     });
     todayBtn.addEventListener('click', () => {
-        currentDate = new Date();
-        renderWeek();
+        // `currentDate` を直接変更する代わりに、
+        // datePicker の値を更新して 'change' イベントを発火させ、
+        // 更新ロジックを一本化する
+        const today = new Date();
+        const mondayOfThisWeek = getMonday(today);
+        datePicker.value = formatDate(mondayOfThisWeek);
+        datePicker.dispatchEvent(new Event('change'));
     });
 
     datePicker.addEventListener('change', (e) => {
@@ -494,5 +511,7 @@ document.addEventListener('DOMContentLoaded', () => {
     importFileInput.addEventListener('change', importData);
 
     // --- Initial Render ---
-    renderWeek();
+    // 初回読み込み時もdatePickerのchangeイベント経由で描画し、ロジックを統一
+    datePicker.value = formatDate(getMonday(new Date()));
+    datePicker.dispatchEvent(new Event('change'));
 });
