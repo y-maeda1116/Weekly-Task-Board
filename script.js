@@ -214,10 +214,29 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Initial Load ---
     // carryOverOldTasks(); // データ消失を防ぐため、この自動実行を一時的に無効化
 
+    // --- Event Delegation for Task Clicks ---
+    // Using event delegation on the main container is more robust and performant.
+    // It ensures that clicks are handled correctly even for tasks that are re-rendered.
+    document.getElementById('app-container').addEventListener('click', (e) => {
+        // Find the closest ancestor which is a task element
+        const taskElement = e.target.closest('.task');
+
+        // If a task was clicked, but not the checkbox inside it
+        if (taskElement && !e.target.matches('.task-checkbox')) {
+            const taskId = taskElement.dataset.taskId;
+            // Find the task from the global `tasks` array to ensure data is up-to-date
+            const task = tasks.find(t => t.id === taskId);
+            if (task) {
+                openEditModal(task);
+            }
+        }
+    });
+
     // --- Modal Logic ---
     addTaskBtn.addEventListener('click', () => {
         editingTaskId = null;
         taskForm.reset();
+        document.querySelector('#task-modal h2').textContent = 'タスクを新規登録';
         taskForm.querySelector('button').textContent = '登録';
         modal.style.display = 'block';
     });
@@ -234,9 +253,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function openEditModal(task) {
         editingTaskId = task.id;
+        document.querySelector('#task-modal h2').textContent = 'タスクを編集';
         taskNameInput.value = task.name;
         estimatedTimeInput.value = task.estimated_time;
-        taskDateInput.value = task.assigned_date;
+        taskDateInput.value = task.assigned_date || ''; // Handle null assigned_date
         dueDateInput.value = task.due_date || '';
         taskDetailsInput.value = task.details || '';
         taskForm.querySelector('button').textContent = '更新';
@@ -251,7 +271,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const taskData = {
             name: taskNameInput.value,
             estimated_time: parseFloat(estimatedTimeInput.value),
-            assigned_date: taskDateInput.value,
+            // Ensure empty date string is saved as null
+            assigned_date: taskDateInput.value || null,
             due_date: dueDateInput.value || null,
             details: taskDetailsInput.value,
         };
@@ -305,13 +326,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const checkbox = taskElement.querySelector('.task-checkbox');
         checkbox.addEventListener('click', (e) => {
-            e.stopPropagation(); // Stop click from opening the modal
+            // The delegated listener on #app-container will ignore checkbox clicks,
+            // so we no longer need e.stopPropagation() here.
             task.completed = e.target.checked;
             saveTasks();
             renderWeek(); // Re-render to apply style changes immediately
         });
 
-        taskElement.addEventListener('click', () => openEditModal(task));
+        // The 'click' listener for opening the modal is now handled by event delegation.
+        // We only need drag listeners directly on the element.
         taskElement.addEventListener('dragstart', handleDragStart);
         taskElement.addEventListener('dragend', handleDragEnd);
 
