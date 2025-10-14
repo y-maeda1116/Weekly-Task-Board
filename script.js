@@ -1,4 +1,3 @@
-
 // --- Global State and LocalStorage Functions ---
 
 const TASKS_STORAGE_KEY = 'weekly-task-board.tasks';
@@ -7,7 +6,7 @@ const SETTINGS_STORAGE_KEY = 'weekly-task-board.settings';
 // グローバル変数として宣言のみ行い、初期化はDOMContentLoaded内で行う
 let tasks; 
 let settings; 
-let currentDate; 
+let currentDate; // 💡 修正: アプリケーションの基点となる日付
 let datePicker; // DOM要素もグローバルでアクセスできるように定義
 
 /**
@@ -175,6 +174,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // 1. データの初期化
     tasks = loadTasks(); 
     settings = loadSettings();
+    // 💡 修正 1: currentDateを現在の日付で初期化し、週の基点を定める
+    currentDate = new Date(); 
 
     // --- DOM Element Selections ---
     const addTaskBtn = document.getElementById('add-task-btn');
@@ -208,6 +209,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Initial Load ---
     carryOverOldTasks();
 
+    // 💡 修正 2: 初期ロード時にタスクボードを描画する
+    renderWeek();
+
     // --- Modal Logic ---
     addTaskBtn.addEventListener('click', () => {
         editingTaskId = null;
@@ -230,6 +234,7 @@ document.addEventListener('DOMContentLoaded', () => {
         editingTaskId = task.id;
         taskNameInput.value = task.name;
         estimatedTimeInput.value = task.estimated_time;
+        // 💡 修正: nullの場合は空文字列を設定し、HTML inputで表示できるようにする
         taskDateInput.value = task.assigned_date || ''; 
         dueDateInput.value = task.due_date || '';
         taskDetailsInput.value = task.details || '';
@@ -242,7 +247,8 @@ document.addEventListener('DOMContentLoaded', () => {
     taskForm.addEventListener('submit', (event) => {
         event.preventDefault();
 
-        const assignedDateValue = taskDateInput.value || null;
+        // 💡 修正 3: taskDateInput.valueが空文字列の場合はnullにする
+        const assignedDateValue = taskDateInput.value || null; 
 
         const taskData = {
             name: taskNameInput.value,
@@ -418,4 +424,84 @@ document.addEventListener('DOMContentLoaded', () => {
 
     nextWeekBtn.addEventListener('click', () => {
         const newMonday = getMonday(currentDate); 
-        newMonday.setDate
+        // 💡 修正 4: 次週へ移動するように修正 (getDate() + 7)
+        newMonday.setDate(newMonday.getDate() + 7); 
+        currentDate = newMonday; 
+        datePicker.value = formatDate(currentDate);
+        renderWeek();
+    });
+
+    // 💡 修正 5: 今週に戻るボタンのイベントリスナーを追加
+    todayBtn.addEventListener('click', () => {
+        currentDate = new Date();
+        renderWeek();
+    });
+
+    // 💡 修正 6: 日付ピッカーの変更リスナーを追加
+    datePicker.addEventListener('change', (e) => {
+        if (e.target.value) {
+            currentDate = new Date(e.target.value);
+            renderWeek();
+        }
+    });
+
+    // 💡 修正 7: idealDailyMinutesの変更リスナーを追加（設定の保存）
+    idealDailyMinutesInput.value = settings.ideal_daily_minutes; // 初期値を反映
+    idealDailyMinutesInput.addEventListener('change', (e) => {
+        settings.ideal_daily_minutes = parseInt(e.target.value, 10) || 480;
+        saveSettings();
+        renderWeek(); // 合計時間の表示を更新
+    });
+    
+    // --- データのエクスポート/インポートロジック ---
+    
+    function exportData() {
+        const data = { tasks: tasks, settings: settings };
+        const dataStr = JSON.stringify(data, null, 2);
+        const blob = new Blob([dataStr], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `weekly-task-board-data-${formatDate(new Date())}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+
+    function importData(file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                const importedData = JSON.parse(e.target.result);
+                if (importedData.tasks) {
+                    // タスク配列を上書き
+                    tasks = importedData.tasks.map(task => ({ ...task, completed: task.completed || false }));
+                    saveTasks();
+                }
+                if (importedData.settings) {
+                    // 設定オブジェクトを上書き
+                    settings = { ...settings, ...importedData.settings };
+                    saveSettings();
+                    idealDailyMinutesInput.value = settings.ideal_daily_minutes; // UIを更新
+                }
+                renderWeek();
+                alert('データのインポートが完了しました。');
+            } catch (error) {
+                alert('インポート中にエラーが発生しました: ' + error.message);
+                console.error('Import Error:', error);
+            }
+        };
+        reader.readAsText(file);
+    }
+    
+    // イベントリスナー
+    exportDataBtn.addEventListener('click', exportData);
+    importDataBtn.addEventListener('click', () => importFileInput.click());
+    importFileInput.addEventListener('change', (e) => {
+        if (e.target.files.length > 0) {
+            importData(e.target.files[0]);
+        }
+    });
+
+}); // DOMContentLoaded 終了
