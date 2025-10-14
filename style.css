@@ -99,7 +99,8 @@ main#task-board {
     padding: 10px;
     margin-bottom: 10px;
     box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-    cursor: grab; /* Indicate draggable */
+    /* 🚨 修正 1: デリゲーションが機能するように cursor: pointer に変更 */
+    cursor: pointer; 
     display: flex;
     flex-direction: column; /* Align content vertically */
     gap: 5px; /* Space between header and due date */
@@ -133,7 +134,10 @@ main#task-board {
 }
 
 .task-checkbox {
+    /* 🚨 修正 2: チェックボックスのカーソルとz-indexを強制 */
     cursor: pointer;
+    position: relative; 
+    z-index: 5;
 }
 
 .task-name {
@@ -150,6 +154,8 @@ main#task-board {
 .task.dragging {
     opacity: 0.5;
     box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    /* ドラッグ中は cursor: grab に戻す */
+    cursor: grab; 
 }
 
 #unassigned-list {
@@ -310,4 +316,26 @@ button:hover {
         flex-direction: column;
         align-items: stretch;
     }
+}
+/* Modal styles - 最終調整 */
+.modal {
+    display: none; /* 💡 初期状態を確実に非表示にする */
+    position: fixed;
+    z-index: 9999; /* 💡 z-indexを最大値に近く設定 */
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.5);
+}
+
+.modal-content {
+    background-color: #fefefe;
+    margin: 10% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%;
+    max-width: 500px;
+    border-radius: 8px;
 }
