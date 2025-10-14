@@ -31,13 +31,16 @@ function saveSettings() {
  * @returns {Date} The Monday of that week, set to 00:00:00 local time.
  */
 function getMonday(d) {
-    d = new Date(d);
-    d.setHours(0, 0, 0, 0); 
-    const day = d.getDay();
-    const diff = d.getDate() - day + (day === 0 ? -6 : 1); // Adjust when day is Sunday
-    const monday = new Date(d.setDate(diff));
-    monday.setHours(0, 0, 0, 0); 
-    return monday;
+    const date = new Date(d);
+    date.setHours(0, 0, 0, 0); 
+    const day = date.getDay();
+    const diff = date.getDate() - day + (day === 0 ? -6 : 1); // Adjust when day is Sunday
+    
+    // 💡 修正 2: setDataをsetDateに修正
+    date.setDate(diff);
+    
+    // 💡 修正 3: mondayをdateに修正
+    return date;
 }
 
 /**
@@ -76,16 +79,23 @@ function loadTasks() {
     const tasksJson = localStorage.getItem(TASKS_STORAGE_KEY);
     let tasksData = [];
     if (!tasksJson || JSON.parse(tasksJson).length === 0) {
-        // LocalStorageが空の場合、安定したgetNextDateを使用してサンプルタスクを生成
+        // 💡 修正 4: サンプルタスクの assigned_date を現在の週に割り当てる
+        const todayMonday = formatDate(getMonday(new Date())); 
+
         tasksData = [
-            { id: `task-${Date.now()+1}`, name: "D&D機能を実装する", estimated_time: 8, assigned_date: null, due_date: null, details: "タスクをドラッグ＆ドロップで移動できるようにする", completed: false },
+            { id: `task-${Date.now()+1}`, name: "D&D機能を実装する", estimated_time: 8, assigned_date: todayMonday, due_date: null, details: "タスクをドラッグ＆ドロップで移動できるようにする", completed: false },
             { id: `task-${Date.now()+2}`, name: "UIを修正する", estimated_time: 5, assigned_date: getNextDate(1), due_date: getNextDate(3) + 'T18:00', details: "新しいレイアウトを適用する", completed: false },
-            { id: `task-${Date.now()+3}`, name: "バグを修正する", estimated_time: 3, assigned_date: getNextDate(2), due_date: getNextDate(2) + 'T23:59', details: "報告されたバグを調査・修正", completed: true },
+            { id: `task-${Date.now()+3}`, name: "バグを修正する", estimated_time: 3, assigned_date: null, due_date: getNextDate(2) + 'T23:59', details: "報告されたバグを調査・修正", completed: true },
         ];
     } else {
         tasksData = JSON.parse(tasksJson);
     }
-    return tasksData.map(task => ({ ...task, completed: task.completed || false }));
+    // 💡 修正 5: assigned_dateが空文字や未定義の場合に備え、nullに変換
+    return tasksData.map(task => ({ 
+        ...task, 
+        completed: task.completed || false,
+        assigned_date: task.assigned_date === "" || task.assigned_date === undefined ? null : task.assigned_date
+    }));
 }
 
 
@@ -174,8 +184,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // 1. データの初期化
     tasks = loadTasks(); 
     settings = loadSettings();
-    // 💡 修正 1: currentDateを現在の日付で初期化し、週の基点を定める
-    currentDate = new Date(); 
+    // 💡 currentDateを現在の週の月曜日に設定し、時刻情報をクリアする
+    currentDate = getMonday(new Date()); 
 
     // --- DOM Element Selections ---
     const addTaskBtn = document.getElementById('add-task-btn');
@@ -209,7 +219,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Initial Load ---
     carryOverOldTasks();
 
-    // 💡 修正 2: 初期ロード時にタスクボードを描画する
+    // 💡 修正 6: currentDate を基にした週の月曜日の日付を datePicker に設定
+    datePicker.value = formatDate(currentDate);
+
+    // 💡 修正 7: 初期ロード時にタスクボードを描画する
     renderWeek();
 
     // --- Modal Logic ---
@@ -247,7 +260,7 @@ document.addEventListener('DOMContentLoaded', () => {
     taskForm.addEventListener('submit', (event) => {
         event.preventDefault();
 
-        // 💡 修正 3: taskDateInput.valueが空文字列の場合はnullにする
+        // 💡 修正 8: taskDateInput.valueが空文字列の場合はnullにする
         const assignedDateValue = taskDateInput.value || null; 
 
         const taskData = {
@@ -415,37 +428,39 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Navigation Event Listeners ---
     prevWeekBtn.addEventListener('click', () => {
-        const newMonday = getMonday(currentDate); 
-        newMonday.setDate(newMonday.getDate() - 7); 
-        currentDate = newMonday; 
+        const currentMonday = getMonday(currentDate); 
+        // 💡 修正 9: 前週へ移動
+        currentMonday.setDate(currentMonday.getDate() - 7); 
+        currentDate = currentMonday; 
         datePicker.value = formatDate(currentDate);
         renderWeek();
     });
 
     nextWeekBtn.addEventListener('click', () => {
-        const newMonday = getMonday(currentDate); 
-        // 💡 修正 4: 次週へ移動するように修正 (getDate() + 7)
-        newMonday.setDate(newMonday.getDate() + 7); 
-        currentDate = newMonday; 
+        const currentMonday = getMonday(currentDate); 
+        // 💡 修正 10: 次週へ移動
+        currentMonday.setDate(currentMonday.getDate() + 7); 
+        currentDate = currentMonday; 
         datePicker.value = formatDate(currentDate);
         renderWeek();
     });
 
-    // 💡 修正 5: 今週に戻るボタンのイベントリスナーを追加
+    // 💡 修正 11: 今週に戻るボタンのイベントリスナー (安定動作のためgetMondayを使用)
     todayBtn.addEventListener('click', () => {
-        currentDate = new Date();
+        currentDate = getMonday(new Date());
+        datePicker.value = formatDate(currentDate);
         renderWeek();
     });
 
-    // 💡 修正 6: 日付ピッカーの変更リスナーを追加
+    // 💡 修正 12: 日付ピッカーの変更リスナー (安定動作のためgetMondayを使用)
     datePicker.addEventListener('change', (e) => {
         if (e.target.value) {
-            currentDate = new Date(e.target.value);
+            currentDate = getMonday(new Date(e.target.value));
             renderWeek();
         }
     });
 
-    // 💡 修正 7: idealDailyMinutesの変更リスナーを追加（設定の保存）
+    // 💡 修正 13: idealDailyMinutesの変更リスナー
     idealDailyMinutesInput.value = settings.ideal_daily_minutes; // 初期値を反映
     idealDailyMinutesInput.addEventListener('change', (e) => {
         settings.ideal_daily_minutes = parseInt(e.target.value, 10) || 480;
