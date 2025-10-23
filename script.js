@@ -4,8 +4,8 @@ const TASKS_STORAGE_KEY = 'weekly-task-board.tasks';
 const SETTINGS_STORAGE_KEY = 'weekly-task-board.settings';
 
 // グローバル変数として宣言のみ行い、初期化はDOMContentLoaded内で行う
-let tasks; 
-let settings; 
+let tasks;
+let settings;
 let currentDate; // 💡 修正: アプリケーションの基点となる日付
 let datePicker; // DOM要素もグローバルでアクセスできるように定義
 
@@ -32,11 +32,11 @@ function saveSettings() {
  */
 function getMonday(d) {
     d = new Date(d);
-    d.setHours(0, 0, 0, 0); 
+    d.setHours(0, 0, 0, 0);
     const day = d.getDay();
     const diff = d.getDate() - day + (day === 0 ? -6 : 1); // Adjust when day is Sunday
     const monday = new Date(d.setDate(diff));
-    monday.setHours(0, 0, 0, 0); 
+    monday.setHours(0, 0, 0, 0);
     return monday;
 }
 
@@ -59,9 +59,9 @@ function formatDate(date) {
  */
 function getNextDate(daysToAdd) {
     const date = new Date();
-    date.setHours(0, 0, 0, 0); 
+    date.setHours(0, 0, 0, 0);
     date.setDate(date.getDate() + daysToAdd);
-    
+
     const y = date.getFullYear();
     const m = String(date.getMonth() + 1).padStart(2, '0');
     const d = String(date.getDate()).padStart(2, '0');
@@ -76,11 +76,23 @@ function loadTasks() {
     const tasksJson = localStorage.getItem(TASKS_STORAGE_KEY);
     let tasksData = [];
     if (!tasksJson || JSON.parse(tasksJson).length === 0) {
-        // LocalStorageが空の場合、安定したgetNextDateを使用してサンプルタスクを生成
+        // LocalStorageが空の場合、現在の週に表示されるサンプルタスクを生成
+        const today = new Date();
+        const monday = getMonday(today);
+
+        // 今週の月曜日から水曜日の日付を取得
+        const mondayStr = formatDate(monday);
+        const tuesday = new Date(monday);
+        tuesday.setDate(monday.getDate() + 1);
+        const tuesdayStr = formatDate(tuesday);
+        const wednesday = new Date(monday);
+        wednesday.setDate(monday.getDate() + 2);
+        const wednesdayStr = formatDate(wednesday);
+
         tasksData = [
-            { id: `task-${Date.now()+1}`, name: "D&D機能を実装する", estimated_time: 8, assigned_date: null, due_date: null, details: "タスクをドラッグ＆ドロップで移動できるようにする", completed: false },
-            { id: `task-${Date.now()+2}`, name: "UIを修正する", estimated_time: 5, assigned_date: getNextDate(1), due_date: getNextDate(3) + 'T18:00', details: "新しいレイアウトを適用する", completed: false },
-            { id: `task-${Date.now()+3}`, name: "バグを修正する", estimated_time: 3, assigned_date: getNextDate(2), due_date: getNextDate(2) + 'T23:59', details: "報告されたバグを調査・修正", completed: true },
+            { id: `task-${Date.now() + 1}`, name: "D&D機能を実装する", estimated_time: 8, assigned_date: null, due_date: null, details: "タスクをドラッグ＆ドロップで移動できるようにする", completed: false },
+            { id: `task-${Date.now() + 2}`, name: "UIを修正する", estimated_time: 5, assigned_date: tuesdayStr, due_date: wednesdayStr + 'T18:00', details: "新しいレイアウトを適用する", completed: false },
+            { id: `task-${Date.now() + 3}`, name: "バグを修正する", estimated_time: 3, assigned_date: mondayStr, due_date: mondayStr + 'T23:59', details: "報告されたバグを調査・修正", completed: false },
         ];
     } else {
         tasksData = JSON.parse(tasksJson);
@@ -139,7 +151,7 @@ function handleDrop(e) {
     if (task) {
         task.assigned_date = newDate;
         saveTasks();
-        if(document.body.renderWeek) document.body.renderWeek();
+        if (document.body.renderWeek) document.body.renderWeek();
     }
 }
 
@@ -149,7 +161,7 @@ function handleDrop(e) {
  */
 function carryOverOldTasks() {
     const today = new Date();
-    today.setHours(0, 0, 0, 0); 
+    today.setHours(0, 0, 0, 0);
     const todayStr = formatDate(today);
 
     let tasksModified = false;
@@ -170,12 +182,12 @@ function carryOverOldTasks() {
 // --- Main Application Logic ---
 
 document.addEventListener('DOMContentLoaded', () => {
-    
+
     // 1. データの初期化
-    tasks = loadTasks(); 
+    tasks = loadTasks();
     settings = loadSettings();
     // 💡 修正 1: currentDateを現在の日付で初期化し、週の基点を定める
-    currentDate = new Date(); 
+    currentDate = new Date();
 
     // --- DOM Element Selections ---
     const addTaskBtn = document.getElementById('add-task-btn');
@@ -191,9 +203,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const prevWeekBtn = document.getElementById('prev-week');
     const todayBtn = document.getElementById('today');
     const nextWeekBtn = document.getElementById('next-week');
-    
+
     // グローバル変数に代入
-    datePicker = document.getElementById('date-picker'); 
+    datePicker = document.getElementById('date-picker');
 
     const weekTitle = document.getElementById('week-title');
     const dayColumns = Array.from(document.querySelectorAll('#task-board .day-column'));
@@ -204,10 +216,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const importFileInput = document.getElementById('import-file-input');
 
     let editingTaskId = null;
-    let isRendering = false; 
+    let isRendering = false;
 
     // --- Initial Load ---
     carryOverOldTasks();
+
+    // 設定値をUIに反映
+    idealDailyMinutesInput.value = settings.ideal_daily_minutes;
 
     // 💡 修正 2: 初期ロード時にタスクボードを描画する
     renderWeek();
@@ -235,7 +250,7 @@ document.addEventListener('DOMContentLoaded', () => {
         taskNameInput.value = task.name;
         estimatedTimeInput.value = task.estimated_time;
         // 💡 修正: nullの場合は空文字列を設定し、HTML inputで表示できるようにする
-        taskDateInput.value = task.assigned_date || ''; 
+        taskDateInput.value = task.assigned_date || '';
         dueDateInput.value = task.due_date || '';
         taskDetailsInput.value = task.details || '';
         taskForm.querySelector('button').textContent = '更新';
@@ -248,7 +263,7 @@ document.addEventListener('DOMContentLoaded', () => {
         event.preventDefault();
 
         // 💡 修正 3: taskDateInput.valueが空文字列の場合はnullにする
-        const assignedDateValue = taskDateInput.value || null; 
+        const assignedDateValue = taskDateInput.value || null;
 
         const taskData = {
             name: taskNameInput.value,
@@ -262,13 +277,13 @@ document.addEventListener('DOMContentLoaded', () => {
             const taskIndex = tasks.findIndex(t => t.id === editingTaskId);
             if (taskIndex > -1) {
                 // 既存タスクを更新
-                tasks[taskIndex] = { ...tasks[taskIndex], ...taskData }; 
+                tasks[taskIndex] = { ...tasks[taskIndex], ...taskData };
             }
         } else {
             // 新規タスクを追加
             const newTask = {
                 id: `task-${Date.now()}`,
-                completed: false, 
+                completed: false,
                 ...taskData
             };
             tasks.push(newTask);
@@ -310,10 +325,10 @@ document.addEventListener('DOMContentLoaded', () => {
         // 💡 タスク修正/完了チェックボックスのイベントリスナー
         const checkbox = taskElement.querySelector('.task-checkbox');
         checkbox.addEventListener('click', (e) => {
-            e.stopPropagation(); 
+            e.stopPropagation();
             task.completed = e.target.checked;
             saveTasks();
-            renderWeek(); 
+            renderWeek();
         });
 
         // 💡 タスク修正/編集モーダルを開くイベントリスナー
@@ -337,8 +352,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (isRendering) return;
         isRendering = true;
 
-        const monday = getMonday(currentDate); 
-        
+        const monday = getMonday(currentDate);
+
         dayColumns.forEach(col => {
             col.querySelectorAll('.task').forEach(task => task.remove());
             const totalTimeEl = col.querySelector('.daily-total-time');
@@ -347,12 +362,12 @@ document.addEventListener('DOMContentLoaded', () => {
         unassignedColumn.querySelector('#unassigned-list').innerHTML = '';
 
         const weekDates = [];
-        const dailyTotals = {}; 
+        const dailyTotals = {};
 
         for (let i = 0; i < 7; i++) {
             const date = new Date(monday);
             date.setDate(monday.getDate() + i);
-            date.setHours(0, 0, 0, 0); 
+            date.setHours(0, 0, 0, 0);
             const dateStr = formatDate(date);
             weekDates.push(date);
             dailyTotals[dateStr] = 0;
@@ -365,6 +380,20 @@ document.addEventListener('DOMContentLoaded', () => {
         const startOfWeekStr = formatDate(startOfWeek);
         const endOfWeekStr = formatDate(endOfWeek);
 
+        // 先に各カラムにdata-date属性を設定
+        const dayNames = ['月曜日', '火曜日', '水曜日', '木曜日', '金曜日', '土曜日', '日曜日'];
+        dayColumns.forEach((column, index) => {
+            const date = weekDates[index];
+            const dateStr = formatDate(date);
+
+            // data-date属性を先に設定
+            column.dataset.date = dateStr;
+
+            const h3 = column.querySelector('h3');
+            h3.innerHTML = `${dayNames[index]} (${date.getMonth() + 1}/${date.getDate()}) <span class="daily-total-time"></span>`;
+        });
+
+        // タスクを配置
         tasks.forEach(task => {
             const taskElement = createTaskElement(task);
             if (task.assigned_date && task.assigned_date >= startOfWeekStr && task.assigned_date <= endOfWeekStr) {
@@ -378,14 +407,11 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        const dayNames = ['月曜日', '火曜日', '水曜日', '木曜日', '金曜日', '土曜日', '日曜日'];
+        // 合計時間を表示
         dayColumns.forEach((column, index) => {
             const date = weekDates[index];
             const dateStr = formatDate(date);
             const totalMinutes = dailyTotals[dateStr];
-
-            const h3 = column.querySelector('h3');
-            h3.innerHTML = `${dayNames[index]} (${date.getMonth() + 1}/${date.getDate()}) <span class="daily-total-time"></span>`;
 
             const totalTimeEl = column.querySelector('.daily-total-time');
             if (totalTimeEl) {
@@ -401,7 +427,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     totalTimeEl.classList.add('overload');
                 }
             }
-            column.dataset.date = dateStr;
         });
 
         unassignedColumn.dataset.date = "null";
@@ -415,18 +440,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Navigation Event Listeners ---
     prevWeekBtn.addEventListener('click', () => {
-        const newMonday = getMonday(currentDate); 
-        newMonday.setDate(newMonday.getDate() - 7); 
-        currentDate = newMonday; 
+        const newMonday = getMonday(currentDate);
+        newMonday.setDate(newMonday.getDate() - 7);
+        currentDate = newMonday;
         datePicker.value = formatDate(currentDate);
         renderWeek();
     });
 
     nextWeekBtn.addEventListener('click', () => {
-        const newMonday = getMonday(currentDate); 
+        const newMonday = getMonday(currentDate);
         // 💡 修正 4: 次週へ移動するように修正 (getDate() + 7)
-        newMonday.setDate(newMonday.getDate() + 7); 
-        currentDate = newMonday; 
+        newMonday.setDate(newMonday.getDate() + 7);
+        currentDate = newMonday;
         datePicker.value = formatDate(currentDate);
         renderWeek();
     });
@@ -446,15 +471,14 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // 💡 修正 7: idealDailyMinutesの変更リスナーを追加（設定の保存）
-    idealDailyMinutesInput.value = settings.ideal_daily_minutes; // 初期値を反映
     idealDailyMinutesInput.addEventListener('change', (e) => {
         settings.ideal_daily_minutes = parseInt(e.target.value, 10) || 480;
         saveSettings();
         renderWeek(); // 合計時間の表示を更新
     });
-    
+
     // --- データのエクスポート/インポートロジック ---
-    
+
     function exportData() {
         const data = { tasks: tasks, settings: settings };
         const dataStr = JSON.stringify(data, null, 2);
@@ -494,7 +518,7 @@ document.addEventListener('DOMContentLoaded', () => {
         };
         reader.readAsText(file);
     }
-    
+
     // イベントリスナー
     exportDataBtn.addEventListener('click', exportData);
     importDataBtn.addEventListener('click', () => importFileInput.click());
