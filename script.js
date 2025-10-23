@@ -214,6 +214,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const exportDataBtn = document.getElementById('export-data-btn');
     const importDataBtn = document.getElementById('import-data-btn');
     const importFileInput = document.getElementById('import-file-input');
+    const themeToggleBtn = document.getElementById('theme-toggle');
 
     let editingTaskId = null;
     let isRendering = false;
@@ -223,6 +224,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 設定値をUIに反映
     idealDailyMinutesInput.value = settings.ideal_daily_minutes;
+    
+    // ダークモードの初期化
+    initializeTheme();
 
     // 💡 修正 2: 初期ロード時にタスクボードを描画する
     renderWeek();
@@ -234,6 +238,93 @@ document.addEventListener('DOMContentLoaded', () => {
         taskForm.querySelector('button').textContent = '登録';
         modal.style.display = 'block';
     });
+    
+    // 日付入力フィールドをカレンダー専用にする
+    function makeDateInputCalendarOnly(inputElement) {
+        // キーボード入力を無効にする
+        inputElement.addEventListener('keydown', function(e) {
+            // Tabキー、Enterキー、Escapeキーは許可
+            if (e.key === 'Tab' || e.key === 'Enter' || e.key === 'Escape') {
+                return;
+            }
+            // その他のキー入力を無効にする
+            e.preventDefault();
+        });
+        
+        // キーボード入力を完全に無効にする
+        inputElement.addEventListener('keypress', function(e) {
+            e.preventDefault();
+        });
+        
+        // 入力イベントも無効にする
+        inputElement.addEventListener('input', function(e) {
+            // カレンダーからの入力は許可するため、手動入力のみブロック
+        });
+        
+        // フィールドクリックでカレンダーを開く
+        inputElement.addEventListener('click', function() {
+            // readonly属性を一時的に解除してカレンダーを開く
+            this.removeAttribute('readonly');
+            if (typeof this.showPicker === 'function') {
+                try {
+                    this.showPicker();
+                } catch (error) {
+                    this.focus();
+                }
+            } else {
+                this.focus();
+            }
+        });
+        
+        // フォーカス時にもカレンダーを開く
+        inputElement.addEventListener('focus', function() {
+            this.removeAttribute('readonly');
+            if (typeof this.showPicker === 'function') {
+                try {
+                    this.showPicker();
+                } catch (error) {
+                    // カレンダーが開けない場合はそのまま
+                }
+            }
+        });
+        
+        // カレンダーが閉じられた後にreadonly属性を復元
+        inputElement.addEventListener('blur', function() {
+            // 少し遅延させてからreadonly属性を復元
+            setTimeout(() => {
+                this.setAttribute('readonly', 'readonly');
+            }, 100);
+        });
+        
+        // 値が変更された後もreadonly属性を復元
+        inputElement.addEventListener('change', function() {
+            setTimeout(() => {
+                this.setAttribute('readonly', 'readonly');
+            }, 100);
+        });
+        
+        // ラベルクリックでも日付ピッカーを開く
+        const label = document.querySelector(`label[for="${inputElement.id}"]`);
+        if (label) {
+            label.style.cursor = 'pointer';
+            label.addEventListener('click', function(e) {
+                e.preventDefault();
+                if (typeof inputElement.showPicker === 'function') {
+                    try {
+                        inputElement.showPicker();
+                    } catch (error) {
+                        inputElement.focus();
+                    }
+                } else {
+                    inputElement.focus();
+                }
+            });
+        }
+    }
+    
+    // 日付入力フィールドをカレンダー専用に設定
+    makeDateInputCalendarOnly(taskDateInput);
+    makeDateInputCalendarOnly(dueDateInput);
 
     closeModalBtn.addEventListener('click', () => {
         modal.style.display = 'none';
@@ -519,6 +610,32 @@ document.addEventListener('DOMContentLoaded', () => {
         reader.readAsText(file);
     }
 
+    // --- ダークモード機能 ---
+    
+    function initializeTheme() {
+        // LocalStorageからテーマ設定を読み込み
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        updateThemeButton(savedTheme);
+    }
+    
+    function toggleTheme() {
+        const currentTheme = document.documentElement.getAttribute('data-theme');
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        
+        document.documentElement.setAttribute('data-theme', newTheme);
+        localStorage.setItem('theme', newTheme);
+        updateThemeButton(newTheme);
+    }
+    
+    function updateThemeButton(theme) {
+        if (theme === 'dark') {
+            themeToggleBtn.innerHTML = '☀️ ライト';
+        } else {
+            themeToggleBtn.innerHTML = '🌙 ダーク';
+        }
+    }
+
     // イベントリスナー
     exportDataBtn.addEventListener('click', exportData);
     importDataBtn.addEventListener('click', () => importFileInput.click());
@@ -527,5 +644,6 @@ document.addEventListener('DOMContentLoaded', () => {
             importData(e.target.files[0]);
         }
     });
+    themeToggleBtn.addEventListener('click', toggleTheme);
 
 }); // DOMContentLoaded 終了
