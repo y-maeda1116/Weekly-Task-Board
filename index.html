@@ -4,6 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ウィークリータスクボード</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="apple-touch-icon" sizes="180x180" href="favicon.svg">
+    <link rel="manifest" href="manifest.json">
+    
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#4a90e2">
+    <meta name="description" content="効率的なタスク管理のためのウィークリータスクボード">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="タスクボード">
+    
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -25,6 +38,7 @@
                 <button id="export-data-btn">エクスポート</button>
                 <button id="import-data-btn">インポート</button>
                 <input type="file" id="import-file-input" style="display: none;" accept=".json">
+                <button id="archive-toggle">📁 アーカイブ</button>
                 <button id="theme-toggle">🌙 ダーク</button>
             </div>
         </div>
@@ -34,24 +48,31 @@
         <main id="task-board">
             <div class="day-column" id="monday">
                 <h3>月曜日 <span class="daily-total-time"></span></h3>
+                <div class="day-column-hint">クリックでタスク作成</div>
             </div>
             <div class="day-column" id="tuesday">
                 <h3>火曜日 <span class="daily-total-time"></span></h3>
+                <div class="day-column-hint">クリックでタスク作成</div>
             </div>
             <div class="day-column" id="wednesday">
                 <h3>水曜日 <span class="daily-total-time"></span></h3>
+                <div class="day-column-hint">クリックでタスク作成</div>
             </div>
             <div class="day-column" id="thursday">
                 <h3>木曜日 <span class="daily-total-time"></span></h3>
+                <div class="day-column-hint">クリックでタスク作成</div>
             </div>
             <div class="day-column" id="friday">
                 <h3>金曜日 <span class="daily-total-time"></span></h3>
+                <div class="day-column-hint">クリックでタスク作成</div>
             </div>
             <div class="day-column" id="saturday">
                 <h3>土曜日 <span class="daily-total-time"></span></h3>
+                <div class="day-column-hint">クリックでタスク作成</div>
             </div>
             <div class="day-column" id="sunday">
                 <h3>日曜日 <span class="daily-total-time"></span></h3>
+                <div class="day-column-hint">クリックでタスク作成</div>
             </div>
         </main>
         <aside id="sidebar">
@@ -62,6 +83,22 @@
                 </div>
             </div>
         </aside>
+    </div>
+
+    <!-- アーカイブビュー -->
+    <div id="archive-view" style="display: none;">
+        <div id="archive-header">
+            <h2>📁 完了タスクアーカイブ</h2>
+            <div id="archive-controls">
+                <button id="close-archive">✕ 閉じる</button>
+                <button id="clear-archive">🗑️ 全削除</button>
+            </div>
+        </div>
+        <div id="archive-content">
+            <div id="archive-list">
+                <!-- アーカイブされたタスクがここに表示される -->
+            </div>
+        </div>
     </div>
 
     <!-- タスク追加モーダル -->
@@ -75,6 +112,13 @@
 
                 <label for="estimated-time">見積もり時間 (時間):</label>
                 <input type="number" id="estimated-time" min="0" step="0.5" required>
+
+                <label for="task-priority">優先度:</label>
+                <select id="task-priority" required>
+                    <option value="medium">中</option>
+                    <option value="high">高</option>
+                    <option value="low">低</option>
+                </select>
 
                 <label for="task-date">担当日:</label>
                 <input type="date" id="task-date" required readonly>
