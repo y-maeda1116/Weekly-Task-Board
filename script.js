@@ -1269,7 +1269,7 @@ document.addEventListener('DOMContentLoaded', () => {
             ...currentTaskData,
             id: `task-${Date.now()}`,
             completed: false,
-            name: currentTaskData.name + ' (コピー)'
+            name: currentTaskData.name
         };
         
         // タスクリストに追加
