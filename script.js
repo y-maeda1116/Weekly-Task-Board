@@ -983,7 +983,29 @@ document.addEventListener('DOMContentLoaded', () => {
             ${datesHTML ? `<div class="archived-task-dates">${datesHTML}</div>` : ''}
             ${task.details ? `<div class="archived-task-details">${task.details}</div>` : ''}
             <div class="archived-task-completed-date">完了: ${formattedArchivedDate}</div>
+            <div class="archived-task-actions">
+                <button class="restore-task-btn" data-task-id="${task.id}">
+                    ↩️ 復元
+                </button>
+                <button class="delete-task-btn" data-task-id="${task.id}">
+                    🗑️ 削除
+                </button>
+            </div>
         `;
+        
+        // 復元ボタンのイベントリスナー
+        const restoreBtn = taskElement.querySelector('.restore-task-btn');
+        restoreBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            restoreTaskFromArchive(task.id, taskElement);
+        });
+        
+        // 削除ボタンのイベントリスナー
+        const deleteBtn = taskElement.querySelector('.delete-task-btn');
+        deleteBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            deleteTaskFromArchive(task.id, taskElement);
+        });
         
         return taskElement;
     }
@@ -993,6 +1015,90 @@ document.addEventListener('DOMContentLoaded', () => {
             saveArchivedTasks([]);
             renderArchive();
         }
+    }
+    
+    function restoreTaskFromArchive(taskId, taskElement) {
+        const archivedTasks = loadArchivedTasks();
+        const taskIndex = archivedTasks.findIndex(task => task.id === taskId);
+        
+        if (taskIndex === -1) return;
+        
+        const taskToRestore = archivedTasks[taskIndex];
+        
+        // 復元アニメーション
+        taskElement.classList.add('restoring');
+        
+        setTimeout(() => {
+            // アーカイブから削除
+            archivedTasks.splice(taskIndex, 1);
+            saveArchivedTasks(archivedTasks);
+            
+            // タスクを未完了状態で復元
+            const restoredTask = {
+                ...taskToRestore,
+                completed: false
+            };
+            delete restoredTask.archived_date;
+            
+            // 通常のタスクリストに追加
+            tasks.push(restoredTask);
+            saveTasks();
+            
+            // アーカイブビューを更新
+            renderArchive();
+            
+            // 成功メッセージ
+            showRestoreMessage(taskToRestore.name);
+            
+        }, 800);
+    }
+    
+    function deleteTaskFromArchive(taskId, taskElement) {
+        const archivedTasks = loadArchivedTasks();
+        const taskIndex = archivedTasks.findIndex(task => task.id === taskId);
+        
+        if (taskIndex === -1) return;
+        
+        const taskToDelete = archivedTasks[taskIndex];
+        
+        if (confirm(`「${taskToDelete.name}」を完全に削除しますか？この操作は取り消せません。`)) {
+            // 削除アニメーション
+            taskElement.classList.add('restoring');
+            
+            setTimeout(() => {
+                // アーカイブから削除
+                archivedTasks.splice(taskIndex, 1);
+                saveArchivedTasks(archivedTasks);
+                
+                // アーカイブビューを更新
+                renderArchive();
+                
+            }, 800);
+        }
+    }
+    
+    function showRestoreMessage(taskName) {
+        const messageElement = document.createElement('div');
+        messageElement.className = 'success-message';
+        messageElement.textContent = `「${taskName}」を復元しました！`;
+        messageElement.style.background = 'linear-gradient(135deg, #4a90e2, #5aa3f0)';
+        
+        document.body.appendChild(messageElement);
+        
+        // メッセージ表示
+        setTimeout(() => {
+            messageElement.classList.add('show');
+        }, 100);
+        
+        // メッセージ非表示・削除
+        setTimeout(() => {
+            messageElement.classList.remove('show');
+            setTimeout(() => {
+                if (messageElement.parentNode) {
+                    messageElement.parentNode.removeChild(messageElement);
+                }
+            }, 300);
+        }, 2000);
     }
 
     // イベントリスナー
