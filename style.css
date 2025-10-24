@@ -818,4 +818,72 @@ input[type="datetime-local"][readonly]:focus {
     background-color: var(--card-background);
     color: var(--font-color);
     font-size: 1em;
+}/*
+ 日付クリックでタスク作成機能 */
+.day-column {
+    position: relative;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.day-column:hover {
+    background-color: rgba(74, 144, 226, 0.05);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px var(--task-shadow);
+}
+
+.day-column h3 {
+    position: relative;
+}
+
+.day-column h3::after {
+    content: "📝";
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    font-size: 0.8em;
+}
+
+.day-column:hover h3::after {
+    opacity: 0.6;
+}
+
+/* ダークモード用のホバー効果 */
+[data-theme="dark"] .day-column:hover {
+    background-color: rgba(90, 163, 240, 0.1);
+}
+
+/* タスク作成ヒント */
+.day-column-hint {
+    position: absolute;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.75em;
+    color: #999;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    pointer-events: none;
+}
+
+.day-column:hover .day-column-hint {
+    opacity: 1;
+}
+
+/* 未割り当てエリアは除外 */
+#unassigned-tasks {
+    cursor: default;
+}
+
+#unassigned-tasks:hover {
+    background-color: var(--card-background);
+    transform: none;
+    box-shadow: 0 1px 3px var(--task-shadow);
+}
+
+#unassigned-tasks h3::after {
+    display: none;
 }

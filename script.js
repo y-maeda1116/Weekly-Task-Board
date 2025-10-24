@@ -269,6 +269,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let editingTaskId = null;
     let isRendering = false;
+    let selectedDate = null; // 日付クリックで選択された日付
 
     // --- Initial Load ---
     carryOverOldTasks();
@@ -284,11 +285,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Modal Logic ---
     addTaskBtn.addEventListener('click', () => {
+        openTaskModal();
+    });
+    
+    function openTaskModal(presetDate = null) {
         editingTaskId = null;
+        selectedDate = presetDate;
         taskForm.reset();
+        
+        // 事前設定された日付がある場合は設定
+        if (presetDate) {
+            taskDateInput.value = presetDate;
+        }
+        
         taskForm.querySelector('button').textContent = '登録';
         modal.style.display = 'block';
-    });
+    }
     
     // 日付入力フィールドをカレンダー専用にする
     function makeDateInputCalendarOnly(inputElement) {
@@ -379,11 +391,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     closeModalBtn.addEventListener('click', () => {
         modal.style.display = 'none';
+        selectedDate = null;
     });
 
     window.addEventListener('click', (event) => {
         if (event.target == modal) {
             modal.style.display = 'none';
+            selectedDate = null;
         }
     });
 
@@ -437,6 +451,7 @@ document.addEventListener('DOMContentLoaded', () => {
         renderWeek();
         modal.style.display = 'none';
         taskForm.reset();
+        selectedDate = null; // 選択された日付をクリア
     });
 
     // --- Date and Rendering Logic ---
@@ -504,6 +519,28 @@ document.addEventListener('DOMContentLoaded', () => {
             col.addEventListener('dragover', handleDragOver);
             col.addEventListener('dragleave', handleDragLeave);
             col.addEventListener('drop', handleDrop);
+        });
+    }
+    
+    function addDateClickListeners() {
+        // 未割り当てエリア以外の日付列にクリックリスナーを追加
+        dayColumns.forEach(col => {
+            col.addEventListener('click', (e) => {
+                // タスク要素やその子要素がクリックされた場合は無視
+                if (e.target.closest('.task')) {
+                    return;
+                }
+                
+                // ドラッグ&ドロップ中は無視
+                if (e.target.closest('.dragging')) {
+                    return;
+                }
+                
+                const dateStr = col.dataset.date;
+                if (dateStr && dateStr !== 'null') {
+                    openTaskModal(dateStr);
+                }
+            });
         });
     }
 
@@ -590,6 +627,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         unassignedColumn.dataset.date = "null";
         addDragAndDropListeners();
+        addDateClickListeners();
 
         datePicker.value = formatDate(monday);
         isRendering = false;
