@@ -245,6 +245,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const taskDateInput = document.getElementById('task-date');
     const dueDateInput = document.getElementById('due-date');
     const taskDetailsInput = document.getElementById('task-details');
+    const duplicateTaskBtn = document.getElementById('duplicate-task-btn');
 
     const prevWeekBtn = document.getElementById('prev-week');
     const todayBtn = document.getElementById('today');
@@ -298,7 +299,11 @@ document.addEventListener('DOMContentLoaded', () => {
             taskDateInput.value = presetDate;
         }
         
-        taskForm.querySelector('button').textContent = '登録';
+        taskForm.querySelector('button[type="submit"]').textContent = '登録';
+        
+        // 複製ボタンを非表示
+        duplicateTaskBtn.style.display = 'none';
+        
         modal.style.display = 'block';
     }
     
@@ -400,6 +405,13 @@ document.addEventListener('DOMContentLoaded', () => {
             selectedDate = null;
         }
     });
+    
+    // 複製ボタンのイベントリスナー
+    duplicateTaskBtn.addEventListener('click', () => {
+        if (editingTaskId) {
+            duplicateTask(editingTaskId);
+        }
+    });
 
     function openEditModal(task) {
         editingTaskId = task.id;
@@ -410,7 +422,11 @@ document.addEventListener('DOMContentLoaded', () => {
         taskDateInput.value = task.assigned_date || '';
         dueDateInput.value = task.due_date || '';
         taskDetailsInput.value = task.details || '';
-        taskForm.querySelector('button').textContent = '更新';
+        taskForm.querySelector('button[type="submit"]').textContent = '更新';
+        
+        // 複製ボタンを表示
+        duplicateTaskBtn.style.display = 'block';
+        
         modal.style.display = 'block';
     }
 
@@ -1082,6 +1098,56 @@ document.addEventListener('DOMContentLoaded', () => {
         messageElement.className = 'success-message';
         messageElement.textContent = `「${taskName}」を復元しました！`;
         messageElement.style.background = 'linear-gradient(135deg, #4a90e2, #5aa3f0)';
+        
+        document.body.appendChild(messageElement);
+        
+        // メッセージ表示
+        setTimeout(() => {
+            messageElement.classList.add('show');
+        }, 100);
+        
+        // メッセージ非表示・削除
+        setTimeout(() => {
+            messageElement.classList.remove('show');
+            setTimeout(() => {
+                if (messageElement.parentNode) {
+                    messageElement.parentNode.removeChild(messageElement);
+                }
+            }, 300);
+        }, 2000);
+    }
+    
+    function duplicateTask(taskId) {
+        const originalTask = tasks.find(task => task.id === taskId);
+        if (!originalTask) return;
+        
+        // 新しいタスクを作成（IDと完了状態をリセット）
+        const duplicatedTask = {
+            ...originalTask,
+            id: `task-${Date.now()}`,
+            completed: false,
+            name: originalTask.name + ' (コピー)'
+        };
+        
+        // タスクリストに追加
+        tasks.push(duplicatedTask);
+        saveTasks();
+        
+        // 画面を更新
+        renderWeek();
+        
+        // モーダルを閉じる
+        modal.style.display = 'none';
+        selectedDate = null;
+        
+        // 成功メッセージを表示
+        showDuplicateMessage(originalTask.name);
+    }
+    
+    function showDuplicateMessage(taskName) {
+        const messageElement = document.createElement('div');
+        messageElement.className = 'duplicate-message';
+        messageElement.textContent = `「${taskName}」を複製しました！`;
         
         document.body.appendChild(messageElement);
         
