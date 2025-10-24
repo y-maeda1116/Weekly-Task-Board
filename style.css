@@ -1085,4 +1085,70 @@ input[type="datetime-local"][readonly]:focus {
 [data-theme="dark"] .success-message {
     background: linear-gradient(135deg, #51cf66, #40c057);
     box-shadow: 0 8px 25px rgba(81, 207, 102, 0.4);
+}/
+* 日付ピッカーのカスタマイズ */
+#date-picker-wrapper {
+    position: relative;
+    display: inline-block;
+}
+
+#date-picker {
+    background-color: var(--card-background);
+    border: 2px solid var(--border-color);
+    border-radius: 4px;
+    padding: 8px 12px;
+    color: var(--font-color);
+    font-size: 0.9em;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-width: 120px;
+    text-align: center;
+}
+
+#date-picker:hover {
+    border-color: var(--primary-color);
+    background-color: rgba(74, 144, 226, 0.05);
+}
+
+#date-picker:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
+}
+
+/* カレンダーアイコンを完全に非表示 */
+#date-picker::-webkit-calendar-picker-indicator {
+    display: none;
+    -webkit-appearance: none;
+}
+
+#date-picker::-webkit-inner-spin-button,
+#date-picker::-webkit-outer-spin-button {
+    display: none;
+    -webkit-appearance: none;
+}
+
+/* Firefox用 */
+#date-picker::-moz-calendar-picker {
+    display: none;
+}
+
+/* 日付ピッカーのreadonly状態でもクリック可能に見せる */
+#date-picker[readonly] {
+    cursor: pointer;
+    background-color: var(--card-background);
+}
+
+#date-picker[readonly]:hover {
+    border-color: var(--primary-color);
+    background-color: rgba(74, 144, 226, 0.05);
+}
+
+/* ダークモード用 */
+[data-theme="dark"] #date-picker:hover {
+    background-color: rgba(90, 163, 240, 0.1);
+}
+
+[data-theme="dark"] #date-picker[readonly]:hover {
+    background-color: rgba(90, 163, 240, 0.1);
 }
