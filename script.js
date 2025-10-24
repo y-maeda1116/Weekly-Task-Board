@@ -2,6 +2,7 @@
 
 const TASKS_STORAGE_KEY = 'weekly-task-board.tasks';
 const SETTINGS_STORAGE_KEY = 'weekly-task-board.settings';
+const ARCHIVE_STORAGE_KEY = 'weekly-task-board.archive';
 
 // グローバル変数として宣言のみ行い、初期化はDOMContentLoaded内で行う
 let tasks;
@@ -106,6 +107,46 @@ function loadTasks() {
  */
 function saveTasks() {
     localStorage.setItem(TASKS_STORAGE_KEY, JSON.stringify(tasks));
+}
+
+/**
+ * Load archived tasks from localStorage.
+ * @returns {object[]}
+ */
+function loadArchivedTasks() {
+    const archivedJson = localStorage.getItem(ARCHIVE_STORAGE_KEY);
+    return archivedJson ? JSON.parse(archivedJson) : [];
+}
+
+/**
+ * Save archived tasks to localStorage.
+ * @param {object[]} archivedTasks
+ */
+function saveArchivedTasks(archivedTasks) {
+    localStorage.setItem(ARCHIVE_STORAGE_KEY, JSON.stringify(archivedTasks));
+}
+
+/**
+ * Move completed tasks to archive.
+ */
+function archiveCompletedTasks() {
+    const completedTasks = tasks.filter(task => task.completed);
+    if (completedTasks.length === 0) return;
+
+    const archivedTasks = loadArchivedTasks();
+    const currentDate = new Date().toISOString();
+
+    // 完了タスクにアーカイブ日時を追加
+    completedTasks.forEach(task => {
+        task.archived_date = currentDate;
+        archivedTasks.push(task);
+    });
+
+    // 完了タスクを通常のタスクリストから削除
+    tasks = tasks.filter(task => !task.completed);
+
+    saveArchivedTasks(archivedTasks);
+    saveTasks();
 }
 
 
@@ -215,6 +256,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const importDataBtn = document.getElementById('import-data-btn');
     const importFileInput = document.getElementById('import-file-input');
     const themeToggleBtn = document.getElementById('theme-toggle');
+    const archiveToggleBtn = document.getElementById('archive-toggle');
+    const archiveView = document.getElementById('archive-view');
+    const closeArchiveBtn = document.getElementById('close-archive');
+    const clearArchiveBtn = document.getElementById('clear-archive');
+    const archiveList = document.getElementById('archive-list');
 
     let editingTaskId = null;
     let isRendering = false;
@@ -418,6 +464,15 @@ document.addEventListener('DOMContentLoaded', () => {
         checkbox.addEventListener('click', (e) => {
             e.stopPropagation();
             task.completed = e.target.checked;
+            
+            if (task.completed) {
+                // タスク完了時に少し遅延してからアーカイブ
+                setTimeout(() => {
+                    archiveCompletedTasks();
+                    renderWeek();
+                }, 500);
+            }
+            
             saveTasks();
             renderWeek();
         });
@@ -571,7 +626,12 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- データのエクスポート/インポートロジック ---
 
     function exportData() {
-        const data = { tasks: tasks, settings: settings };
+        const archivedTasks = loadArchivedTasks();
+        const data = { 
+            tasks: tasks, 
+            settings: settings,
+            archive: archivedTasks
+        };
         const dataStr = JSON.stringify(data, null, 2);
         const blob = new Blob([dataStr], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
@@ -599,6 +659,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     settings = { ...settings, ...importedData.settings };
                     saveSettings();
                     idealDailyMinutesInput.value = settings.ideal_daily_minutes; // UIを更新
+                }
+                if (importedData.archive) {
+                    // アーカイブデータを上書き
+                    saveArchivedTasks(importedData.archive);
                 }
                 renderWeek();
                 alert('データのインポートが完了しました。');
@@ -636,6 +700,75 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // --- アーカイブ機能 ---
+    
+    function showArchiveView() {
+        renderArchive();
+        archiveView.style.display = 'block';
+        document.body.style.overflow = 'hidden'; // スクロールを無効化
+    }
+    
+    function hideArchiveView() {
+        archiveView.style.display = 'none';
+        document.body.style.overflow = 'auto'; // スクロールを有効化
+    }
+    
+    function renderArchive() {
+        const archivedTasks = loadArchivedTasks();
+        archiveList.innerHTML = '';
+        
+        if (archivedTasks.length === 0) {
+            archiveList.innerHTML = '<div class="archive-empty">アーカイブされたタスクはありません</div>';
+            return;
+        }
+        
+        // 新しい順にソート
+        archivedTasks.sort((a, b) => new Date(b.archived_date) - new Date(a.archived_date));
+        
+        archivedTasks.forEach(task => {
+            const taskElement = createArchivedTaskElement(task);
+            archiveList.appendChild(taskElement);
+        });
+    }
+    
+    function createArchivedTaskElement(task) {
+        const taskElement = document.createElement('div');
+        taskElement.className = 'archived-task';
+        
+        const archivedDate = new Date(task.archived_date);
+        const formattedArchivedDate = `${archivedDate.getFullYear()}/${archivedDate.getMonth() + 1}/${archivedDate.getDate()} ${String(archivedDate.getHours()).padStart(2, '0')}:${String(archivedDate.getMinutes()).padStart(2, '0')}`;
+        
+        let datesHTML = '';
+        if (task.assigned_date) {
+            const assignedDate = new Date(task.assigned_date);
+            datesHTML += `担当日: ${assignedDate.getMonth() + 1}/${assignedDate.getDate()}`;
+        }
+        if (task.due_date) {
+            const dueDate = new Date(task.due_date);
+            if (datesHTML) datesHTML += ' | ';
+            datesHTML += `期限: ${dueDate.getMonth() + 1}/${dueDate.getDate()} ${String(dueDate.getHours()).padStart(2, '0')}:${String(dueDate.getMinutes()).padStart(2, '0')}`;
+        }
+        
+        taskElement.innerHTML = `
+            <div class="archived-task-header">
+                <div class="archived-task-name">${task.name}</div>
+                <div class="archived-task-time">${task.estimated_time}h</div>
+            </div>
+            ${datesHTML ? `<div class="archived-task-dates">${datesHTML}</div>` : ''}
+            ${task.details ? `<div class="archived-task-details">${task.details}</div>` : ''}
+            <div class="archived-task-completed-date">完了: ${formattedArchivedDate}</div>
+        `;
+        
+        return taskElement;
+    }
+    
+    function clearAllArchive() {
+        if (confirm('アーカイブされた全てのタスクを削除しますか？この操作は取り消せません。')) {
+            saveArchivedTasks([]);
+            renderArchive();
+        }
+    }
+
     // イベントリスナー
     exportDataBtn.addEventListener('click', exportData);
     importDataBtn.addEventListener('click', () => importFileInput.click());
@@ -645,5 +778,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
     themeToggleBtn.addEventListener('click', toggleTheme);
+    archiveToggleBtn.addEventListener('click', showArchiveView);
+    closeArchiveBtn.addEventListener('click', hideArchiveView);
+    clearArchiveBtn.addEventListener('click', clearAllArchive);
 
 }); // DOMContentLoaded 終了

@@ -25,6 +25,7 @@
                 <button id="export-data-btn">エクスポート</button>
                 <button id="import-data-btn">インポート</button>
                 <input type="file" id="import-file-input" style="display: none;" accept=".json">
+                <button id="archive-toggle">📁 アーカイブ</button>
                 <button id="theme-toggle">🌙 ダーク</button>
             </div>
         </div>
@@ -62,6 +63,22 @@
                 </div>
             </div>
         </aside>
+    </div>
+
+    <!-- アーカイブビュー -->
+    <div id="archive-view" style="display: none;">
+        <div id="archive-header">
+            <h2>📁 完了タスクアーカイブ</h2>
+            <div id="archive-controls">
+                <button id="close-archive">✕ 閉じる</button>
+                <button id="clear-archive">🗑️ 全削除</button>
+            </div>
+        </div>
+        <div id="archive-content">
+            <div id="archive-list">
+                <!-- アーカイブされたタスクがここに表示される -->
+            </div>
+        </div>
     </div>
 
     <!-- タスク追加モーダル -->
