@@ -155,6 +155,20 @@ main#task-board {
     cursor: pointer;
     position: relative; 
     z-index: 5;
+    /* チェックボックスを大きくする */
+    width: 20px;
+    height: 20px;
+    transform: scale(1.2);
+    margin-right: 8px;
+    transition: transform 0.2s ease;
+}
+
+.task-checkbox:hover {
+    transform: scale(1.3);
+}
+
+.task-checkbox:checked {
+    transform: scale(1.4);
 }
 
 .task-name {
@@ -886,4 +900,143 @@ input[type="datetime-local"][readonly]:focus {
 
 #unassigned-tasks h3::after {
     display: none;
+}/* タスク完了
+時の爽快アニメーション */
+@keyframes taskCompleteAnimation {
+    0% {
+        transform: scale(1) rotate(0deg);
+        opacity: 1;
+    }
+    25% {
+        transform: scale(1.1) rotate(5deg);
+        opacity: 1;
+    }
+    50% {
+        transform: scale(1.2) rotate(-5deg);
+        opacity: 0.8;
+        box-shadow: 0 0 20px rgba(40, 167, 69, 0.6);
+    }
+    75% {
+        transform: scale(0.9) rotate(2deg);
+        opacity: 0.5;
+        box-shadow: 0 0 30px rgba(40, 167, 69, 0.8);
+    }
+    100% {
+        transform: scale(0) rotate(10deg);
+        opacity: 0;
+        box-shadow: 0 0 40px rgba(40, 167, 69, 1);
+    }
+}
+
+@keyframes checkboxSuccess {
+    0% {
+        transform: scale(1.2);
+    }
+    50% {
+        transform: scale(1.6);
+        box-shadow: 0 0 15px rgba(40, 167, 69, 0.8);
+    }
+    100% {
+        transform: scale(1.4);
+        box-shadow: 0 0 5px rgba(40, 167, 69, 0.4);
+    }
+}
+
+@keyframes confettiPop {
+    0% {
+        transform: scale(0) rotate(0deg);
+        opacity: 1;
+    }
+    50% {
+        transform: scale(1.5) rotate(180deg);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(0) rotate(360deg);
+        opacity: 0;
+    }
+}
+
+/* タスク完了アニメーションクラス */
+.task.completing {
+    animation: taskCompleteAnimation 1s ease-out forwards;
+    z-index: 10;
+    position: relative;
+}
+
+.task-checkbox.success-animation {
+    animation: checkboxSuccess 0.6s ease-out;
+}
+
+/* 紙吹雪エフェクト用 */
+.confetti {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 15;
+}
+
+.confetti.red { background-color: #dc3545; }
+.confetti.orange { background-color: #f5a623; }
+.confetti.green { background-color: #28a745; }
+.confetti.blue { background-color: #4a90e2; }
+.confetti.purple { background-color: #6f42c1; }
+
+.confetti.animate {
+    animation: confettiPop 1.2s ease-out forwards;
+}
+
+/* 完了時の光る効果 */
+@keyframes glowPulse {
+    0% {
+        box-shadow: 0 0 5px rgba(40, 167, 69, 0.3);
+    }
+    50% {
+        box-shadow: 0 0 25px rgba(40, 167, 69, 0.8), 0 0 35px rgba(40, 167, 69, 0.6);
+    }
+    100% {
+        box-shadow: 0 0 5px rgba(40, 167, 69, 0.3);
+    }
+}
+
+.task.glow-effect {
+    animation: glowPulse 0.8s ease-in-out;
+}
+
+/* 成功メッセージ */
+.success-message {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: linear-gradient(135deg, #28a745, #20c997);
+    color: white;
+    padding: 15px 25px;
+    border-radius: 25px;
+    font-weight: bold;
+    font-size: 1.1em;
+    box-shadow: 0 8px 25px rgba(40, 167, 69, 0.4);
+    z-index: 20;
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0);
+    transition: all 0.3s ease-out;
+}
+
+.success-message.show {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+}
+
+.success-message::before {
+    content: "🎉";
+    margin-right: 8px;
+    font-size: 1.2em;
+}
+
+/* ダークモード用の調整 */
+[data-theme="dark"] .success-message {
+    background: linear-gradient(135deg, #51cf66, #40c057);
+    box-shadow: 0 8px 25px rgba(81, 207, 102, 0.4);
 }

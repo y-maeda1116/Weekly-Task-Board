@@ -494,15 +494,19 @@ document.addEventListener('DOMContentLoaded', () => {
             task.completed = e.target.checked;
             
             if (task.completed) {
-                // タスク完了時に少し遅延してからアーカイブ
+                // 派手な完了アニメーションを実行
+                playTaskCompletionAnimation(taskElement, checkbox);
+                
+                // アニメーション完了後にアーカイブ
                 setTimeout(() => {
                     archiveCompletedTasks();
                     renderWeek();
-                }, 500);
+                }, 1200);
+            } else {
+                // チェック解除時は即座に更新
+                saveTasks();
+                renderWeek();
             }
-            
-            saveTasks();
-            renderWeek();
         });
 
         // 💡 タスク修正/編集モーダルを開くイベントリスナー
@@ -749,6 +753,100 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             themeToggleBtn.innerHTML = '🌙 ダーク';
         }
+    }
+
+    // --- タスク完了アニメーション ---
+    
+    function playTaskCompletionAnimation(taskElement, checkbox) {
+        // チェックボックスの成功アニメーション
+        checkbox.classList.add('success-animation');
+        
+        // 光る効果
+        taskElement.classList.add('glow-effect');
+        
+        // 紙吹雪エフェクト
+        createConfettiEffect(taskElement);
+        
+        // 成功メッセージ表示
+        showSuccessMessage();
+        
+        // タスク要素の完了アニメーション（少し遅延）
+        setTimeout(() => {
+            taskElement.classList.add('completing');
+        }, 300);
+        
+        // データ保存
+        saveTasks();
+    }
+    
+    function createConfettiEffect(taskElement) {
+        const rect = taskElement.getBoundingClientRect();
+        const centerX = rect.left + rect.width / 2;
+        const centerY = rect.top + rect.height / 2;
+        
+        const colors = ['red', 'orange', 'green', 'blue', 'purple'];
+        const confettiCount = 12;
+        
+        for (let i = 0; i < confettiCount; i++) {
+            const confetti = document.createElement('div');
+            confetti.className = `confetti ${colors[Math.floor(Math.random() * colors.length)]}`;
+            
+            // ランダムな位置に配置
+            const angle = (360 / confettiCount) * i;
+            const distance = 30 + Math.random() * 40;
+            const x = centerX + Math.cos(angle * Math.PI / 180) * distance;
+            const y = centerY + Math.sin(angle * Math.PI / 180) * distance;
+            
+            confetti.style.left = x + 'px';
+            confetti.style.top = y + 'px';
+            
+            document.body.appendChild(confetti);
+            
+            // アニメーション開始
+            setTimeout(() => {
+                confetti.classList.add('animate');
+            }, 50);
+            
+            // 要素を削除
+            setTimeout(() => {
+                if (confetti.parentNode) {
+                    confetti.parentNode.removeChild(confetti);
+                }
+            }, 1300);
+        }
+    }
+    
+    function showSuccessMessage() {
+        const messages = [
+            'タスク完了！お疲れさまでした！',
+            '素晴らしい！また一つ達成しました！',
+            'やったね！タスククリア！',
+            '完了！次のタスクも頑張りましょう！',
+            'ナイス！効率的ですね！'
+        ];
+        
+        const message = messages[Math.floor(Math.random() * messages.length)];
+        
+        const messageElement = document.createElement('div');
+        messageElement.className = 'success-message';
+        messageElement.textContent = message;
+        
+        document.body.appendChild(messageElement);
+        
+        // メッセージ表示
+        setTimeout(() => {
+            messageElement.classList.add('show');
+        }, 100);
+        
+        // メッセージ非表示・削除
+        setTimeout(() => {
+            messageElement.classList.remove('show');
+            setTimeout(() => {
+                if (messageElement.parentNode) {
+                    messageElement.parentNode.removeChild(messageElement);
+                }
+            }, 300);
+        }, 2000);
     }
 
     // --- アーカイブ機能 ---
