@@ -633,7 +633,7 @@ document.addEventListener('DOMContentLoaded', () => {
         addDragAndDropListeners();
         addDateClickListeners();
 
-        datePicker.value = formatDate(monday);
+        datePicker.value = formatDate(currentDate);
         isRendering = false;
     }
     document.body.renderWeek = renderWeek;
@@ -644,7 +644,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const newMonday = getMonday(currentDate);
         newMonday.setDate(newMonday.getDate() - 7);
         currentDate = newMonday;
-        datePicker.value = formatDate(currentDate);
         renderWeek();
     });
 
@@ -653,7 +652,6 @@ document.addEventListener('DOMContentLoaded', () => {
         // 💡 修正 4: 次週へ移動するように修正 (getDate() + 7)
         newMonday.setDate(newMonday.getDate() + 7);
         currentDate = newMonday;
-        datePicker.value = formatDate(currentDate);
         renderWeek();
     });
 
@@ -663,12 +661,37 @@ document.addEventListener('DOMContentLoaded', () => {
         renderWeek();
     });
 
-    // 💡 修正 6: 日付ピッカーの変更リスナーを追加
+    // 日付ピッカーのクリック・変更リスナーを追加
+    datePicker.addEventListener('click', (e) => {
+        // readonly属性を一時的に解除してカレンダーを開く
+        datePicker.removeAttribute('readonly');
+        if (typeof datePicker.showPicker === 'function') {
+            try {
+                datePicker.showPicker();
+            } catch (error) {
+                datePicker.focus();
+            }
+        } else {
+            datePicker.focus();
+        }
+    });
+    
     datePicker.addEventListener('change', (e) => {
         if (e.target.value) {
             currentDate = new Date(e.target.value);
             renderWeek();
         }
+        // カレンダー選択後にreadonly属性を復元
+        setTimeout(() => {
+            datePicker.setAttribute('readonly', 'readonly');
+        }, 100);
+    });
+    
+    datePicker.addEventListener('blur', (e) => {
+        // フォーカスが外れた時にreadonly属性を復元
+        setTimeout(() => {
+            datePicker.setAttribute('readonly', 'readonly');
+        }, 100);
     });
 
     // 💡 修正 7: idealDailyMinutesの変更リスナーを追加（設定の保存）
