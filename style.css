@@ -5,6 +5,23 @@
     --font-color: #333;
     --border-color: #ddd;
     --header-height: 120px;
+    --card-background: #fff;
+    --modal-background: #fefefe;
+    --shadow-color: rgba(0,0,0,0.1);
+    --task-shadow: rgba(0,0,0,0.05);
+}
+
+/* ダークモードのテーマ */
+[data-theme="dark"] {
+    --primary-color: #5aa3f0;
+    --secondary-color: #ffc947;
+    --background-color: #1a1a1a;
+    --font-color: #e0e0e0;
+    --border-color: #404040;
+    --card-background: #2d2d2d;
+    --modal-background: #2d2d2d;
+    --shadow-color: rgba(0,0,0,0.3);
+    --task-shadow: rgba(0,0,0,0.2);
 }
 
 body {
@@ -16,9 +33,9 @@ body {
 }
 
 header {
-    background-color: white;
+    background-color: var(--card-background);
     padding: 20px 40px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 4px var(--shadow-color);
     position: sticky;
     top: 0;
     z-index: 1000;
@@ -61,18 +78,18 @@ main#task-board {
 }
 
 #unassigned-tasks {
-    background-color: #fff;
+    background-color: var(--card-background);
     border-radius: 8px;
     padding: 15px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    box-shadow: 0 1px 3px var(--task-shadow);
     height: 100%; /* Make it fill the sidebar height */
 }
 
 .day-column {
-    background-color: #fff;
+    background-color: var(--card-background);
     border-radius: 8px;
     padding: 15px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    box-shadow: 0 1px 3px var(--task-shadow);
     min-height: 200px; /* Ensure columns are valid drop targets */
     transition: background-color 0.2s ease; /* Smooth transition for drag-over */
 }
@@ -92,13 +109,13 @@ main#task-board {
 
 /* Task styles */
 .task {
-    background-color: #fff;
+    background-color: var(--card-background);
     border: 1px solid var(--border-color);
     border-left: 5px solid var(--secondary-color);
     border-radius: 4px;
     padding: 10px;
     margin-bottom: 10px;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    box-shadow: 0 1px 2px var(--task-shadow);
     /* 🚨 修正 1: デリゲーションが機能するように cursor: pointer に変更 */
     cursor: pointer; 
     display: flex;
@@ -253,7 +270,7 @@ button:hover {
 .daily-total-time {
     font-size: 0.9em;
     font-weight: bold;
-    color: #333;
+    color: var(--font-color);
     margin-left: 8px;
 }
 
@@ -331,11 +348,258 @@ button:hover {
 }
 
 .modal-content {
-    background-color: #fefefe;
+    background-color: var(--modal-background);
     margin: 10% auto;
     padding: 20px;
-    border: 1px solid #888;
+    border: 1px solid var(--border-color);
     width: 80%;
     max-width: 500px;
     border-radius: 8px;
+}
+
+/* ダークモード切り替えボタン */
+#theme-toggle {
+    background: none;
+    border: 2px solid var(--border-color);
+    color: var(--font-color);
+    padding: 8px 12px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 0.9em;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+#theme-toggle:hover {
+    background-color: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+}
+
+/* ダークモード用のドラッグオーバー効果 */
+[data-theme="dark"] .day-column.drag-over {
+    background-color: #2a3a5c;
+    border: 2px dashed var(--primary-color);
+}
+
+/* ダークモード用のタスク完了スタイル */
+[data-theme="dark"] .task.completed {
+    background-color: #1f1f1f;
+    border-left-color: #666;
+    opacity: 0.7;
+}
+
+/* ダークモード用のフォーカススタイル */
+[data-theme="dark"] input:focus,
+[data-theme="dark"] textarea:focus,
+[data-theme="dark"] select:focus {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+}
+
+/* ダークモード用のフォーム要素 */
+[data-theme="dark"] input,
+[data-theme="dark"] textarea,
+[data-theme="dark"] select {
+    background-color: var(--card-background);
+    color: var(--font-color);
+    border: 1px solid var(--border-color);
+}/* 日付
+入力フィールドの改善 */
+.date-input-wrapper {
+    position: relative;
+    display: inline-block;
+    width: 100%;
+}
+
+input[type="date"], input[type="datetime-local"] {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background-color: var(--card-background);
+    color: var(--font-color);
+    font-size: 1em;
+    cursor: pointer;
+    position: relative;
+    /* 直接入力を無効にする */
+    caret-color: transparent;
+}
+
+/* 日付入力フィールド全体をクリック可能にする */
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: auto;
+    height: auto;
+    color: transparent;
+    background: transparent;
+    cursor: pointer;
+}
+
+/* Firefox用の日付入力スタイル */
+input[type="date"]::-moz-focus-inner,
+input[type="datetime-local"]::-moz-focus-inner {
+    border: 0;
+    padding: 0;
+}
+
+/* 日付入力フィールドのホバー効果 */
+input[type="date"]:hover,
+input[type="datetime-local"]:hover {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.1);
+}
+
+/* 日付入力フィールドのフォーカス効果 */
+input[type="date"]:focus,
+input[type="datetime-local"]:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
+}
+
+/* ダークモード用の日付入力スタイル */
+[data-theme="dark"] input[type="date"]:hover,
+[data-theme="dark"] input[type="datetime-local"]:hover {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(90, 163, 240, 0.1);
+}
+
+[data-theme="dark"] input[type="date"]:focus,
+[data-theme="dark"] input[type="datetime-local"]:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(90, 163, 240, 0.2);
+}/* フォー
+ムラベルの改善 */
+form label {
+    display: block;
+    margin-top: 15px;
+    margin-bottom: 5px;
+    font-weight: 500;
+    color: var(--font-color);
+}
+
+/* 日付関連のラベルをクリック可能に見せる */
+label[for="task-date"],
+label[for="due-date"] {
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+label[for="task-date"]:hover,
+label[for="due-date"]:hover {
+    color: var(--primary-color);
+}
+
+/* 日付入力フィールドにアイコンを追加 */
+label[for="task-date"]::after,
+label[for="due-date"]::after {
+    content: " 📅";
+    font-size: 0.9em;
+    opacity: 0.7;
+}
+
+/* フォーム全体の改善 */
+form input, form textarea {
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}/* 
+日付入力フィールドをカレンダー専用にする */
+input[type="date"], input[type="datetime-local"] {
+    /* キーボード入力を無効にする */
+    pointer-events: auto;
+}
+
+/* 日付入力フィールドの見た目を改善 */
+input[type="date"]::-webkit-datetime-edit,
+input[type="datetime-local"]::-webkit-datetime-edit {
+    padding: 0;
+    color: var(--font-color);
+}
+
+input[type="date"]::-webkit-datetime-edit-text,
+input[type="datetime-local"]::-webkit-datetime-edit-text {
+    color: var(--font-color);
+    padding: 0 2px;
+}
+
+input[type="date"]::-webkit-datetime-edit-month-field,
+input[type="date"]::-webkit-datetime-edit-day-field,
+input[type="date"]::-webkit-datetime-edit-year-field,
+input[type="datetime-local"]::-webkit-datetime-edit-month-field,
+input[type="datetime-local"]::-webkit-datetime-edit-day-field,
+input[type="datetime-local"]::-webkit-datetime-edit-year-field,
+input[type="datetime-local"]::-webkit-datetime-edit-hour-field,
+input[type="datetime-local"]::-webkit-datetime-edit-minute-field {
+    color: var(--font-color);
+    background: transparent;
+}
+
+/* 空の日付フィールドにプレースホルダー風の表示 */
+input[type="date"]:invalid,
+input[type="datetime-local"]:invalid {
+    color: #999;
+}
+
+/* カレンダーアイコンを強調 */
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="%234a90e2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>');
+    background-size: 16px 16px;
+    background-repeat: no-repeat;
+    background-position: center;
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    opacity: 0.8;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator:hover,
+input[type="datetime-local"]::-webkit-calendar-picker-indicator:hover {
+    opacity: 1;
+}
+
+/* ダークモード用のカレンダーアイコン */
+[data-theme="dark"] input[type="date"]::-webkit-calendar-picker-indicator,
+[data-theme="dark"] input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="%235aa3f0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>');
+}/* rea
+donly状態の日付入力フィールドのスタイル */
+input[type="date"][readonly],
+input[type="datetime-local"][readonly] {
+    background-color: var(--card-background);
+    cursor: pointer;
+    opacity: 1;
+}
+
+input[type="date"][readonly]:hover,
+input[type="datetime-local"][readonly]:hover {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.1);
+}
+
+input[type="date"][readonly]:focus,
+input[type="datetime-local"][readonly]:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
+}
+
+/* ダークモード用のreadonly状態 */
+[data-theme="dark"] input[type="date"][readonly]:hover,
+[data-theme="dark"] input[type="datetime-local"][readonly]:hover {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(90, 163, 240, 0.1);
+}
+
+[data-theme="dark"] input[type="date"][readonly]:focus,
+[data-theme="dark"] input[type="datetime-local"][readonly]:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(90, 163, 240, 0.2);
 }
