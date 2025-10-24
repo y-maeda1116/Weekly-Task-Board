@@ -244,6 +244,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const taskPriorityInput = document.getElementById('task-priority');
     const taskDateInput = document.getElementById('task-date');
     const dueDateInput = document.getElementById('due-date');
+    const dueTimePeriodInput = document.getElementById('due-time-period');
+    const dueHourInput = document.getElementById('due-hour');
     const taskDetailsInput = document.getElementById('task-details');
     const duplicateTaskBtn = document.getElementById('duplicate-task-btn');
 
@@ -393,6 +395,99 @@ document.addEventListener('DOMContentLoaded', () => {
     // 日付入力フィールドをカレンダー専用に設定
     makeDateInputCalendarOnly(taskDateInput);
     makeDateInputCalendarOnly(dueDateInput);
+    
+    // 午前午後選択時の時間選択表示制御
+    dueTimePeriodInput.addEventListener('change', function() {
+        if (this.value === 'morning' || this.value === 'afternoon') {
+            dueHourInput.style.display = 'block';
+            // 午前午後に応じて時間選択肢を調整
+            updateHourOptions(this.value);
+        } else {
+            dueHourInput.style.display = 'none';
+            dueHourInput.value = '';
+        }
+    });
+    
+    function updateHourOptions(period) {
+        const morningHours = [
+            { value: '', text: '時間指定なし' },
+            { value: '9', text: '9時' },
+            { value: '10', text: '10時' },
+            { value: '11', text: '11時' },
+            { value: '12', text: '12時' }
+        ];
+        
+        const afternoonHours = [
+            { value: '', text: '時間指定なし' },
+            { value: '13', text: '13時' },
+            { value: '14', text: '14時' },
+            { value: '15', text: '15時' },
+            { value: '16', text: '16時' },
+            { value: '17', text: '17時' },
+            { value: '18', text: '18時' },
+            { value: '19', text: '19時' },
+            { value: '20', text: '20時' },
+            { value: '21', text: '21時' },
+            { value: '22', text: '22時' }
+        ];
+        
+        const hours = period === 'morning' ? morningHours : afternoonHours;
+        dueHourInput.innerHTML = '';
+        
+        hours.forEach(hour => {
+            const option = document.createElement('option');
+            option.value = hour.value;
+            option.textContent = hour.text;
+            dueHourInput.appendChild(option);
+        });
+    }
+    
+    function buildDueDateString() {
+        const date = dueDateInput.value;
+        const period = dueTimePeriodInput.value;
+        const hour = dueHourInput.value;
+        
+        if (!date) return null;
+        
+        if (period && hour) {
+            return `${date}T${hour.padStart(2, '0')}:00`;
+        } else if (period === 'morning') {
+            return `${date}T09:00`;
+        } else if (period === 'afternoon') {
+            return `${date}T13:00`;
+        } else {
+            return `${date}T23:59`;
+        }
+    }
+    
+    function parseDueDateString(dueDateStr) {
+        if (!dueDateStr) {
+            return { date: '', period: '', hour: '' };
+        }
+        
+        const [datePart, timePart] = dueDateStr.split('T');
+        if (!timePart) {
+            return { date: datePart, period: '', hour: '' };
+        }
+        
+        const hour = parseInt(timePart.split(':')[0]);
+        
+        if (hour >= 9 && hour <= 12) {
+            return { 
+                date: datePart, 
+                period: 'morning', 
+                hour: hour.toString() 
+            };
+        } else if (hour >= 13 && hour <= 22) {
+            return { 
+                date: datePart, 
+                period: 'afternoon', 
+                hour: hour.toString() 
+            };
+        } else {
+            return { date: datePart, period: '', hour: '' };
+        }
+    }
 
     closeModalBtn.addEventListener('click', () => {
         modal.style.display = 'none';
@@ -420,7 +515,21 @@ document.addEventListener('DOMContentLoaded', () => {
         taskPriorityInput.value = task.priority || 'medium';
         // 💡 修正: nullの場合は空文字列を設定し、HTML inputで表示できるようにする
         taskDateInput.value = task.assigned_date || '';
-        dueDateInput.value = task.due_date || '';
+        
+        // 期限の解析と設定
+        const dueDateParts = parseDueDateString(task.due_date);
+        dueDateInput.value = dueDateParts.date;
+        dueTimePeriodInput.value = dueDateParts.period;
+        
+        if (dueDateParts.period) {
+            updateHourOptions(dueDateParts.period);
+            dueHourInput.style.display = 'block';
+            dueHourInput.value = dueDateParts.hour;
+        } else {
+            dueHourInput.style.display = 'none';
+            dueHourInput.value = '';
+        }
+        
         taskDetailsInput.value = task.details || '';
         taskForm.querySelector('button[type="submit"]').textContent = '更新';
         
@@ -443,7 +552,7 @@ document.addEventListener('DOMContentLoaded', () => {
             estimated_time: parseFloat(estimatedTimeInput.value),
             priority: taskPriorityInput.value,
             assigned_date: assignedDateValue,
-            due_date: dueDateInput.value || null,
+            due_date: buildDueDateString(),
             details: taskDetailsInput.value,
         };
 
@@ -579,6 +688,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const weekDates = [];
         const dailyTotals = {};
+        const dailyCompletedTotals = {}; // 完了したタスクの時間
 
         for (let i = 0; i < 7; i++) {
             const date = new Date(monday);
@@ -587,6 +697,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const dateStr = formatDate(date);
             weekDates.push(date);
             dailyTotals[dateStr] = 0;
+            dailyCompletedTotals[dateStr] = 0;
         }
 
         const startOfWeek = weekDates[0];
@@ -609,6 +720,15 @@ document.addEventListener('DOMContentLoaded', () => {
             h3.innerHTML = `${dayNames[index]} (${date.getMonth() + 1}/${date.getDate()}) <span class="daily-total-time"></span>`;
         });
 
+        // 完了したタスク（アーカイブ）の時間を計算
+        const archivedTasks = loadArchivedTasks();
+        archivedTasks.forEach(task => {
+            if (task.assigned_date && task.assigned_date >= startOfWeekStr && task.assigned_date <= endOfWeekStr) {
+                dailyCompletedTotals[task.assigned_date] += (task.estimated_time || 0) * 60;
+                dailyTotals[task.assigned_date] += (task.estimated_time || 0) * 60;
+            }
+        });
+
         // タスクを配置
         tasks.forEach(task => {
             const taskElement = createTaskElement(task);
@@ -628,19 +748,32 @@ document.addEventListener('DOMContentLoaded', () => {
             const date = weekDates[index];
             const dateStr = formatDate(date);
             const totalMinutes = dailyTotals[dateStr];
+            const completedMinutes = dailyCompletedTotals[dateStr];
 
             const totalTimeEl = column.querySelector('.daily-total-time');
             if (totalTimeEl) {
                 if (totalMinutes > 0) {
                     const hours = Math.floor(totalMinutes / 60);
                     const minutes = totalMinutes % 60;
-                    totalTimeEl.textContent = `(${hours}h ${minutes}m)`;
+                    
+                    if (completedMinutes > 0) {
+                        const completedHours = Math.floor(completedMinutes / 60);
+                        const completedMins = completedMinutes % 60;
+                        totalTimeEl.innerHTML = `
+                            <span class="total-time">(${hours}h ${minutes}m)</span>
+                            <span class="completed-time">完了: ${completedHours}h ${completedMins}m</span>
+                        `;
+                    } else {
+                        totalTimeEl.innerHTML = `<span class="total-time">(${hours}h ${minutes}m)</span>`;
+                    }
                 } else {
-                    totalTimeEl.textContent = '(0h 0m)';
+                    totalTimeEl.innerHTML = '<span class="total-time">(0h 0m)</span>';
                 }
 
                 if (totalMinutes > settings.ideal_daily_minutes) {
                     totalTimeEl.classList.add('overload');
+                } else {
+                    totalTimeEl.classList.remove('overload');
                 }
             }
         });
@@ -1121,12 +1254,22 @@ document.addEventListener('DOMContentLoaded', () => {
         const originalTask = tasks.find(task => task.id === taskId);
         if (!originalTask) return;
         
-        // 新しいタスクを作成（IDと完了状態をリセット）
+        // フォームから現在の値を取得
+        const currentTaskData = {
+            name: taskNameInput.value,
+            estimated_time: parseFloat(estimatedTimeInput.value),
+            priority: taskPriorityInput.value,
+            assigned_date: taskDateInput.value || null,
+            due_date: buildDueDateString(),
+            details: taskDetailsInput.value,
+        };
+        
+        // 新しいタスクを作成（フォームの値を使用）
         const duplicatedTask = {
-            ...originalTask,
+            ...currentTaskData,
             id: `task-${Date.now()}`,
             completed: false,
-            name: originalTask.name + ' (コピー)'
+            name: currentTaskData.name + ' (コピー)'
         };
         
         // タスクリストに追加
@@ -1141,7 +1284,7 @@ document.addEventListener('DOMContentLoaded', () => {
         selectedDate = null;
         
         // 成功メッセージを表示
-        showDuplicateMessage(originalTask.name);
+        showDuplicateMessage(currentTaskData.name);
     }
     
     function showDuplicateMessage(taskName) {
