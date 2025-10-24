@@ -1315,4 +1315,90 @@ input[type="datetime-local"][readonly]:focus {
 [data-theme="dark"] .duplicate-message {
     background: linear-gradient(135deg, #51cf66, #40c057);
     box-shadow: 0 8px 25px rgba(81, 207, 102, 0.4);
+}/* 完了タ
+スクを含む時間表示の改善 */
+.daily-total-time {
+    font-size: 0.9em;
+    font-weight: bold;
+    color: var(--font-color);
+    margin-left: 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    line-height: 1.2;
+}
+
+.daily-total-time .total-time {
+    color: var(--font-color);
+}
+
+.daily-total-time .completed-time {
+    font-size: 0.8em;
+    color: #28a745;
+    opacity: 0.8;
+}
+
+.daily-total-time.overload .total-time {
+    color: #e74c3c;
+}
+
+/* ダークモード用 */
+[data-theme="dark"] .daily-total-time .completed-time {
+    color: #51cf66;
+}/* 期限入力のス
+タイル */
+#due-date-container {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+#due-date-container input,
+#due-date-container select {
+    padding: 8px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background-color: var(--card-background);
+    color: var(--font-color);
+    font-size: 0.9em;
+}
+
+#due-date {
+    flex: 1;
+    min-width: 140px;
+}
+
+#due-time-period,
+#due-hour {
+    min-width: 100px;
+}
+
+#due-time-period:focus,
+#due-hour:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
+}
+
+/* ダークモード用 */
+[data-theme="dark"] #due-date-container input,
+[data-theme="dark"] #due-date-container select {
+    background-color: var(--card-background);
+    color: var(--font-color);
+    border-color: var(--border-color);
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 480px) {
+    #due-date-container {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    #due-date,
+    #due-time-period,
+    #due-hour {
+        width: 100%;
+    }
 }

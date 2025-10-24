@@ -126,7 +126,31 @@
                 <input type="date" id="task-date" required readonly>
 
                 <label for="due-date">期限:</label>
-                <input type="datetime-local" id="due-date" readonly>
+                <div id="due-date-container">
+                    <input type="date" id="due-date" readonly>
+                    <select id="due-time-period">
+                        <option value="">指定なし</option>
+                        <option value="morning">午前</option>
+                        <option value="afternoon">午後</option>
+                    </select>
+                    <select id="due-hour" style="display: none;">
+                        <option value="">時間指定なし</option>
+                        <option value="9">9時</option>
+                        <option value="10">10時</option>
+                        <option value="11">11時</option>
+                        <option value="12">12時</option>
+                        <option value="13">13時</option>
+                        <option value="14">14時</option>
+                        <option value="15">15時</option>
+                        <option value="16">16時</option>
+                        <option value="17">17時</option>
+                        <option value="18">18時</option>
+                        <option value="19">19時</option>
+                        <option value="20">20時</option>
+                        <option value="21">21時</option>
+                        <option value="22">22時</option>
+                    </select>
+                </div>
 
                 <label for="task-details">詳細メモ:</label>
                 <textarea id="task-details"></textarea>
