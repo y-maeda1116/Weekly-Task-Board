@@ -501,7 +501,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 setTimeout(() => {
                     archiveCompletedTasks();
                     renderWeek();
-                }, 1200);
+                }, 1800);
             } else {
                 // チェック解除時は即座に更新
                 saveTasks();
@@ -770,10 +770,10 @@ document.addEventListener('DOMContentLoaded', () => {
         // 成功メッセージ表示
         showSuccessMessage();
         
-        // タスク要素の完了アニメーション（少し遅延）
+        // タスク要素の渦巻きアニメーション（少し遅延）
         setTimeout(() => {
             taskElement.classList.add('completing');
-        }, 300);
+        }, 400);
         
         // データ保存
         saveTasks();
@@ -785,34 +785,88 @@ document.addEventListener('DOMContentLoaded', () => {
         const centerY = rect.top + rect.height / 2;
         
         const colors = ['red', 'orange', 'green', 'blue', 'purple'];
-        const confettiCount = 12;
+        const confettiCount = 20; // 紙吹雪の数を増加
         
+        // 爆発する紙吹雪
         for (let i = 0; i < confettiCount; i++) {
             const confetti = document.createElement('div');
             confetti.className = `confetti ${colors[Math.floor(Math.random() * colors.length)]}`;
             
-            // ランダムな位置に配置
-            const angle = (360 / confettiCount) * i;
-            const distance = 30 + Math.random() * 40;
+            // ランダムな位置に配置（より広範囲に）
+            const angle = (360 / confettiCount) * i + Math.random() * 30;
+            const distance = 40 + Math.random() * 80;
             const x = centerX + Math.cos(angle * Math.PI / 180) * distance;
             const y = centerY + Math.sin(angle * Math.PI / 180) * distance;
             
             confetti.style.left = x + 'px';
             confetti.style.top = y + 'px';
             
+            // ランダムなサイズ
+            const size = 6 + Math.random() * 8;
+            confetti.style.width = size + 'px';
+            confetti.style.height = size + 'px';
+            
             document.body.appendChild(confetti);
             
-            // アニメーション開始
+            // アニメーション開始（ランダムな遅延）
             setTimeout(() => {
-                confetti.classList.add('animate');
-            }, 50);
+                if (Math.random() > 0.5) {
+                    confetti.classList.add('explode');
+                } else {
+                    confetti.classList.add('fall');
+                }
+            }, Math.random() * 200);
             
             // 要素を削除
             setTimeout(() => {
                 if (confetti.parentNode) {
                     confetti.parentNode.removeChild(confetti);
                 }
-            }, 1300);
+            }, 2200);
+        }
+        
+        // 追加の中央爆発エフェクト
+        createCenterBurst(centerX, centerY);
+    }
+    
+    function createCenterBurst(centerX, centerY) {
+        const burstCount = 8;
+        const colors = ['red', 'orange', 'green', 'blue', 'purple'];
+        
+        for (let i = 0; i < burstCount; i++) {
+            const burst = document.createElement('div');
+            burst.className = `confetti ${colors[Math.floor(Math.random() * colors.length)]}`;
+            
+            // 中央から放射状に配置
+            const angle = (360 / burstCount) * i;
+            const x = centerX;
+            const y = centerY;
+            
+            burst.style.left = x + 'px';
+            burst.style.top = y + 'px';
+            burst.style.width = '12px';
+            burst.style.height = '12px';
+            
+            // 放射状に移動するアニメーション
+            const distance = 100 + Math.random() * 50;
+            const endX = centerX + Math.cos(angle * Math.PI / 180) * distance;
+            const endY = centerY + Math.sin(angle * Math.PI / 180) * distance;
+            
+            document.body.appendChild(burst);
+            
+            // カスタムアニメーション
+            setTimeout(() => {
+                burst.style.transition = 'all 1s ease-out';
+                burst.style.transform = `translate(${endX - centerX}px, ${endY - centerY}px) rotate(720deg) scale(0)`;
+                burst.style.opacity = '0';
+            }, 100);
+            
+            // 要素を削除
+            setTimeout(() => {
+                if (burst.parentNode) {
+                    burst.parentNode.removeChild(burst);
+                }
+            }, 1200);
         }
     }
     
