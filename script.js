@@ -91,14 +91,18 @@ function loadTasks() {
         const wednesdayStr = formatDate(wednesday);
 
         tasksData = [
-            { id: `task-${Date.now() + 1}`, name: "D&D機能を実装する", estimated_time: 8, assigned_date: null, due_date: null, details: "タスクをドラッグ＆ドロップで移動できるようにする", completed: false },
-            { id: `task-${Date.now() + 2}`, name: "UIを修正する", estimated_time: 5, assigned_date: tuesdayStr, due_date: wednesdayStr + 'T18:00', details: "新しいレイアウトを適用する", completed: false },
-            { id: `task-${Date.now() + 3}`, name: "バグを修正する", estimated_time: 3, assigned_date: mondayStr, due_date: mondayStr + 'T23:59', details: "報告されたバグを調査・修正", completed: false },
+            { id: `task-${Date.now() + 1}`, name: "D&D機能を実装する", estimated_time: 8, priority: "high", assigned_date: null, due_date: null, details: "タスクをドラッグ＆ドロップで移動できるようにする", completed: false },
+            { id: `task-${Date.now() + 2}`, name: "UIを修正する", estimated_time: 5, priority: "medium", assigned_date: tuesdayStr, due_date: wednesdayStr + 'T18:00', details: "新しいレイアウトを適用する", completed: false },
+            { id: `task-${Date.now() + 3}`, name: "バグを修正する", estimated_time: 3, priority: "low", assigned_date: mondayStr, due_date: mondayStr + 'T23:59', details: "報告されたバグを調査・修正", completed: false },
         ];
     } else {
         tasksData = JSON.parse(tasksJson);
     }
-    return tasksData.map(task => ({ ...task, completed: task.completed || false }));
+    return tasksData.map(task => ({ 
+        ...task, 
+        completed: task.completed || false,
+        priority: task.priority || 'medium' // 既存タスクにデフォルト優先度を設定
+    }));
 }
 
 
@@ -237,6 +241,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const taskForm = document.getElementById('task-form');
     const taskNameInput = document.getElementById('task-name');
     const estimatedTimeInput = document.getElementById('estimated-time');
+    const taskPriorityInput = document.getElementById('task-priority');
     const taskDateInput = document.getElementById('task-date');
     const dueDateInput = document.getElementById('due-date');
     const taskDetailsInput = document.getElementById('task-details');
@@ -386,6 +391,7 @@ document.addEventListener('DOMContentLoaded', () => {
         editingTaskId = task.id;
         taskNameInput.value = task.name;
         estimatedTimeInput.value = task.estimated_time;
+        taskPriorityInput.value = task.priority || 'medium';
         // 💡 修正: nullの場合は空文字列を設定し、HTML inputで表示できるようにする
         taskDateInput.value = task.assigned_date || '';
         dueDateInput.value = task.due_date || '';
@@ -405,6 +411,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const taskData = {
             name: taskNameInput.value,
             estimated_time: parseFloat(estimatedTimeInput.value),
+            priority: taskPriorityInput.value,
             assigned_date: assignedDateValue,
             due_date: dueDateInput.value || null,
             details: taskDetailsInput.value,
@@ -440,6 +447,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (task.completed) {
             taskElement.classList.add('completed');
         }
+        // 優先度クラスを追加
+        taskElement.classList.add(`priority-${task.priority || 'medium'}`);
         taskElement.dataset.taskId = task.id;
         taskElement.draggable = true;
 
@@ -450,10 +459,14 @@ document.addEventListener('DOMContentLoaded', () => {
             dueDateHTML = `<div class="task-due-date">期限: ${formattedDate}</div>`;
         }
 
+        const priorityLabels = { high: '高', medium: '中', low: '低' };
+        const priorityLabel = priorityLabels[task.priority] || '中';
+        
         taskElement.innerHTML = `
             <div class="task-header">
                 <input type="checkbox" class="task-checkbox" ${task.completed ? 'checked' : ''}>
                 <div class="task-name">${task.name}</div>
+                <span class="task-priority ${task.priority || 'medium'}">${priorityLabel}</span>
                 <div class="task-time">${task.estimated_time}h</div>
             </div>
             ${dueDateHTML}

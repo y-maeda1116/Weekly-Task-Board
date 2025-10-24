@@ -745,4 +745,77 @@ input[type="datetime-local"][readonly]:focus {
     #archive-list {
         grid-template-columns: 1fr;
     }
+}/
+* 優先度による色分け */
+.task.priority-high {
+    border-left-color: #dc3545; /* 赤 */
+}
+
+.task.priority-medium {
+    border-left-color: var(--secondary-color); /* オレンジ（既存） */
+}
+
+.task.priority-low {
+    border-left-color: #28a745; /* 緑 */
+}
+
+/* 優先度インジケーター */
+.task-priority {
+    font-size: 0.8em;
+    font-weight: bold;
+    padding: 2px 6px;
+    border-radius: 3px;
+    margin-left: 5px;
+}
+
+.task-priority.high {
+    background-color: #dc3545;
+    color: white;
+}
+
+.task-priority.medium {
+    background-color: var(--secondary-color);
+    color: white;
+}
+
+.task-priority.low {
+    background-color: #28a745;
+    color: white;
+}
+
+/* ダークモード用の優先度色調整 */
+[data-theme="dark"] .task.priority-high {
+    border-left-color: #ff6b7a;
+}
+
+[data-theme="dark"] .task.priority-medium {
+    border-left-color: #ffc947;
+}
+
+[data-theme="dark"] .task.priority-low {
+    border-left-color: #51cf66;
+}
+
+[data-theme="dark"] .task-priority.high {
+    background-color: #ff6b7a;
+}
+
+[data-theme="dark"] .task-priority.medium {
+    background-color: #ffc947;
+}
+
+[data-theme="dark"] .task-priority.low {
+    background-color: #51cf66;
+}
+
+/* 優先度選択のスタイル */
+#task-priority {
+    width: 100%;
+    padding: 8px;
+    margin-top: 5px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background-color: var(--card-background);
+    color: var(--font-color);
+    font-size: 1em;
 }
