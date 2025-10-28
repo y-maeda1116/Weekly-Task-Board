@@ -4,11 +4,22 @@ const TASKS_STORAGE_KEY = 'weekly-task-board.tasks';
 const SETTINGS_STORAGE_KEY = 'weekly-task-board.settings';
 const ARCHIVE_STORAGE_KEY = 'weekly-task-board.archive';
 
+// --- Task Categories Definition ---
+const TASK_CATEGORIES = {
+    'task': { name: 'タスク', color: '#3498db', bgColor: '#e3f2fd' },
+    'meeting': { name: '打ち合わせ', color: '#27ae60', bgColor: '#e8f5e8' },
+    'review': { name: 'レビュー', color: '#f39c12', bgColor: '#fff3e0' },
+    'bugfix': { name: 'バグ修正', color: '#e74c3c', bgColor: '#ffebee' },
+    'document': { name: 'ドキュメント作成', color: '#9b59b6', bgColor: '#f3e5f5' },
+    'research': { name: '学習・調査', color: '#f1c40f', bgColor: '#fffde7' }
+};
+
 // グローバル変数として宣言のみ行い、初期化はDOMContentLoaded内で行う
 let tasks;
 let settings;
 let currentDate; // 💡 修正: アプリケーションの基点となる日付
 let datePicker; // DOM要素もグローバルでアクセスできるように定義
+let currentCategoryFilter = ''; // カテゴリフィルターの状態
 
 /**
  * Load settings from localStorage, providing defaults if empty.
@@ -91,9 +102,9 @@ function loadTasks() {
         const wednesdayStr = formatDate(wednesday);
 
         tasksData = [
-            { id: `task-${Date.now() + 1}`, name: "D&D機能を実装する", estimated_time: 8, priority: "high", assigned_date: null, due_date: null, details: "タスクをドラッグ＆ドロップで移動できるようにする", completed: false },
-            { id: `task-${Date.now() + 2}`, name: "UIを修正する", estimated_time: 5, priority: "medium", assigned_date: tuesdayStr, due_date: wednesdayStr + 'T18:00', details: "新しいレイアウトを適用する", completed: false },
-            { id: `task-${Date.now() + 3}`, name: "バグを修正する", estimated_time: 3, priority: "low", assigned_date: mondayStr, due_date: mondayStr + 'T23:59', details: "報告されたバグを調査・修正", completed: false },
+            { id: `task-${Date.now() + 1}`, name: "D&D機能を実装する", estimated_time: 8, priority: "high", assigned_date: null, due_date: null, details: "タスクをドラッグ＆ドロップで移動できるようにする", completed: false, category: "task" },
+            { id: `task-${Date.now() + 2}`, name: "UIを修正する", estimated_time: 5, priority: "medium", assigned_date: tuesdayStr, due_date: wednesdayStr + 'T18:00', details: "新しいレイアウトを適用する", completed: false, category: "task" },
+            { id: `task-${Date.now() + 3}`, name: "バグを修正する", estimated_time: 3, priority: "low", assigned_date: mondayStr, due_date: mondayStr + 'T23:59', details: "報告されたバグを調査・修正", completed: false, category: "bugfix" },
         ];
     } else {
         tasksData = JSON.parse(tasksJson);
@@ -101,7 +112,8 @@ function loadTasks() {
     return tasksData.map(task => ({ 
         ...task, 
         completed: task.completed || false,
-        priority: task.priority || 'medium' // 既存タスクにデフォルト優先度を設定
+        priority: task.priority || 'medium', // 既存タスクにデフォルト優先度を設定
+        category: task.category || 'task' // 既存タスクにデフォルトカテゴリを設定（マイグレーション処理）
     }));
 }
 
@@ -110,7 +122,47 @@ function loadTasks() {
  * Save tasks to localStorage.
  */
 function saveTasks() {
-    localStorage.setItem(TASKS_STORAGE_KEY, JSON.stringify(tasks));
+    // カテゴリ情報の検証を行ってから保存
+    const validatedTasks = tasks.map(task => ({
+        ...task,
+        category: validateCategory(task.category)
+    }));
+    localStorage.setItem(TASKS_STORAGE_KEY, JSON.stringify(validatedTasks));
+}
+
+/**
+ * Get category information by category key.
+ * @param {string} categoryKey - The category key.
+ * @returns {object} Category information with name, color, and bgColor.
+ */
+function getCategoryInfo(categoryKey) {
+    return TASK_CATEGORIES[categoryKey] || TASK_CATEGORIES['task'];
+}
+
+/**
+ * Validate and normalize category value.
+ * @param {string} category - The category to validate.
+ * @returns {string} Valid category key.
+ */
+function validateCategory(category) {
+    if (category && TASK_CATEGORIES[category]) {
+        return category;
+    }
+    console.warn(`Invalid category "${category}", falling back to default "task"`);
+    return 'task';
+}
+
+/**
+ * Check if a task should be displayed based on current category filter.
+ * @param {object} task - The task to check.
+ * @returns {boolean} True if task should be displayed.
+ */
+function shouldDisplayTask(task) {
+    if (!currentCategoryFilter) {
+        return true; // Show all tasks when no filter is selected
+    }
+    const taskCategory = validateCategory(task.category);
+    return taskCategory === currentCategoryFilter;
 }
 
 /**
@@ -202,6 +254,47 @@ function handleDrop(e) {
 
 
 /**
+ * Verify and repair category information in LocalStorage data.
+ */
+function verifyCategoryData() {
+    let dataModified = false;
+    
+    // タスクデータのカテゴリ検証
+    tasks.forEach(task => {
+        const originalCategory = task.category;
+        task.category = validateCategory(task.category);
+        if (originalCategory !== task.category) {
+            dataModified = true;
+            console.log(`Task "${task.name}" category corrected from "${originalCategory}" to "${task.category}"`);
+        }
+    });
+    
+    // アーカイブデータのカテゴリ検証
+    const archivedTasks = loadArchivedTasks();
+    let archiveModified = false;
+    archivedTasks.forEach(task => {
+        const originalCategory = task.category;
+        task.category = validateCategory(task.category);
+        if (originalCategory !== task.category) {
+            archiveModified = true;
+            console.log(`Archived task "${task.name}" category corrected from "${originalCategory}" to "${task.category}"`);
+        }
+    });
+    
+    if (dataModified) {
+        console.log("Category data verification completed - tasks updated.");
+        saveTasks();
+    }
+    
+    if (archiveModified) {
+        console.log("Category data verification completed - archive updated.");
+        saveArchivedTasks(archivedTasks);
+    }
+    
+    return dataModified || archiveModified;
+}
+
+/**
  * Moves incomplete tasks from past weeks to the unassigned list.
  */
 function carryOverOldTasks() {
@@ -242,6 +335,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const taskNameInput = document.getElementById('task-name');
     const estimatedTimeInput = document.getElementById('estimated-time');
     const taskPriorityInput = document.getElementById('task-priority');
+    const taskCategoryInput = document.getElementById('task-category');
     const taskDateInput = document.getElementById('task-date');
     const dueDateInput = document.getElementById('due-date');
     const dueTimePeriodInput = document.getElementById('due-time-period');
@@ -269,6 +363,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const closeArchiveBtn = document.getElementById('close-archive');
     const clearArchiveBtn = document.getElementById('clear-archive');
     const archiveList = document.getElementById('archive-list');
+    const categoryFilterSelect = document.getElementById('filter-category');
 
     let editingTaskId = null;
     let isRendering = false;
@@ -276,12 +371,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Initial Load ---
     carryOverOldTasks();
+    
+    // カテゴリデータの検証と修復
+    verifyCategoryData();
 
     // 設定値をUIに反映
     idealDailyMinutesInput.value = settings.ideal_daily_minutes;
     
     // ダークモードの初期化
     initializeTheme();
+
+    // カテゴリフィルターの初期化
+    initializeCategoryFilter();
 
     // 💡 修正 2: 初期ロード時にタスクボードを描画する
     renderWeek();
@@ -513,6 +614,7 @@ document.addEventListener('DOMContentLoaded', () => {
         taskNameInput.value = task.name;
         estimatedTimeInput.value = task.estimated_time;
         taskPriorityInput.value = task.priority || 'medium';
+        taskCategoryInput.value = validateCategory(task.category);
         // 💡 修正: nullの場合は空文字列を設定し、HTML inputで表示できるようにする
         taskDateInput.value = task.assigned_date || '';
         
@@ -551,6 +653,7 @@ document.addEventListener('DOMContentLoaded', () => {
             name: taskNameInput.value,
             estimated_time: parseFloat(estimatedTimeInput.value),
             priority: taskPriorityInput.value,
+            category: validateCategory(taskCategoryInput.value),
             assigned_date: assignedDateValue,
             due_date: buildDueDateString(),
             details: taskDetailsInput.value,
@@ -589,8 +692,15 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         // 優先度クラスを追加
         taskElement.classList.add(`priority-${task.priority || 'medium'}`);
+        // カテゴリクラスを追加
+        const categoryKey = validateCategory(task.category);
+        taskElement.classList.add(`category-${categoryKey}`);
         taskElement.dataset.taskId = task.id;
+        taskElement.dataset.category = categoryKey;
         taskElement.draggable = true;
+
+        // カテゴリ情報を取得
+        const categoryInfo = getCategoryInfo(categoryKey);
 
         let dueDateHTML = '';
         if (task.due_date) {
@@ -603,6 +713,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const priorityLabel = priorityLabels[task.priority] || '中';
         
         taskElement.innerHTML = `
+            <div class="category-bar" style="background-color: ${categoryInfo.color};"></div>
             <div class="task-header">
                 <input type="checkbox" class="task-checkbox" ${task.completed ? 'checked' : ''}>
                 <div class="task-name">${task.name}</div>
@@ -702,7 +813,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const startOfWeek = weekDates[0];
         const endOfWeek = weekDates[6];
-        weekTitle.textContent = `${startOfWeek.getFullYear()}年${startOfWeek.getMonth() + 1}月${startOfWeek.getDate()}日 - ${endOfWeek.getFullYear()}年${endOfWeek.getMonth() + 1}月${endOfWeek.getDate()}日`;
+        let weekTitleText = `${startOfWeek.getFullYear()}年${startOfWeek.getMonth() + 1}月${startOfWeek.getDate()}日 - ${endOfWeek.getFullYear()}年${endOfWeek.getMonth() + 1}月${endOfWeek.getDate()}日`;
+        
+        // カテゴリフィルターが有効な場合、フィルター情報を追加
+        if (currentCategoryFilter) {
+            const categoryInfo = getCategoryInfo(currentCategoryFilter);
+            const filteredTaskCount = tasks.filter(task => shouldDisplayTask(task)).length;
+            weekTitleText += ` | フィルター: ${categoryInfo.name} (${filteredTaskCount}件)`;
+        }
+        
+        weekTitle.textContent = weekTitleText;
 
         const startOfWeekStr = formatDate(startOfWeek);
         const endOfWeekStr = formatDate(endOfWeek);
@@ -720,17 +840,22 @@ document.addEventListener('DOMContentLoaded', () => {
             h3.innerHTML = `${dayNames[index]} (${date.getMonth() + 1}/${date.getDate()}) <span class="daily-total-time"></span>`;
         });
 
-        // 完了したタスク（アーカイブ）の時間を計算
+        // 完了したタスク（アーカイブ）の時間を計算（カテゴリフィルターを適用）
         const archivedTasks = loadArchivedTasks();
         archivedTasks.forEach(task => {
-            if (task.assigned_date && task.assigned_date >= startOfWeekStr && task.assigned_date <= endOfWeekStr) {
+            if (task.assigned_date && task.assigned_date >= startOfWeekStr && task.assigned_date <= endOfWeekStr && shouldDisplayTask(task)) {
                 dailyCompletedTotals[task.assigned_date] += (task.estimated_time || 0) * 60;
                 dailyTotals[task.assigned_date] += (task.estimated_time || 0) * 60;
             }
         });
 
-        // タスクを配置
+        // タスクを配置（カテゴリフィルターを適用）
         tasks.forEach(task => {
+            // カテゴリフィルターをチェック
+            if (!shouldDisplayTask(task)) {
+                return; // フィルターに一致しないタスクはスキップ
+            }
+            
             const taskElement = createTaskElement(task);
             if (task.assigned_date && task.assigned_date >= startOfWeekStr && task.assigned_date <= endOfWeekStr) {
                 const column = document.querySelector(`.day-column[data-date="${task.assigned_date}"]`);
@@ -850,15 +975,57 @@ document.addEventListener('DOMContentLoaded', () => {
         renderWeek(); // 合計時間の表示を更新
     });
 
+    // カテゴリフィルターの変更リスナー
+    categoryFilterSelect.addEventListener('change', (e) => {
+        currentCategoryFilter = e.target.value;
+        updateFilterIndicator();
+        renderWeek(); // フィルターを適用してタスクボードを再描画
+    });
+
+    /**
+     * Update the visual indicator for active category filter.
+     */
+    function updateFilterIndicator() {
+        const filterContainer = document.getElementById('category-filter');
+        if (currentCategoryFilter) {
+            filterContainer.classList.add('filter-active');
+        } else {
+            filterContainer.classList.remove('filter-active');
+        }
+    }
+
+    /**
+     * Initialize category filter state.
+     */
+    function initializeCategoryFilter() {
+        // Set initial filter state
+        currentCategoryFilter = '';
+        categoryFilterSelect.value = '';
+        updateFilterIndicator();
+    }
+
     // --- データのエクスポート/インポートロジック ---
 
     function exportData() {
         const archivedTasks = loadArchivedTasks();
+        
+        // カテゴリ情報を含むデータの準備
         const data = { 
             tasks: tasks, 
             settings: settings,
-            archive: archivedTasks
+            archive: archivedTasks,
+            exportInfo: {
+                exportDate: new Date().toISOString(),
+                version: "1.0",
+                categoriesIncluded: true
+            }
         };
+        
+        // エクスポート前にカテゴリ情報の存在を確認
+        const tasksWithCategories = tasks.filter(task => task.category).length;
+        const archivedWithCategories = archivedTasks.filter(task => task.category).length;
+        console.log(`Exporting ${tasks.length} tasks (${tasksWithCategories} with categories) and ${archivedTasks.length} archived tasks (${archivedWithCategories} with categories)`);
+        
         const dataStr = JSON.stringify(data, null, 2);
         const blob = new Blob([dataStr], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
@@ -869,6 +1036,9 @@ document.addEventListener('DOMContentLoaded', () => {
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
+        
+        // エクスポート完了メッセージ
+        console.log("Data export completed with category information included.");
     }
 
     function importData(file) {
@@ -876,23 +1046,80 @@ document.addEventListener('DOMContentLoaded', () => {
         reader.onload = (e) => {
             try {
                 const importedData = JSON.parse(e.target.result);
+                let importStats = {
+                    tasksImported: 0,
+                    tasksWithCategories: 0,
+                    archivedImported: 0,
+                    archivedWithCategories: 0,
+                    categoriesFixed: 0
+                };
+                
                 if (importedData.tasks) {
-                    // タスク配列を上書き
-                    tasks = importedData.tasks.map(task => ({ ...task, completed: task.completed || false }));
+                    // タスク配列を上書き（カテゴリ情報の検証とマイグレーション処理を含む）
+                    tasks = importedData.tasks.map(task => {
+                        const originalCategory = task.category;
+                        const validatedCategory = validateCategory(task.category);
+                        
+                        if (originalCategory !== validatedCategory) {
+                            importStats.categoriesFixed++;
+                        }
+                        if (validatedCategory !== 'task') {
+                            importStats.tasksWithCategories++;
+                        }
+                        
+                        return { 
+                            ...task, 
+                            completed: task.completed || false,
+                            category: validatedCategory
+                        };
+                    });
+                    importStats.tasksImported = tasks.length;
                     saveTasks();
+                    console.log(`Imported ${importStats.tasksImported} tasks, ${importStats.tasksWithCategories} with categories`);
                 }
+                
                 if (importedData.settings) {
                     // 設定オブジェクトを上書き
                     settings = { ...settings, ...importedData.settings };
                     saveSettings();
                     idealDailyMinutesInput.value = settings.ideal_daily_minutes; // UIを更新
+                    console.log('Settings imported successfully');
                 }
+                
                 if (importedData.archive) {
-                    // アーカイブデータを上書き
-                    saveArchivedTasks(importedData.archive);
+                    // アーカイブデータを上書き（カテゴリ情報の検証を含む）
+                    const validatedArchive = importedData.archive.map(task => {
+                        const originalCategory = task.category;
+                        const validatedCategory = validateCategory(task.category);
+                        
+                        if (originalCategory !== validatedCategory) {
+                            importStats.categoriesFixed++;
+                        }
+                        if (validatedCategory !== 'task') {
+                            importStats.archivedWithCategories++;
+                        }
+                        
+                        return {
+                            ...task,
+                            category: validatedCategory
+                        };
+                    });
+                    importStats.archivedImported = validatedArchive.length;
+                    saveArchivedTasks(validatedArchive);
+                    console.log(`Imported ${importStats.archivedImported} archived tasks, ${importStats.archivedWithCategories} with categories`);
                 }
+                
                 renderWeek();
-                alert('データのインポートが完了しました。');
+                
+                // 詳細なインポート結果を表示
+                let message = 'データのインポートが完了しました。';
+                if (importStats.categoriesFixed > 0) {
+                    message += `\n${importStats.categoriesFixed}個のカテゴリが修正されました。`;
+                }
+                alert(message);
+                
+                console.log('Import completed:', importStats);
+                
             } catch (error) {
                 alert('インポート中にエラーが発生しました: ' + error.message);
                 console.error('Import Error:', error);
@@ -1110,6 +1337,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const taskElement = document.createElement('div');
         taskElement.className = 'archived-task';
         
+        // カテゴリ情報を取得
+        const categoryKey = validateCategory(task.category);
+        const categoryInfo = getCategoryInfo(categoryKey);
+        taskElement.classList.add(`category-${categoryKey}`);
+        
         const archivedDate = new Date(task.archived_date);
         const formattedArchivedDate = `${archivedDate.getFullYear()}/${archivedDate.getMonth() + 1}/${archivedDate.getDate()} ${String(archivedDate.getHours()).padStart(2, '0')}:${String(archivedDate.getMinutes()).padStart(2, '0')}`;
         
@@ -1125,6 +1357,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         
         taskElement.innerHTML = `
+            <div class="category-bar" style="background-color: ${categoryInfo.color};"></div>
             <div class="archived-task-header">
                 <div class="archived-task-name">${task.name}</div>
                 <div class="archived-task-time">${task.estimated_time}h</div>
@@ -1259,6 +1492,7 @@ document.addEventListener('DOMContentLoaded', () => {
             name: taskNameInput.value,
             estimated_time: parseFloat(estimatedTimeInput.value),
             priority: taskPriorityInput.value,
+            category: validateCategory(taskCategoryInput.value),
             assigned_date: taskDateInput.value || null,
             due_date: buildDueDateString(),
             details: taskDetailsInput.value,

@@ -111,7 +111,6 @@ main#task-board {
 .task {
     background-color: var(--card-background);
     border: 1px solid var(--border-color);
-    border-left: 5px solid var(--secondary-color);
     border-radius: 4px;
     padding: 10px;
     margin-bottom: 10px;
@@ -122,6 +121,18 @@ main#task-board {
     flex-direction: column; /* Align content vertically */
     gap: 5px; /* Space between header and due date */
     transition: background-color 0.2s ease;
+    position: relative; /* カテゴリバーの配置のため */
+}
+
+/* Category bar styles */
+.category-bar {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 5px;
+    border-radius: 4px 0 0 4px;
+    background-color: var(--secondary-color); /* デフォルト色 */
 }
 
 .task-header {
@@ -129,6 +140,7 @@ main#task-board {
     align-items: center;
     width: 100%;
     gap: 10px;
+    margin-left: 5px; /* カテゴリバーの分だけ右にずらす */
 }
 
 .task-due-date {
@@ -136,7 +148,7 @@ main#task-board {
     color: #c0392b; /* A darker red for deadlines */
     font-weight: bold;
     align-self: flex-start; /* Align to the left */
-    padding-left: 25px; /* Indent to align with task name */
+    padding-left: 30px; /* Indent to align with task name (adjusted for category bar) */
 }
 
 .task.completed {
@@ -280,6 +292,87 @@ button:hover {
     padding: 5px;
 }
 
+/* Category filter in header */
+#category-filter {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+#category-filter label {
+    font-size: 0.9em;
+    color: var(--font-color);
+    white-space: nowrap;
+}
+
+#category-filter select {
+    padding: 8px 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background-color: var(--card-background);
+    color: var(--font-color);
+    font-size: 0.9em;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-width: 140px;
+}
+
+#category-filter select:hover {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.1);
+}
+
+#category-filter select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
+}
+
+/* ダークモード用のカテゴリフィルター */
+[data-theme="dark"] #category-filter select {
+    background-color: var(--card-background);
+    color: var(--font-color);
+    border-color: var(--border-color);
+}
+
+[data-theme="dark"] #category-filter select:hover {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(90, 163, 240, 0.1);
+}
+
+[data-theme="dark"] #category-filter select:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(90, 163, 240, 0.2);
+}
+
+/* Active filter indicator */
+#category-filter.filter-active {
+    background-color: rgba(74, 144, 226, 0.1);
+    padding: 8px;
+    border-radius: 6px;
+    border: 1px solid rgba(74, 144, 226, 0.3);
+}
+
+#category-filter.filter-active label {
+    color: var(--primary-color);
+    font-weight: 600;
+}
+
+#category-filter.filter-active select {
+    border-color: var(--primary-color);
+    background-color: var(--card-background);
+}
+
+/* ダークモード用のアクティブフィルター */
+[data-theme="dark"] #category-filter.filter-active {
+    background-color: rgba(90, 163, 240, 0.1);
+    border-color: rgba(90, 163, 240, 0.3);
+}
+
+[data-theme="dark"] #category-filter.filter-active label {
+    color: var(--primary-color);
+}
+
 /* Daily total time display */
 .daily-total-time {
     font-size: 0.9em;
@@ -346,6 +439,15 @@ button:hover {
     #user-settings {
         flex-direction: column;
         align-items: stretch;
+    }
+
+    #category-filter {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    #category-filter select {
+        width: 100%;
     }
 }
 /* Modal styles - 最終調整 */
@@ -420,8 +522,9 @@ button:hover {
     background-color: var(--card-background);
     color: var(--font-color);
     border: 1px solid var(--border-color);
-}/* 日付
-入力フィールドの改善 */
+}
+
+/* 日付入力フィールドの改善 */
 .date-input-wrapper {
     position: relative;
     display: inline-block;
@@ -490,8 +593,9 @@ input[type="datetime-local"]:focus {
 [data-theme="dark"] input[type="datetime-local"]:focus {
     border-color: var(--primary-color);
     box-shadow: 0 0 0 2px rgba(90, 163, 240, 0.2);
-}/* フォー
-ムラベルの改善 */
+}
+
+/* フォームラベルの改善 */
 form label {
     display: block;
     margin-top: 15px;
@@ -523,8 +627,9 @@ label[for="due-date"]::after {
 /* フォーム全体の改善 */
 form input, form textarea {
     transition: border-color 0.2s ease, box-shadow 0.2s ease;
-}/* 
-日付入力フィールドをカレンダー専用にする */
+}
+
+/* 日付入力フィールドをカレンダー専用にする */
 input[type="date"], input[type="datetime-local"] {
     /* キーボード入力を無効にする */
     pointer-events: auto;
@@ -583,8 +688,9 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator:hover {
 [data-theme="dark"] input[type="date"]::-webkit-calendar-picker-indicator,
 [data-theme="dark"] input[type="datetime-local"]::-webkit-calendar-picker-indicator {
     background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="%235aa3f0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>');
-}/* rea
-donly状態の日付入力フィールドのスタイル */
+}
+
+/* readonly状態の日付入力フィールドのスタイル */
 input[type="date"][readonly],
 input[type="datetime-local"][readonly] {
     background-color: var(--card-background);
@@ -616,8 +722,9 @@ input[type="datetime-local"][readonly]:focus {
 [data-theme="dark"] input[type="datetime-local"][readonly]:focus {
     border-color: var(--primary-color);
     box-shadow: 0 0 0 2px rgba(90, 163, 240, 0.2);
-}/* アーカイブビュー
-のスタイル */
+}
+
+/* アーカイブビューのスタイル */
 #archive-view {
     position: fixed;
     top: 0;
@@ -683,11 +790,11 @@ input[type="datetime-local"][readonly]:focus {
 .archived-task {
     background-color: var(--background-color);
     border: 1px solid var(--border-color);
-    border-left: 5px solid #28a745;
     border-radius: 4px;
     padding: 15px;
     box-shadow: 0 1px 2px var(--task-shadow);
     transition: transform 0.2s ease;
+    position: relative; /* カテゴリバーの配置のため */
 }
 
 .archived-task:hover {
@@ -700,6 +807,7 @@ input[type="datetime-local"][readonly]:focus {
     justify-content: space-between;
     align-items: flex-start;
     margin-bottom: 10px;
+    margin-left: 5px; /* カテゴリバーの分だけ右にずらす */
 }
 
 .archived-task-name {
@@ -719,6 +827,7 @@ input[type="datetime-local"][readonly]:focus {
     font-size: 0.85em;
     color: #666;
     margin-bottom: 8px;
+    margin-left: 5px; /* カテゴリバーの分だけ右にずらす */
 }
 
 .archived-task-details {
@@ -726,6 +835,7 @@ input[type="datetime-local"][readonly]:focus {
     color: var(--font-color);
     opacity: 0.7;
     line-height: 1.4;
+    margin-left: 5px; /* カテゴリバーの分だけ右にずらす */
 }
 
 .archived-task-completed-date {
@@ -734,6 +844,7 @@ input[type="datetime-local"][readonly]:focus {
     font-weight: bold;
     margin-top: 10px;
     text-align: right;
+    margin-right: 0; /* 右端は調整不要 */
 }
 
 /* アーカイブが空の場合のメッセージ */
@@ -759,8 +870,9 @@ input[type="datetime-local"][readonly]:focus {
     #archive-list {
         grid-template-columns: 1fr;
     }
-}/
-* 優先度による色分け */
+}
+
+/* 優先度による色分け */
 .task.priority-high {
     border-left-color: #dc3545; /* 赤 */
 }
@@ -822,6 +934,81 @@ input[type="datetime-local"][readonly]:focus {
     background-color: #51cf66;
 }
 
+/* カテゴリによる色分け */
+.task.category-task .category-bar {
+    background-color: #3498db;
+}
+
+.task.category-meeting .category-bar {
+    background-color: #27ae60;
+}
+
+.task.category-review .category-bar {
+    background-color: #f39c12;
+}
+
+.task.category-bugfix .category-bar {
+    background-color: #e74c3c;
+}
+
+.task.category-document .category-bar {
+    background-color: #9b59b6;
+}
+
+.task.category-research .category-bar {
+    background-color: #f1c40f;
+}
+
+/* カテゴリ背景色の適用（オプション） */
+.task.category-task {
+    background-color: #e3f2fd;
+}
+
+.task.category-meeting {
+    background-color: #e8f5e8;
+}
+
+.task.category-review {
+    background-color: #fff3e0;
+}
+
+.task.category-bugfix {
+    background-color: #ffebee;
+}
+
+.task.category-document {
+    background-color: #f3e5f5;
+}
+
+.task.category-research {
+    background-color: #fffde7;
+}
+
+/* ダークモード用のカテゴリ背景色 */
+[data-theme="dark"] .task.category-task {
+    background-color: rgba(52, 152, 219, 0.1);
+}
+
+[data-theme="dark"] .task.category-meeting {
+    background-color: rgba(39, 174, 96, 0.1);
+}
+
+[data-theme="dark"] .task.category-review {
+    background-color: rgba(243, 156, 18, 0.1);
+}
+
+[data-theme="dark"] .task.category-bugfix {
+    background-color: rgba(231, 76, 60, 0.1);
+}
+
+[data-theme="dark"] .task.category-document {
+    background-color: rgba(155, 89, 182, 0.1);
+}
+
+[data-theme="dark"] .task.category-research {
+    background-color: rgba(241, 196, 15, 0.1);
+}
+
 /* 優先度選択のスタイル */
 #task-priority {
     width: 100%;
@@ -832,8 +1019,9 @@ input[type="datetime-local"][readonly]:focus {
     background-color: var(--card-background);
     color: var(--font-color);
     font-size: 1em;
-}/*
- 日付クリックでタスク作成機能 */
+}
+
+/* 日付クリックでタスク作成機能 */
 .day-column {
     position: relative;
     cursor: pointer;
@@ -900,8 +1088,9 @@ input[type="datetime-local"][readonly]:focus {
 
 #unassigned-tasks h3::after {
     display: none;
-}/* タスク完了
-時の爽快アニメーション */
+}
+
+/* タスク完了時の爽快アニメーション */
 @keyframes taskSwirlDisappear {
     0% {
         transform: scale(1) rotate(0deg) translateX(0) translateY(0);
@@ -1085,8 +1274,9 @@ input[type="datetime-local"][readonly]:focus {
 [data-theme="dark"] .success-message {
     background: linear-gradient(135deg, #51cf66, #40c057);
     box-shadow: 0 8px 25px rgba(81, 207, 102, 0.4);
-}/
-* 日付ピッカーのカスタマイズ */
+}
+
+/* 日付ピッカーのカスタマイズ */
 #date-picker-wrapper {
     position: relative;
     display: inline-block;
@@ -1151,8 +1341,9 @@ input[type="datetime-local"][readonly]:focus {
 
 [data-theme="dark"] #date-picker[readonly]:hover {
     background-color: rgba(90, 163, 240, 0.1);
-}/* アーカイ
-ブタスクの復元機能 */
+}
+
+/* アーカイブタスクの復元機能 */
 .archived-task-actions {
     display: flex;
     justify-content: flex-end;
@@ -1235,8 +1426,9 @@ input[type="datetime-local"][readonly]:focus {
 
 .archived-task.restoring {
     animation: restoreAnimation 0.8s ease-out forwards;
-}/* フォームボタンのス
-タイル */
+}
+
+/* フォームボタンのスタイル */
 #form-buttons {
     display: flex;
     gap: 10px;
@@ -1315,8 +1507,9 @@ input[type="datetime-local"][readonly]:focus {
 [data-theme="dark"] .duplicate-message {
     background: linear-gradient(135deg, #51cf66, #40c057);
     box-shadow: 0 8px 25px rgba(81, 207, 102, 0.4);
-}/* 完了タ
-スクを含む時間表示の改善 */
+}
+
+/* 完了タスクを含む時間表示の改善 */
 .daily-total-time {
     font-size: 0.9em;
     font-weight: bold;
@@ -1345,8 +1538,9 @@ input[type="datetime-local"][readonly]:focus {
 /* ダークモード用 */
 [data-theme="dark"] .daily-total-time .completed-time {
     color: #51cf66;
-}/* 期限入力のス
-タイル */
+}
+
+/* 期限入力のスタイル */
 #due-date-container {
     display: flex;
     gap: 8px;

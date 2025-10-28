@@ -24,6 +24,18 @@
         <h1>ウィークリータスクボード</h1>
         <div id="header-controls">
             <button id="add-task-btn">タスクを追加</button>
+            <div id="category-filter">
+                <label for="filter-category">カテゴリフィルター:</label>
+                <select id="filter-category">
+                    <option value="">すべて表示</option>
+                    <option value="task">タスク</option>
+                    <option value="meeting">打ち合わせ</option>
+                    <option value="review">レビュー</option>
+                    <option value="bugfix">バグ修正</option>
+                    <option value="document">ドキュメント作成</option>
+                    <option value="research">学習・調査</option>
+                </select>
+            </div>
             <div id="user-settings">
                 <label for="ideal-daily-minutes">1日の理想稼働時間 (分):</label>
                 <input type="number" id="ideal-daily-minutes" value="480" step="30">
@@ -120,6 +132,16 @@
                     <option value="medium">中</option>
                     <option value="high">高</option>
                     <option value="low">低</option>
+                </select>
+
+                <label for="task-category">カテゴリ:</label>
+                <select id="task-category" required>
+                    <option value="task">タスク</option>
+                    <option value="meeting">打ち合わせ</option>
+                    <option value="review">レビュー</option>
+                    <option value="bugfix">バグ修正</option>
+                    <option value="document">ドキュメント作成</option>
+                    <option value="research">学習・調査</option>
                 </select>
 
                 <label for="task-date">担当日:</label>
