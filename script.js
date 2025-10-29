@@ -21,6 +21,7 @@ let currentDate; // 💡 修正: アプリケーションの基点となる日�
 let datePicker; // DOM要素もグローバルでアクセスできるように定義
 let currentCategoryFilter = ''; // カテゴリフィルターの状態
 let weekdayManager; // 曜日管理インスタンス
+let taskBulkMover; // タスク一括移動インスタンス
 
 /**
  * Load settings from localStorage, providing defaults if empty.
@@ -194,6 +195,110 @@ function shouldDisplayTask(task) {
 }
 
 /**
+ * TaskBulkMover - タスクの一括移動を管理するクラス
+ */
+class TaskBulkMover {
+    constructor() {
+        this.dayNames = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+        this.dayLabels = ['月', '火', '水', '木', '金', '土', '日'];
+    }
+    
+    /**
+     * 指定日のタスクを未割り当てに移動
+     * @param {string} dateString - 移動対象の日付文字列 (YYYY-MM-DD)
+     * @returns {number} 移動したタスク数
+     */
+    moveTasksToUnassigned(dateString) {
+        if (!tasks || !dateString) return 0;
+        
+        try {
+            let movedCount = 0;
+            tasks.forEach(task => {
+                if (task.assigned_date === dateString && !task.completed) {
+                    task.assigned_date = null;
+                    movedCount++;
+                }
+            });
+            
+            if (movedCount > 0) {
+                saveTasks();
+            }
+            
+            return movedCount;
+        } catch (error) {
+            console.error('タスク移動エラー:', error);
+            showBulkMoveNotification('タスクの移動に失敗しました', 'error');
+            return 0;
+        }
+    }
+    
+    /**
+     * 指定日のタスクを取得
+     * @param {string} dateString - 対象の日付文字列 (YYYY-MM-DD)
+     * @returns {Array} その日のタスク配列
+     */
+    getTasksForDate(dateString) {
+        if (!tasks || !dateString) return [];
+        
+        return tasks.filter(task => 
+            task.assigned_date === dateString && !task.completed
+        );
+    }
+    
+    /**
+     * 一括移動の実行
+     * @param {Array} tasksToMove - 移動するタスク配列
+     * @returns {number} 移動したタスク数
+     */
+    executeBulkMove(tasksToMove) {
+        let movedCount = 0;
+        
+        tasksToMove.forEach(task => {
+            task.assigned_date = null;
+            movedCount++;
+        });
+        
+        if (movedCount > 0) {
+            saveTasks();
+        }
+        
+        return movedCount;
+    }
+    
+    /**
+     * 移動結果の通知
+     * @param {number} movedCount - 移動したタスク数
+     * @param {string} dateString - 移動元の日付
+     */
+    notifyMoveResult(movedCount, dateString) {
+        if (movedCount === 0) {
+            showBulkMoveNotification('移動するタスクがありませんでした', 'info');
+            return;
+        }
+        
+        const date = new Date(dateString);
+        const dayOfWeek = this.dayLabels[date.getDay() === 0 ? 6 : date.getDay() - 1]; // 日曜日を6に調整
+        const dateStr = `${date.getMonth() + 1}/${date.getDate()}(${dayOfWeek})`;
+        
+        showBulkMoveNotification(
+            `${dateStr}の${movedCount}個のタスクを未割り当てに移動しました`,
+            'success'
+        );
+    }
+    
+    /**
+     * 日付から曜日名を取得
+     * @param {string} dateString - 日付文字列 (YYYY-MM-DD)
+     * @returns {string} 曜日名
+     */
+    getDayNameFromDate(dateString) {
+        const date = new Date(dateString);
+        const dayIndex = date.getDay() === 0 ? 6 : date.getDay() - 1; // 日曜日を6に調整
+        return this.dayNames[dayIndex];
+    }
+}
+
+/**
  * WeekdayManager - 曜日の表示/非表示状態を管理するクラス
  */
 class WeekdayManager {
@@ -228,9 +333,14 @@ class WeekdayManager {
      * 設定の保存
      */
     saveSettings() {
-        if (settings) {
-            settings.weekday_visibility = { ...this.weekdaySettings };
-            saveSettings();
+        try {
+            if (settings) {
+                settings.weekday_visibility = { ...this.weekdaySettings };
+                saveSettings();
+            }
+        } catch (error) {
+            console.error('曜日設定の保存に失敗:', error);
+            showBulkMoveNotification('設定の保存に失敗しました', 'error');
         }
     }
     
@@ -398,6 +508,11 @@ function handleDrop(e) {
     const targetColumn = e.target.closest('.day-column');
     if (!targetColumn) return;
 
+    // 非表示の曜日列へのドロップを防止
+    if (targetColumn.classList.contains('hidden')) {
+        return;
+    }
+
     targetColumn.classList.remove('drag-over');
 
     const taskId = e.dataTransfer.getData('text/plain');
@@ -488,6 +603,9 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // 曜日管理の初期化
     weekdayManager = new WeekdayManager();
+    
+    // タスク一括移動の初期化
+    taskBulkMover = new TaskBulkMover();
 
     // --- DOM Element Selections ---
     const addTaskBtn = document.getElementById('add-task-btn');
@@ -548,6 +666,9 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // 曜日設定UIの初期化
     initializeWeekdaySettings();
+    
+    // コンテキストメニューの初期化
+    initializeContextMenu();
 
     // 💡 修正 2: 初期ロード時にタスクボードを描画する
     renderWeek();
@@ -1313,15 +1434,36 @@ document.addEventListener('DOMContentLoaded', () => {
      * @param {string} message - 通知メッセージ
      */
     function showWeekdayNotification(message) {
+        showBulkMoveNotification(message, 'info');
+    }
+    
+    /**
+     * Show bulk move notification.
+     * @param {string} message - 通知メッセージ
+     * @param {string} type - 通知タイプ ('success', 'info', 'warning', 'error')
+     */
+    function showBulkMoveNotification(message, type = 'info') {
         // 既存の通知があれば削除
-        const existingNotification = document.querySelector('.weekday-notification');
+        const existingNotification = document.querySelector('.bulk-move-notification');
         if (existingNotification) {
             existingNotification.remove();
         }
         
         const notification = document.createElement('div');
-        notification.className = 'weekday-notification';
-        notification.textContent = message;
+        notification.className = `bulk-move-notification ${type}`;
+        
+        // アイコンを追加
+        const icons = {
+            success: '✅',
+            info: 'ℹ️',
+            warning: '⚠️',
+            error: '❌'
+        };
+        
+        notification.innerHTML = `
+            <span class="notification-icon">${icons[type] || icons.info}</span>
+            <span class="notification-message">${message}</span>
+        `;
         
         document.body.appendChild(notification);
         
@@ -1330,7 +1472,7 @@ document.addEventListener('DOMContentLoaded', () => {
             notification.classList.add('show');
         }, 100);
         
-        // 3秒後に非表示
+        // 4秒後に非表示
         setTimeout(() => {
             notification.classList.remove('show');
             setTimeout(() => {
@@ -1338,7 +1480,184 @@ document.addEventListener('DOMContentLoaded', () => {
                     notification.parentNode.removeChild(notification);
                 }
             }, 300);
-        }, 3000);
+        }, 4000);
+    }
+    
+    /**
+     * Initialize context menu functionality.
+     */
+    function initializeContextMenu() {
+        const contextMenu = document.getElementById('day-context-menu');
+        let currentTargetDate = null;
+        let currentTargetColumn = null;
+        
+        // 日付列の右クリックイベント
+        dayColumns.forEach(column => {
+            column.addEventListener('contextmenu', (e) => {
+                // タスク要素上での右クリックは無視
+                if (e.target.closest('.task')) {
+                    return;
+                }
+                
+                e.preventDefault();
+                
+                const dateStr = column.dataset.date;
+                if (!dateStr || dateStr === 'null') return;
+                
+                currentTargetDate = dateStr;
+                currentTargetColumn = column;
+                
+                showContextMenu(e.pageX, e.pageY, dateStr);
+            });
+        });
+        
+        // コンテキストメニューのクリックイベント
+        contextMenu.addEventListener('click', (e) => {
+            const action = e.target.dataset.action;
+            if (!action || !currentTargetDate) return;
+            
+            handleContextMenuAction(action, currentTargetDate, currentTargetColumn);
+            hideContextMenu();
+        });
+        
+        // 外部クリックでメニューを閉じる
+        document.addEventListener('click', (e) => {
+            if (!contextMenu.contains(e.target)) {
+                hideContextMenu();
+            }
+        });
+        
+        // Escキーでメニューを閉じる
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                hideContextMenu();
+            }
+        });
+        
+        /**
+         * Show context menu at specified position.
+         * @param {number} x - X座標
+         * @param {number} y - Y座標
+         * @param {string} dateStr - 対象日付
+         */
+        function showContextMenu(x, y, dateStr) {
+            const tasksCount = taskBulkMover.getTasksForDate(dateStr).length;
+            
+            // タスク数に応じてメニュー項目を更新
+            const moveItem = contextMenu.querySelector('[data-action="move-all-tasks"]');
+            if (tasksCount === 0) {
+                moveItem.innerHTML = '📤 移動するタスクがありません';
+                moveItem.style.opacity = '0.5';
+                moveItem.style.cursor = 'not-allowed';
+            } else {
+                moveItem.innerHTML = `📤 ${tasksCount}個のタスクを未割り当てに移動`;
+                moveItem.style.opacity = '1';
+                moveItem.style.cursor = 'pointer';
+            }
+            
+            // 曜日非表示項目の更新
+            const date = new Date(dateStr);
+            const dayName = taskBulkMover.getDayNameFromDate(dateStr);
+            const dayLabel = taskBulkMover.dayLabels[taskBulkMover.dayNames.indexOf(dayName)];
+            
+            const hideItem = contextMenu.querySelector('[data-action="hide-day"]');
+            hideItem.innerHTML = `👁️ ${dayLabel}曜日を非表示`;
+            
+            // メニューを表示
+            contextMenu.style.display = 'block';
+            
+            // 画面外に出ないように位置調整
+            const menuRect = contextMenu.getBoundingClientRect();
+            const viewportWidth = window.innerWidth;
+            const viewportHeight = window.innerHeight;
+            
+            let adjustedX = x;
+            let adjustedY = y;
+            
+            if (x + menuRect.width > viewportWidth) {
+                adjustedX = viewportWidth - menuRect.width - 10;
+            }
+            
+            if (y + menuRect.height > viewportHeight) {
+                adjustedY = viewportHeight - menuRect.height - 10;
+            }
+            
+            contextMenu.style.left = `${adjustedX}px`;
+            contextMenu.style.top = `${adjustedY}px`;
+        }
+        
+        /**
+         * Hide context menu.
+         */
+        function hideContextMenu() {
+            contextMenu.style.display = 'none';
+            currentTargetDate = null;
+            currentTargetColumn = null;
+        }
+        
+        /**
+         * Handle context menu action.
+         * @param {string} action - アクション名
+         * @param {string} dateStr - 対象日付
+         * @param {HTMLElement} column - 対象列要素
+         */
+        function handleContextMenuAction(action, dateStr, column) {
+            switch (action) {
+                case 'move-all-tasks':
+                    handleBulkMoveAction(dateStr);
+                    break;
+                    
+                case 'hide-day':
+                    handleHideDayAction(dateStr);
+                    break;
+                    
+                case 'cancel':
+                    // 何もしない（メニューが閉じるだけ）
+                    break;
+            }
+        }
+        
+        /**
+         * Handle bulk move action.
+         * @param {string} dateStr - 対象日付
+         */
+        function handleBulkMoveAction(dateStr) {
+            const tasksToMove = taskBulkMover.getTasksForDate(dateStr);
+            
+            if (tasksToMove.length === 0) {
+                showBulkMoveNotification('移動するタスクがありません', 'info');
+                return;
+            }
+            
+            // 確認ダイアログ
+            const date = new Date(dateStr);
+            const dayLabel = taskBulkMover.dayLabels[date.getDay() === 0 ? 6 : date.getDay() - 1];
+            const dateLabel = `${date.getMonth() + 1}/${date.getDate()}(${dayLabel})`;
+            
+            if (confirm(`${dateLabel}の${tasksToMove.length}個のタスクを未割り当てに移動しますか？`)) {
+                const movedCount = taskBulkMover.moveTasksToUnassigned(dateStr);
+                taskBulkMover.notifyMoveResult(movedCount, dateStr);
+                renderWeek();
+            }
+        }
+        
+        /**
+         * Handle hide day action.
+         * @param {string} dateStr - 対象日付
+         */
+        function handleHideDayAction(dateStr) {
+            const dayName = taskBulkMover.getDayNameFromDate(dateStr);
+            const dayLabel = taskBulkMover.dayLabels[taskBulkMover.dayNames.indexOf(dayName)];
+            
+            if (confirm(`${dayLabel}曜日を非表示にしますか？\nその曜日のタスクは未割り当てに移動されます。`)) {
+                // 曜日設定のチェックボックスを更新
+                const checkbox = document.getElementById(`show-${dayName}`);
+                if (checkbox) {
+                    checkbox.checked = false;
+                    handleWeekdayChange(dayName, false);
+                }
+            }
+        }
     }
 
     // --- データのエクスポート/インポートロジック ---
