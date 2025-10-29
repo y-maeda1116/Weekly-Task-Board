@@ -20,6 +20,7 @@ let settings;
 let currentDate; // 💡 修正: アプリケーションの基点となる日付
 let datePicker; // DOM要素もグローバルでアクセスできるように定義
 let currentCategoryFilter = ''; // カテゴリフィルターの状態
+let weekdayManager; // 曜日管理インスタンス
 
 /**
  * Load settings from localStorage, providing defaults if empty.
@@ -27,7 +28,34 @@ let currentCategoryFilter = ''; // カテゴリフィルターの状態
  */
 function loadSettings() {
     const settingsJson = localStorage.getItem(SETTINGS_STORAGE_KEY);
-    return settingsJson ? JSON.parse(settingsJson) : { ideal_daily_minutes: 480 }; // Default to 8 hours
+    const defaultSettings = { 
+        ideal_daily_minutes: 480, // Default to 8 hours
+        weekday_visibility: {
+            monday: true,
+            tuesday: true,
+            wednesday: true,
+            thursday: true,
+            friday: true,
+            saturday: true,
+            sunday: true
+        }
+    };
+    
+    if (!settingsJson) {
+        return defaultSettings;
+    }
+    
+    try {
+        const loadedSettings = JSON.parse(settingsJson);
+        // 既存設定に曜日設定がない場合はデフォルトを追加
+        if (!loadedSettings.weekday_visibility) {
+            loadedSettings.weekday_visibility = defaultSettings.weekday_visibility;
+        }
+        return loadedSettings;
+    } catch (error) {
+        console.warn('設定の読み込みに失敗:', error);
+        return defaultSettings;
+    }
 }
 
 /**
@@ -163,6 +191,137 @@ function shouldDisplayTask(task) {
     }
     const taskCategory = validateCategory(task.category);
     return taskCategory === currentCategoryFilter;
+}
+
+/**
+ * WeekdayManager - 曜日の表示/非表示状態を管理するクラス
+ */
+class WeekdayManager {
+    constructor() {
+        this.dayNames = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+        this.dayLabels = ['月', '火', '水', '木', '金', '土', '日'];
+        this.weekdaySettings = {};
+        this.loadSettings();
+    }
+    
+    /**
+     * 設定の読み込み
+     */
+    loadSettings() {
+        if (settings && settings.weekday_visibility) {
+            this.weekdaySettings = { ...settings.weekday_visibility };
+        } else {
+            // デフォルト設定
+            this.weekdaySettings = {
+                monday: true,
+                tuesday: true,
+                wednesday: true,
+                thursday: true,
+                friday: true,
+                saturday: true,
+                sunday: true
+            };
+        }
+    }
+    
+    /**
+     * 設定の保存
+     */
+    saveSettings() {
+        if (settings) {
+            settings.weekday_visibility = { ...this.weekdaySettings };
+            saveSettings();
+        }
+    }
+    
+    /**
+     * 曜日の表示/非表示切り替え
+     * @param {string} dayName - 曜日名 (monday, tuesday, etc.)
+     * @param {boolean} visible - 表示するかどうか
+     */
+    toggleWeekday(dayName, visible) {
+        if (this.dayNames.includes(dayName)) {
+            this.weekdaySettings[dayName] = visible;
+            this.saveSettings();
+            
+            // 非表示にする場合、その曜日のタスクを未割り当てに移動
+            if (!visible) {
+                this.moveTasksToUnassigned(dayName);
+            }
+        }
+    }
+    
+    /**
+     * 表示中の曜日一覧を取得
+     * @returns {string[]} 表示中の曜日名配列
+     */
+    getVisibleWeekdays() {
+        return this.dayNames.filter(day => this.weekdaySettings[day]);
+    }
+    
+    /**
+     * 非表示の曜日一覧を取得
+     * @returns {string[]} 非表示の曜日名配列
+     */
+    getHiddenWeekdays() {
+        return this.dayNames.filter(day => !this.weekdaySettings[day]);
+    }
+    
+    /**
+     * 曜日が表示されているかチェック
+     * @param {string} dayName - 曜日名
+     * @returns {boolean} 表示されているかどうか
+     */
+    isWeekdayVisible(dayName) {
+        return this.weekdaySettings[dayName] || false;
+    }
+    
+    /**
+     * 指定曜日のタスクを未割り当てに移動
+     * @param {string} dayName - 曜日名
+     * @returns {number} 移動したタスク数
+     */
+    moveTasksToUnassigned(dayName) {
+        if (!tasks) return 0;
+        
+        const monday = getMonday(currentDate);
+        const dayIndex = this.dayNames.indexOf(dayName);
+        if (dayIndex === -1) return 0;
+        
+        const targetDate = new Date(monday);
+        targetDate.setDate(monday.getDate() + dayIndex);
+        const targetDateStr = formatDate(targetDate);
+        
+        let movedCount = 0;
+        tasks.forEach(task => {
+            if (task.assigned_date === targetDateStr) {
+                task.assigned_date = null;
+                movedCount++;
+            }
+        });
+        
+        if (movedCount > 0) {
+            saveTasks();
+            console.log(`${movedCount}個のタスクを未割り当てに移動しました`);
+        }
+        
+        return movedCount;
+    }
+    
+    /**
+     * 曜日設定のバリデーション
+     * @param {object} settings - 検証する設定オブジェクト
+     * @returns {object} 検証済み設定オブジェクト
+     */
+    validateSettings(settings) {
+        const validatedSettings = {};
+        
+        this.dayNames.forEach(day => {
+            validatedSettings[day] = typeof settings[day] === 'boolean' ? settings[day] : true;
+        });
+        
+        return validatedSettings;
+    }
 }
 
 /**
@@ -326,6 +485,9 @@ document.addEventListener('DOMContentLoaded', () => {
     settings = loadSettings();
     // 💡 修正 1: currentDateを現在の日付で初期化し、週の基点を定める
     currentDate = new Date();
+    
+    // 曜日管理の初期化
+    weekdayManager = new WeekdayManager();
 
     // --- DOM Element Selections ---
     const addTaskBtn = document.getElementById('add-task-btn');
@@ -383,6 +545,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // カテゴリフィルターの初期化
     initializeCategoryFilter();
+    
+    // 曜日設定UIの初期化
+    initializeWeekdaySettings();
 
     // 💡 修正 2: 初期ロード時にタスクボードを描画する
     renderWeek();
@@ -407,7 +572,16 @@ document.addEventListener('DOMContentLoaded', () => {
         // 複製ボタンを非表示
         duplicateTaskBtn.style.display = 'none';
         
+        // スクロール抑制とアニメーション
+        document.body.classList.add('modal-open');
         modal.style.display = 'block';
+        // アニメーション用の遅延
+        setTimeout(() => {
+            modal.classList.add('show');
+        }, 10);
+        
+        // フォーカスを最初の入力フィールドに設定
+        taskNameInput.focus();
     }
     
     // 日付入力フィールドをカレンダー専用にする
@@ -591,14 +765,53 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     closeModalBtn.addEventListener('click', () => {
-        modal.style.display = 'none';
-        selectedDate = null;
+        closeTaskModal();
     });
 
     window.addEventListener('click', (event) => {
         if (event.target == modal) {
+            closeTaskModal();
+        }
+    });
+    
+    // Escキーでモーダルを閉じる
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && modal.style.display === 'block') {
+            closeTaskModal();
+        }
+    });
+    
+    // モーダルを閉じる共通関数
+    function closeTaskModal() {
+        modal.classList.remove('show');
+        // アニメーション完了後にモーダルを非表示
+        setTimeout(() => {
             modal.style.display = 'none';
-            selectedDate = null;
+            document.body.classList.remove('modal-open');
+            // フォーカスを元の要素に戻す（アクセシビリティ向上）
+            if (document.activeElement && document.activeElement.blur) {
+                document.activeElement.blur();
+            }
+        }, 300);
+        selectedDate = null;
+    }
+    
+    // モーダル内でのTabキー循環（アクセシビリティ向上）
+    modal.addEventListener('keydown', (event) => {
+        if (event.key === 'Tab') {
+            const focusableElements = modal.querySelectorAll(
+                'input, select, textarea, button, [tabindex]:not([tabindex="-1"])'
+            );
+            const firstElement = focusableElements[0];
+            const lastElement = focusableElements[focusableElements.length - 1];
+            
+            if (event.shiftKey && document.activeElement === firstElement) {
+                event.preventDefault();
+                lastElement.focus();
+            } else if (!event.shiftKey && document.activeElement === lastElement) {
+                event.preventDefault();
+                firstElement.focus();
+            }
         }
     });
     
@@ -638,7 +851,12 @@ document.addEventListener('DOMContentLoaded', () => {
         // 複製ボタンを表示
         duplicateTaskBtn.style.display = 'block';
         
+        // スクロール抑制とアニメーション
+        document.body.classList.add('modal-open');
         modal.style.display = 'block';
+        setTimeout(() => {
+            modal.classList.add('show');
+        }, 10);
     }
 
 
@@ -677,9 +895,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         saveTasks();
         renderWeek();
-        modal.style.display = 'none';
+        closeTaskModal();
         taskForm.reset();
-        selectedDate = null; // 選択された日付をクリア
     });
 
     // --- Date and Rendering Logic ---
@@ -822,6 +1039,17 @@ document.addEventListener('DOMContentLoaded', () => {
             weekTitleText += ` | フィルター: ${categoryInfo.name} (${filteredTaskCount}件)`;
         }
         
+        // 曜日フィルター情報を追加
+        if (weekdayManager) {
+            const hiddenDays = weekdayManager.getHiddenWeekdays();
+            if (hiddenDays.length > 0) {
+                const hiddenLabels = hiddenDays.map(day => 
+                    weekdayManager.dayLabels[weekdayManager.dayNames.indexOf(day)]
+                );
+                weekTitleText += ` | 非表示: ${hiddenLabels.join('・')}曜日`;
+            }
+        }
+        
         weekTitle.textContent = weekTitleText;
 
         const startOfWeekStr = formatDate(startOfWeek);
@@ -838,6 +1066,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const h3 = column.querySelector('h3');
             h3.innerHTML = `${dayNames[index]} (${date.getMonth() + 1}/${date.getDate()}) <span class="daily-total-time"></span>`;
+            
+            // 曜日の表示/非表示を設定
+            if (weekdayManager) {
+                const dayName = weekdayManager.dayNames[index];
+                const isVisible = weekdayManager.isWeekdayVisible(dayName);
+                
+                if (isVisible) {
+                    column.classList.remove('hidden', 'hiding');
+                    column.classList.add('showing');
+                } else {
+                    column.classList.add('hidden');
+                    column.classList.remove('showing', 'hiding');
+                }
+            }
         });
 
         // 完了したタスク（アーカイブ）の時間を計算（カテゴリフィルターを適用）
@@ -1002,6 +1244,101 @@ document.addEventListener('DOMContentLoaded', () => {
         currentCategoryFilter = '';
         categoryFilterSelect.value = '';
         updateFilterIndicator();
+    }
+    
+    /**
+     * Initialize weekday settings UI.
+     */
+    function initializeWeekdaySettings() {
+        const weekdayCheckboxes = document.querySelectorAll('#weekday-checkboxes input[type="checkbox"]');
+        
+        // チェックボックスの初期状態を設定
+        weekdayCheckboxes.forEach((checkbox, index) => {
+            const dayName = weekdayManager.dayNames[index];
+            checkbox.checked = weekdayManager.isWeekdayVisible(dayName);
+            
+            // イベントリスナーを追加
+            checkbox.addEventListener('change', (e) => {
+                handleWeekdayChange(dayName, e.target.checked);
+            });
+        });
+    }
+    
+    /**
+     * Handle weekday visibility change.
+     * @param {string} dayName - 曜日名
+     * @param {boolean} visible - 表示するかどうか
+     */
+    function handleWeekdayChange(dayName, visible) {
+        weekdayManager.toggleWeekday(dayName, visible);
+        updateWeekdayVisibility();
+        renderWeek();
+        
+        // 移動したタスク数を通知
+        if (!visible) {
+            const movedCount = weekdayManager.moveTasksToUnassigned(dayName);
+            if (movedCount > 0) {
+                showWeekdayNotification(`${weekdayManager.dayLabels[weekdayManager.dayNames.indexOf(dayName)]}曜日の${movedCount}個のタスクを未割り当てに移動しました`);
+            }
+        }
+    }
+    
+    /**
+     * Update weekday column visibility.
+     */
+    function updateWeekdayVisibility() {
+        const dayColumns = document.querySelectorAll('.day-column');
+        
+        dayColumns.forEach((column, index) => {
+            if (index >= weekdayManager.dayNames.length) return; // 未割り当て列をスキップ
+            
+            const dayName = weekdayManager.dayNames[index];
+            const isVisible = weekdayManager.isWeekdayVisible(dayName);
+            
+            if (isVisible) {
+                column.classList.remove('hidden');
+                column.classList.add('showing');
+            } else {
+                column.classList.add('hiding');
+                setTimeout(() => {
+                    column.classList.add('hidden');
+                    column.classList.remove('hiding');
+                }, 300);
+            }
+        });
+    }
+    
+    /**
+     * Show weekday notification.
+     * @param {string} message - 通知メッセージ
+     */
+    function showWeekdayNotification(message) {
+        // 既存の通知があれば削除
+        const existingNotification = document.querySelector('.weekday-notification');
+        if (existingNotification) {
+            existingNotification.remove();
+        }
+        
+        const notification = document.createElement('div');
+        notification.className = 'weekday-notification';
+        notification.textContent = message;
+        
+        document.body.appendChild(notification);
+        
+        // アニメーション表示
+        setTimeout(() => {
+            notification.classList.add('show');
+        }, 100);
+        
+        // 3秒後に非表示
+        setTimeout(() => {
+            notification.classList.remove('show');
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.parentNode.removeChild(notification);
+                }
+            }, 300);
+        }, 3000);
     }
 
     // --- データのエクスポート/インポートロジック ---
@@ -1514,8 +1851,7 @@ document.addEventListener('DOMContentLoaded', () => {
         renderWeek();
         
         // モーダルを閉じる
-        modal.style.display = 'none';
-        selectedDate = null;
+        closeTaskModal();
         
         // 成功メッセージを表示
         showDuplicateMessage(currentTaskData.name);
