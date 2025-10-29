@@ -70,6 +70,32 @@ main#task-board {
     grid-template-columns: repeat(7, 1fr);
     gap: 15px;
     flex-grow: 1; /* Takes up remaining space */
+    transition: grid-template-columns 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Dynamic grid columns based on visible weekdays */
+main#task-board.weekdays-6 {
+    grid-template-columns: repeat(6, 1fr);
+}
+
+main#task-board.weekdays-5 {
+    grid-template-columns: repeat(5, 1fr);
+}
+
+main#task-board.weekdays-4 {
+    grid-template-columns: repeat(4, 1fr);
+}
+
+main#task-board.weekdays-3 {
+    grid-template-columns: repeat(3, 1fr);
+}
+
+main#task-board.weekdays-2 {
+    grid-template-columns: repeat(2, 1fr);
+}
+
+main#task-board.weekdays-1 {
+    grid-template-columns: 1fr;
 }
 
 #sidebar {
@@ -602,6 +628,16 @@ button:hover {
     }
 
     main#task-board {
+        grid-template-columns: 1fr;
+    }
+    
+    /* モバイルでは動的グリッド調整を無効化 */
+    main#task-board.weekdays-1,
+    main#task-board.weekdays-2,
+    main#task-board.weekdays-3,
+    main#task-board.weekdays-4,
+    main#task-board.weekdays-5,
+    main#task-board.weekdays-6 {
         grid-template-columns: 1fr;
     }
 
