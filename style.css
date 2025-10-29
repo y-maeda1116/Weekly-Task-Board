@@ -420,16 +420,27 @@ button:hover {
 
 .day-column.hiding {
     opacity: 0;
-    transform: scaleX(0);
-    transition: all 0.3s ease;
+    transform: scaleX(0.8);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     transform-origin: center;
+    pointer-events: none;
 }
 
 .day-column.showing {
     opacity: 1;
     transform: scaleX(1);
-    transition: all 0.3s ease;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     transform-origin: center;
+}
+
+/* 曜日列のホバー効果改善 */
+.day-column:not(.hidden):hover {
+    background-color: rgba(74, 144, 226, 0.02);
+    transition: background-color 0.2s ease;
+}
+
+[data-theme="dark"] .day-column:not(.hidden):hover {
+    background-color: rgba(90, 163, 240, 0.05);
 }
 
 /* Weekday notification styles */
@@ -454,9 +465,111 @@ button:hover {
     transform: translateX(0);
 }
 
-/* ダークモード用の通知 */
-[data-theme="dark"] .weekday-notification {
+/* Bulk move notification styles */
+.bulk-move-notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
     background-color: var(--primary-color);
+    color: white;
+    padding: 12px 20px;
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 10000;
+    font-size: 0.9em;
+    opacity: 0;
+    transform: translateX(100%);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    max-width: 350px;
+}
+
+.bulk-move-notification.show {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.bulk-move-notification.success {
+    background-color: #27ae60;
+}
+
+.bulk-move-notification.info {
+    background-color: var(--primary-color);
+}
+
+.bulk-move-notification.warning {
+    background-color: #f39c12;
+}
+
+.bulk-move-notification.error {
+    background-color: #e74c3c;
+}
+
+.notification-icon {
+    font-size: 1.1em;
+}
+
+.notification-message {
+    flex: 1;
+}
+
+/* Context menu styles */
+.context-menu {
+    position: fixed;
+    background: var(--card-background);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 10001;
+    min-width: 220px;
+    padding: 4px 0;
+    font-size: 0.9em;
+}
+
+.context-menu-item {
+    padding: 10px 15px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    user-select: none;
+}
+
+.context-menu-item:hover {
+    background-color: var(--hover-color, rgba(74, 144, 226, 0.1));
+}
+
+.context-menu-item:active {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.context-menu-separator {
+    height: 1px;
+    background-color: var(--border-color);
+    margin: 4px 0;
+}
+
+/* ダークモード用のコンテキストメニュー */
+[data-theme="dark"] .context-menu {
+    background: var(--card-background);
+    border-color: var(--border-color);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+[data-theme="dark"] .context-menu-item:hover {
+    background-color: rgba(90, 163, 240, 0.1);
+}
+
+[data-theme="dark"] .context-menu-separator {
+    background-color: var(--border-color);
+}
+
+/* ダークモード用の通知 */
+[data-theme="dark"] .bulk-move-notification {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
@@ -558,10 +671,20 @@ button:hover {
         margin-top: 5px;
     }
     
-    .weekday-notification {
+    .bulk-move-notification {
         right: 10px;
         left: 10px;
         text-align: center;
+        max-width: none;
+    }
+    
+    .context-menu {
+        min-width: 200px;
+        font-size: 0.85em;
+    }
+    
+    .context-menu-item {
+        padding: 12px 15px;
     }
 }
 /* Modal styles - 最終調整 */
