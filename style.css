@@ -363,6 +363,103 @@ button:hover {
     background-color: var(--card-background);
 }
 
+/* Weekday settings styles */
+#weekday-settings {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0 15px;
+}
+
+#weekday-settings label {
+    font-size: 0.9em;
+    color: var(--font-color);
+    font-weight: 500;
+}
+
+#weekday-checkboxes {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+#weekday-checkboxes label {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.85em;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+    user-select: none;
+}
+
+#weekday-checkboxes label:hover {
+    background-color: var(--hover-color, rgba(74, 144, 226, 0.1));
+}
+
+#weekday-checkboxes input[type="checkbox"] {
+    margin: 0;
+    cursor: pointer;
+}
+
+/* ダークモード用の曜日設定 */
+[data-theme="dark"] #weekday-settings label {
+    color: var(--font-color);
+}
+
+[data-theme="dark"] #weekday-checkboxes label:hover {
+    background-color: rgba(90, 163, 240, 0.1);
+}
+
+/* Day column visibility animations */
+.day-column.hidden {
+    display: none;
+}
+
+.day-column.hiding {
+    opacity: 0;
+    transform: scaleX(0);
+    transition: all 0.3s ease;
+    transform-origin: center;
+}
+
+.day-column.showing {
+    opacity: 1;
+    transform: scaleX(1);
+    transition: all 0.3s ease;
+    transform-origin: center;
+}
+
+/* Weekday notification styles */
+.weekday-notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background-color: var(--primary-color);
+    color: white;
+    padding: 12px 20px;
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 10000;
+    font-size: 0.9em;
+    opacity: 0;
+    transform: translateX(100%);
+    transition: all 0.3s ease;
+}
+
+.weekday-notification.show {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+/* ダークモード用の通知 */
+[data-theme="dark"] .weekday-notification {
+    background-color: var(--primary-color);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
 /* ダークモード用のアクティブフィルター */
 [data-theme="dark"] #category-filter.filter-active {
     background-color: rgba(90, 163, 240, 0.1);
@@ -449,6 +546,23 @@ button:hover {
     #category-filter select {
         width: 100%;
     }
+    
+    #weekday-settings {
+        flex-direction: column;
+        align-items: stretch;
+        margin: 10px 0;
+    }
+    
+    #weekday-checkboxes {
+        justify-content: center;
+        margin-top: 5px;
+    }
+    
+    .weekday-notification {
+        right: 10px;
+        left: 10px;
+        text-align: center;
+    }
 }
 /* Modal styles - 最終調整 */
 .modal {
@@ -461,16 +575,61 @@ button:hover {
     height: 100%;
     overflow: auto;
     background-color: rgba(0,0,0,0.5);
+    /* スクロール抑制のための設定 */
+    overscroll-behavior: contain;
 }
 
 .modal-content {
     background-color: var(--modal-background);
-    margin: 10% auto;
+    margin: 5% auto; /* 💡 上部マージンを減らして画面中央寄りに */
     padding: 20px;
     border: 1px solid var(--border-color);
     width: 80%;
     max-width: 500px;
+    max-height: 90vh; /* 💡 最大高さを設定 */
     border-radius: 8px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); /* 💡 より強いシャドウ */
+    overflow-y: auto; /* 💡 モーダル内でのスクロールを許可 */
+    /* スムーズなアニメーション */
+    transform: scale(0.9);
+    opacity: 0;
+    transition: all 0.3s ease;
+}
+
+/* モーダル表示時のアニメーション */
+.modal.show .modal-content {
+    transform: scale(1);
+    opacity: 1;
+}
+
+/* スクロール抑制用のbodyクラス */
+body.modal-open {
+    overflow: hidden;
+    position: fixed;
+    width: 100%;
+    /* モバイルでのスクロール抑制を強化 */
+    -webkit-overflow-scrolling: touch;
+}
+
+/* モバイル対応の改善 */
+@media (max-width: 768px) {
+    .modal-content {
+        margin: 2% auto;
+        width: 95%;
+        max-height: 95vh;
+        padding: 15px;
+    }
+    
+    /* モバイルでのキーボード表示時の調整 */
+    @supports (-webkit-touch-callout: none) {
+        body.modal-open {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+        }
+    }
 }
 
 /* ダークモード切り替えボタン */
