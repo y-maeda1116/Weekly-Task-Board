@@ -669,6 +669,9 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // コンテキストメニューの初期化
     initializeContextMenu();
+    
+    // 初期グリッド列数を設定
+    updateGridColumns();
 
     // 💡 修正 2: 初期ロード時にタスクボードを描画する
     renderWeek();
@@ -1271,6 +1274,10 @@ document.addEventListener('DOMContentLoaded', () => {
         addDateClickListeners();
 
         datePicker.value = formatDate(currentDate);
+        
+        // グリッド列数を更新
+        updateGridColumns();
+        
         isRendering = false;
     }
     document.body.renderWeek = renderWeek;
@@ -1409,6 +1416,7 @@ document.addEventListener('DOMContentLoaded', () => {
      */
     function updateWeekdayVisibility() {
         const dayColumns = document.querySelectorAll('.day-column');
+        const taskBoard = document.getElementById('task-board');
         
         dayColumns.forEach((column, index) => {
             if (index >= weekdayManager.dayNames.length) return; // 未割り当て列をスキップ
@@ -1427,6 +1435,25 @@ document.addEventListener('DOMContentLoaded', () => {
                 }, 300);
             }
         });
+        
+        // グリッド列数を動的に調整
+        updateGridColumns();
+    }
+    
+    /**
+     * Update grid columns based on visible weekdays count.
+     */
+    function updateGridColumns() {
+        const taskBoard = document.getElementById('task-board');
+        const visibleCount = weekdayManager.getVisibleWeekdays().length;
+        
+        // 既存のweekdaysクラスを削除
+        taskBoard.classList.remove('weekdays-1', 'weekdays-2', 'weekdays-3', 'weekdays-4', 'weekdays-5', 'weekdays-6');
+        
+        // 表示曜日数に応じてクラスを追加
+        if (visibleCount < 7) {
+            taskBoard.classList.add(`weekdays-${visibleCount}`);
+        }
     }
     
     /**
