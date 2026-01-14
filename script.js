@@ -1056,7 +1056,7 @@ document.addEventListener('DOMContentLoaded', () => {
         taskElement.innerHTML = `
             <div class="category-bar" style="background-color: ${categoryInfo.color};"></div>
             <div class="task-header">
-                <input type="checkbox" class="task-checkbox" ${task.completed ? 'checked' : ''}>
+                <input type="checkbox" class="task-checkbox" aria-label="${task.name}を完了としてマーク" ${task.completed ? 'checked' : ''}>
                 <div class="task-name">${task.name}</div>
                 <span class="task-priority ${task.priority || 'medium'}">${priorityLabel}</span>
                 <div class="task-time">${task.estimated_time}h</div>
@@ -1832,8 +1832,10 @@ document.addEventListener('DOMContentLoaded', () => {
     function updateThemeButton(theme) {
         if (theme === 'dark') {
             themeToggleBtn.innerHTML = '☀️ ライト';
+            themeToggleBtn.setAttribute('aria-label', 'ライトモードに切り替え');
         } else {
             themeToggleBtn.innerHTML = '🌙 ダーク';
+            themeToggleBtn.setAttribute('aria-label', 'ダークモードに切り替え');
         }
     }
 
@@ -2049,10 +2051,10 @@ document.addEventListener('DOMContentLoaded', () => {
             ${task.details ? `<div class="archived-task-details">${task.details}</div>` : ''}
             <div class="archived-task-completed-date">完了: ${formattedArchivedDate}</div>
             <div class="archived-task-actions">
-                <button class="restore-task-btn" data-task-id="${task.id}">
+                <button class="restore-task-btn" data-task-id="${task.id}" aria-label="${task.name}を復元">
                     ↩️ 復元
                 </button>
-                <button class="delete-task-btn" data-task-id="${task.id}">
+                <button class="delete-task-btn" data-task-id="${task.id}" aria-label="${task.name}を削除">
                     🗑️ 削除
                 </button>
             </div>

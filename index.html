@@ -53,19 +53,19 @@
                 <input type="number" id="ideal-daily-minutes" value="480" step="30">
             </div>
             <div id="navigation">
-                <button id="prev-week">前週へ</button>
-                <button id="today">今週に戻る</button>
-                <button id="next-week">次週へ</button>
+                <button id="prev-week" aria-label="前週へ移動">前週へ</button>
+                <button id="today" aria-label="今週に戻る">今週に戻る</button>
+                <button id="next-week" aria-label="次週へ移動">次週へ</button>
                 <div id="date-picker-wrapper">
                     <input type="date" id="date-picker" readonly>
                 </div>
             </div>
             <div id="data-management">
-                <button id="export-data-btn">エクスポート</button>
-                <button id="import-data-btn">インポート</button>
+                <button id="export-data-btn" aria-label="データをエクスポート">エクスポート</button>
+                <button id="import-data-btn" aria-label="データをインポート">インポート</button>
                 <input type="file" id="import-file-input" style="display: none;" accept=".json">
-                <button id="archive-toggle">📁 アーカイブ</button>
-                <button id="theme-toggle">🌙 ダーク</button>
+                <button id="archive-toggle" aria-label="アーカイブを表示">📁 アーカイブ</button>
+                <button id="theme-toggle" aria-label="ダークモードに切り替え">🌙 ダーク</button>
             </div>
         </div>
         <h2 id="week-title"></h2>
@@ -116,8 +116,8 @@
         <div id="archive-header">
             <h2>📁 完了タスクアーカイブ</h2>
             <div id="archive-controls">
-                <button id="close-archive">✕ 閉じる</button>
-                <button id="clear-archive">🗑️ 全削除</button>
+                <button id="close-archive" aria-label="アーカイブを閉じる">✕ 閉じる</button>
+                <button id="clear-archive" aria-label="アーカイブを全削除">🗑️ 全削除</button>
             </div>
         </div>
         <div id="archive-content">
@@ -144,7 +144,7 @@
     <!-- タスク追加モーダル -->
     <div id="task-modal" class="modal">
         <div class="modal-content">
-            <span class="close-btn">&times;</span>
+            <span class="close-btn" aria-label="モーダルを閉じる">&times;</span>
             <h2>タスクを新規登録</h2>
             <form id="task-form">
                 <label for="task-name">タスク名:</label>
