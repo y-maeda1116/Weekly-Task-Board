@@ -491,7 +491,7 @@ function handleDragEnd(e) {
 function handleDragOver(e) {
     e.preventDefault();
     const targetColumn = e.target.closest('.day-column');
-    if (targetColumn) {
+    if (targetColumn && !targetColumn.classList.contains('hidden') && !targetColumn.classList.contains('hiding')) {
         targetColumn.classList.add('drag-over');
     }
 }
@@ -509,7 +509,7 @@ function handleDrop(e) {
     if (!targetColumn) return;
 
     // 非表示の曜日列へのドロップを防止
-    if (targetColumn.classList.contains('hidden')) {
+    if (targetColumn.classList.contains('hidden') || targetColumn.classList.contains('hiding')) {
         return;
     }
 
@@ -1393,14 +1393,23 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     /**
-     * Handle weekday visibility change.
+     * Handle weekday visibility change with optimized performance.
      * @param {string} dayName - 曜日名
      * @param {boolean} visible - 表示するかどうか
      */
     function handleWeekdayChange(dayName, visible) {
+        // アニメーション中は処理をスキップ
+        if (document.querySelector('.day-column.hiding, .day-column.showing')) {
+            return;
+        }
+        
         weekdayManager.toggleWeekday(dayName, visible);
         updateWeekdayVisibility();
-        renderWeek();
+        
+        // アニメーション完了後にrenderWeekを実行
+        setTimeout(() => {
+            renderWeek();
+        }, 450);
         
         // 移動したタスク数を通知
         if (!visible) {
@@ -1412,7 +1421,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     /**
-     * Update weekday column visibility.
+     * Update weekday column visibility with smooth animations.
      */
     function updateWeekdayVisibility() {
         const dayColumns = document.querySelectorAll('.day-column');
@@ -1425,19 +1434,34 @@ document.addEventListener('DOMContentLoaded', () => {
             const isVisible = weekdayManager.isWeekdayVisible(dayName);
             
             if (isVisible) {
-                column.classList.remove('hidden');
-                column.classList.add('showing');
+                // 表示する場合
+                if (column.classList.contains('hidden')) {
+                    column.classList.remove('hidden');
+                    column.classList.add('showing');
+                    
+                    // アニメーション完了後にshowingクラスを削除
+                    setTimeout(() => {
+                        column.classList.remove('showing');
+                    }, 400);
+                }
             } else {
-                column.classList.add('hiding');
-                setTimeout(() => {
-                    column.classList.add('hidden');
-                    column.classList.remove('hiding');
-                }, 300);
+                // 非表示にする場合
+                if (!column.classList.contains('hidden')) {
+                    column.classList.add('hiding');
+                    
+                    // アニメーション完了後にhiddenクラスを追加
+                    setTimeout(() => {
+                        column.classList.add('hidden');
+                        column.classList.remove('hiding');
+                    }, 400);
+                }
             }
         });
         
-        // グリッド列数を動的に調整
-        updateGridColumns();
+        // グリッド列数を動的に調整（アニメーション完了後）
+        setTimeout(() => {
+            updateGridColumns();
+        }, 400);
     }
     
     /**

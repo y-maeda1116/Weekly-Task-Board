@@ -38,15 +38,16 @@
             </div>
             <div id="weekday-settings">
                 <label>表示する曜日:</label>
-                <div id="weekday-checkboxes">
-                    <label><input type="checkbox" id="show-monday" checked> 月</label>
-                    <label><input type="checkbox" id="show-tuesday" checked> 火</label>
-                    <label><input type="checkbox" id="show-wednesday" checked> 水</label>
-                    <label><input type="checkbox" id="show-thursday" checked> 木</label>
-                    <label><input type="checkbox" id="show-friday" checked> 金</label>
-                    <label><input type="checkbox" id="show-saturday" checked> 土</label>
-                    <label><input type="checkbox" id="show-sunday" checked> 日</label>
+                <div id="weekday-checkboxes" role="group" aria-label="曜日表示設定">
+                    <label><input type="checkbox" id="show-monday" checked aria-describedby="weekday-help"> 月</label>
+                    <label><input type="checkbox" id="show-tuesday" checked aria-describedby="weekday-help"> 火</label>
+                    <label><input type="checkbox" id="show-wednesday" checked aria-describedby="weekday-help"> 水</label>
+                    <label><input type="checkbox" id="show-thursday" checked aria-describedby="weekday-help"> 木</label>
+                    <label><input type="checkbox" id="show-friday" checked aria-describedby="weekday-help"> 金</label>
+                    <label><input type="checkbox" id="show-saturday" checked aria-describedby="weekday-help"> 土</label>
+                    <label><input type="checkbox" id="show-sunday" checked aria-describedby="weekday-help"> 日</label>
                 </div>
+                <div id="weekday-help" class="sr-only">チェックを外すとその曜日が非表示になり、タスクは未割り当てエリアに移動します</div>
             </div>
             <div id="user-settings">
                 <label for="ideal-daily-minutes">1日の理想稼働時間 (分):</label>
@@ -128,15 +129,15 @@
     </div>
 
     <!-- コンテキストメニュー -->
-    <div id="day-context-menu" class="context-menu" style="display: none;">
-        <div class="context-menu-item" data-action="move-all-tasks">
+    <div id="day-context-menu" class="context-menu" style="display: none;" role="menu" aria-label="日付列操作メニュー">
+        <div class="context-menu-item" data-action="move-all-tasks" role="menuitem" tabindex="0">
             📤 全タスクを未割り当てに移動
         </div>
-        <div class="context-menu-item" data-action="hide-day">
+        <div class="context-menu-item" data-action="hide-day" role="menuitem" tabindex="0">
             👁️ この曜日を非表示
         </div>
-        <div class="context-menu-separator"></div>
-        <div class="context-menu-item" data-action="cancel">
+        <div class="context-menu-separator" role="separator"></div>
+        <div class="context-menu-item" data-action="cancel" role="menuitem" tabindex="0">
             ❌ キャンセル
         </div>
     </div>
