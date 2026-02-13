@@ -73,46 +73,6 @@
         <h2 id="week-title"></h2>
     </header>
 
-    <!-- ダッシュボードパネル -->
-    <div id="dashboard-panel" class="dashboard-panel">
-        <div class="dashboard-header">
-            <h2>📊 週間統計</h2>
-            <button id="toggle-dashboard" class="toggle-btn" aria-label="ダッシュボード表示切り替え">−</button>
-        </div>
-        <div id="dashboard-content" class="dashboard-content">
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <span class="stat-label">完了率</span>
-                    <span class="stat-value" id="completion-rate-value">0%</span>
-                </div>
-                <div class="stat-card">
-                    <span class="stat-label">完了タスク</span>
-                    <span class="stat-value" id="completed-tasks-value">0/0</span>
-                </div>
-                <div class="stat-card">
-                    <span class="stat-label">見積時間</span>
-                    <span class="stat-value" id="estimated-time-value">0h</span>
-                </div>
-                <div class="stat-card">
-                    <span class="stat-label">実績時間</span>
-                    <span class="stat-value" id="actual-time-value">0h</span>
-                </div>
-            </div>
-            <div class="chart-container">
-                <h3>カテゴリ別時間分析</h3>
-                <div id="category-breakdown" class="category-breakdown">
-                    <!-- カテゴリ別の時間分析がここに表示される -->
-                </div>
-            </div>
-            <div class="daily-breakdown-container">
-                <h3>日別作業時間</h3>
-                <div id="daily-breakdown" class="daily-breakdown">
-                    <!-- 日別の作業時間がここに表示される -->
-                </div>
-            </div>
-        </div>
-    </div>
-
     <div id="app-container">
         <main id="task-board">
             <div class="day-column" id="monday">
@@ -152,6 +112,46 @@
                 </div>
             </div>
         </aside>
+    </div>
+
+    <!-- ダッシュボードパネル -->
+    <div id="dashboard-panel" class="dashboard-panel">
+        <div class="dashboard-header">
+            <h2>📊 週間統計</h2>
+            <button id="toggle-dashboard" class="toggle-btn" aria-label="ダッシュボード表示切り替え">−</button>
+        </div>
+        <div id="dashboard-content" class="dashboard-content">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <span class="stat-label">完了率</span>
+                    <span class="stat-value" id="completion-rate-value">0%</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-label">完了タスク</span>
+                    <span class="stat-value" id="completed-tasks-value">0/0</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-label">見積時間</span>
+                    <span class="stat-value" id="estimated-time-value">0h</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-label">実績時間</span>
+                    <span class="stat-value" id="actual-time-value">0h</span>
+                </div>
+            </div>
+            <div class="chart-container">
+                <h3>カテゴリ別時間分析</h3>
+                <div id="category-breakdown" class="category-breakdown">
+                    <!-- カテゴリ別の時間分析がここに表示される -->
+                </div>
+            </div>
+            <div class="daily-breakdown-container">
+                <h3>日別作業時間</h3>
+                <div id="daily-breakdown" class="daily-breakdown">
+                    <!-- 日別の作業時間がここに表示される -->
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- アーカイブビュー -->
