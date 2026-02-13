@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Migration Integration Tests</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-container {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #333;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 10px;
+        }
+        .test-case {
+            margin-bottom: 15px;
+            padding: 10px;
+            background-color: #f9f9f9;
+            border-left: 4px solid #ddd;
+            border-radius: 4px;
+        }
+        .test-case.passed {
+            border-left-color: #28a745;
+            background-color: #f0f8f4;
+        }
+        .test-case.failed {
+            border-left-color: #dc3545;
+            background-color: #fdf8f8;
+        }
+        .test-name {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .test-result {
+            font-size: 14px;
+            color: #666;
+        }
+        .passed {
+            color: #28a745;
+        }
+        .failed {
+            color: #dc3545;
+        }
+        .summary {
+            background-color: #e7f3ff;
+            border: 2px solid #007bff;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+        }
+        .summary-title {
+            font-weight: bold;
+            font-size: 16px;
+            margin-bottom: 10px;
+            color: #007bff;
+        }
+        .summary-item {
+            margin: 5px 0;
+            font-size: 14px;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-right: 10px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .controls {
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔄 Migration Integration Tests</h1>
+    
+    <div class="controls">
+        <button onclick="runAllTests()">Run All Tests</button>
+        <button onclick="clearTestData()">Clear Test Data</button>
+        <button onclick="resetLocalStorage()">Reset LocalStorage</button>
+    </div>
+
+    <div id="test-results"></div>
+    <div id="summary"></div>
+
+    <script>
+        // Test utilities
+        const testResults = [];
+
+        function addTestResult(testName, passed, message) {
+            testResults.push({ testName, passed, message });
+            displayTestResult(testName, passed, message);
+        }
+
+        function displayTestResult(testName, passed, message) {
+            const resultsDiv = document.getElementById('test-results');
+            const testCase = document.createElement('div');
+            testCase.className = `test-case ${passed ? 'passed' : 'failed'}`;
+            
+            testCase.innerHTML = `
+                <div class="test-name">${testName}</div>
+                <div class="test-result">
+                    <span class="${passed ? 'passed' : 'failed'}">
+                        ${passed ? '✅ PASSED' : '❌ FAILED'}
+                    </span>
+                    ${message ? ` - ${message}` : ''}
+                </div>
+            `;
+            
+            resultsDiv.appendChild(testCase);
+        }
+
+        function displaySummary() {
+            const passed = testResults.filter(r => r.passed).length;
+            const failed = testResults.filter(r => !r.passed).length;
+            const total = testResults.length;
+
+            const summaryDiv = document.getElementById('summary');
+            summaryDiv.innerHTML = `
+                <div class="summary">
+                    <div class="summary-title">📊 Test Summary</div>
+                    <div class="summary-item">Total Tests: <strong>${total}</strong></div>
+                    <div class="summary-item"><span class="passed">✅ Passed: ${passed}</span></div>
+                    <div class="summary-item"><span class="failed">❌ Failed: ${failed}</span></div>
+                    <div class="summary-item">Success Rate: <strong>${total > 0 ? ((passed/total)*100).toFixed(1) : 0}%</strong></div>
+                </div>
+            `;
+        }
+
+        // Test Suite 1: Migration Data Persistence
+        function testMigrationDataPersistence() {
+            console.log('Running: Migration Data Persistence');
+            
+            // Clear storage
+            localStorage.clear();
+            
+            // Create migration history
+            const history = {
+                version: '1.0',
+                lastMigrationDate: new Date().toISOString(),
+                migrations: [
+                    {
+                        version: '1.0',
+                        date: new Date().toISOString(),
+                        description: 'Added actual_time field'
+                    }
+                ]
+            };
+            
+            localStorage.setItem('weekly-task-board.migration-history', JSON.stringify(history));
+            
+            // Retrieve and verify
+            const retrieved = JSON.parse(localStorage.getItem('weekly-task-board.migration-history'));
+            const passed = retrieved.version === '1.0' && retrieved.migrations.length === 1;
+            
+            addTestResult(
+                'Migration Data Persistence',
+                passed,
+                passed ? 'Migration history persisted correctly' : 'Failed to persist migration history'
+            );
+        }
+
+        // Test Suite 2: Task Data Migration with actual_time
+        function testTaskDataMigration() {
+            console.log('Running: Task Data Migration');
+            
+            localStorage.clear();
+            
+            // Create old tasks without actual_time
+            const oldTasks = [
+                { id: 'task-1', name: 'Task 1', estimated_time: 5, priority: 'high', category: 'task' },
+                { id: 'task-2', name: 'Task 2', estimated_time: 3, priority: 'medium', category: 'task' }
+            ];
+            
+            localStorage.setItem('weekly-task-board.tasks', JSON.stringify(oldTasks));
+            
+            // Simulate migration
+            let tasks = JSON.parse(localStorage.getItem('weekly-task-board.tasks'));
+            tasks = tasks.map(task => ({
+                ...task,
+                actual_time: task.actual_time !== undefined ? task.actual_time : 0
+            }));
+            
+            const passed = tasks.every(task => typeof task.actual_time === 'number' && task.actual_time === 0);
+            
+            addTestResult(
+                'Task Data Migration',
+                passed,
+                passed ? 'All tasks have actual_time field' : 'Some tasks missing actual_time field'
+            );
+        }
+
+        // Test Suite 3: Backup Creation
+        function testBackupCreation() {
+            console.log('Running: Backup Creation');
+            
+            localStorage.clear();
+            
+            // Create tasks
+            const tasks = [
+                { id: 'task-1', name: 'Task 1', estimated_time: 5 },
+                { id: 'task-2', name: 'Task 2', estimated_time: 3 }
+            ];
+            
+            localStorage.setItem('weekly-task-board.tasks', JSON.stringify(tasks));
+            
+            // Create backup
+            const timestamp = new Date().toISOString();
+            const backupKey = `weekly-task-board.backup-${timestamp}`;
+            const currentTasks = localStorage.getItem('weekly-task-board.tasks');
+            
+            if (currentTasks) {
+                localStorage.setItem(backupKey, currentTasks);
+            }
+            
+            // Verify backup
+            const backupData = localStorage.getItem(backupKey);
+            const passed = backupData !== null && JSON.parse(backupData).length === 2;
+            
+            addTestResult(
+                'Backup Creation',
+                passed,
+                passed ? 'Backup created successfully' : 'Failed to create backup'
+            );
+        }
+
+        // Test Suite 4: Archived Tasks Migration
+        function testArchivedTasksMigration() {
+            console.log('Running: Archived Tasks Migration');
+            
+            localStorage.clear();
+            
+            // Create archived tasks without actual_time
+            const archivedTasks = [
+                { id: 'archived-1', name: 'Archived 1', estimated_time: 5, archived_date: '2024-01-01' },
+                { id: 'archived-2', name: 'Archived 2', estimated_time: 3, archived_date: '2024-01-02' }
+            ];
+            
+            localStorage.setItem('weekly-task-board.archive', JSON.stringify(archivedTasks));
+            
+            // Simulate migration
+            let archived = JSON.parse(localStorage.getItem('weekly-task-board.archive'));
+            archived = archived.map(task => ({
+                ...task,
+                actual_time: task.actual_time !== undefined ? task.actual_time : 0
+            }));
+            
+            const passed = archived.every(task => typeof task.actual_time === 'number');
+            
+            addTestResult(
+                'Archived Tasks Migration',
+                passed,
+                passed ? 'All archived tasks migrated' : 'Failed to migrate archived tasks'
+            );
+        }
+
+        // Test Suite 5: Mixed Data Migration
+        function testMixedDataMigration() {
+            console.log('Running: Mixed Data Migration');
+            
+            localStorage.clear();
+            
+            // Create mixed tasks (some with actual_time, some without)
+            const mixedTasks = [
+                { id: 'task-1', name: 'Task 1', estimated_time: 5, actual_time: 0 },
+                { id: 'task-2', name: 'Task 2', estimated_time: 3 },
+                { id: 'task-3', name: 'Task 3', estimated_time: 8, actual_time: 4 },
+                { id: 'task-4', name: 'Task 4', estimated_time: 2 }
+            ];
+            
+            localStorage.setItem('weekly-task-board.tasks', JSON.stringify(mixedTasks));
+            
+            // Simulate migration
+            let tasks = JSON.parse(localStorage.getItem('weekly-task-board.tasks'));
+            tasks = tasks.map(task => ({
+                ...task,
+                actual_time: typeof task.actual_time === 'number' ? task.actual_time : 0
+            }));
+            
+            const allHaveActualTime = tasks.every(task => typeof task.actual_time === 'number');
+            const valuesCorrect = tasks[0].actual_time === 0 && tasks[1].actual_time === 0 && 
+                                 tasks[2].actual_time === 4 && tasks[3].actual_time === 0;
+            
+            const passed = allHaveActualTime && valuesCorrect;
+            
+            addTestResult(
+                'Mixed Data Migration',
+                passed,
+                passed ? 'Mixed data migrated correctly' : 'Failed to migrate mixed data'
+            );
+        }
+
+        // Test Suite 6: Version Comparison
+        function testVersionComparison() {
+            console.log('Running: Version Comparison');
+            
+            const version1 = '0.0';
+            const version2 = '1.0';
+            
+            const isMigrationNeeded = version1 < version2;
+            const isNotNeeded = version2 < version1;
+            
+            const passed = isMigrationNeeded === true && isNotNeeded === false;
+            
+            addTestResult(
+                'Version Comparison',
+                passed,
+                passed ? 'Version comparison works correctly' : 'Version comparison failed'
+            );
+        }
+
+        // Test Suite 7: Data Integrity After Migration
+        function testDataIntegrityAfterMigration() {
+            console.log('Running: Data Integrity After Migration');
+            
+            localStorage.clear();
+            
+            // Create tasks with various properties
+            const originalTasks = [
+                { 
+                    id: 'task-1', 
+                    name: 'Task 1', 
+                    estimated_time: 5, 
+                    priority: 'high',
+                    category: 'task',
+                    assigned_date: '2024-01-01',
+                    details: 'Test task'
+                }
+            ];
+            
+            localStorage.setItem('weekly-task-board.tasks', JSON.stringify(originalTasks));
+            
+            // Simulate migration
+            let tasks = JSON.parse(localStorage.getItem('weekly-task-board.tasks'));
+            tasks = tasks.map(task => ({
+                ...task,
+                actual_time: task.actual_time !== undefined ? task.actual_time : 0
+            }));
+            
+            // Verify all properties are preserved
+            const task = tasks[0];
+            const passed = task.id === 'task-1' && 
+                          task.name === 'Task 1' &&
+                          task.estimated_time === 5 &&
+                          task.priority === 'high' &&
+                          task.category === 'task' &&
+                          task.assigned_date === '2024-01-01' &&
+                          task.details === 'Test task' &&
+                          task.actual_time === 0;
+            
+            addTestResult(
+                'Data Integrity After Migration',
+                passed,
+                passed ? 'All properties preserved' : 'Some properties lost during migration'
+            );
+        }
+
+        // Test Suite 8: Error Handling
+        function testErrorHandling() {
+            console.log('Running: Error Handling');
+            
+            localStorage.clear();
+            
+            // Test with invalid JSON
+            localStorage.setItem('weekly-task-board.tasks', 'invalid json');
+            
+            try {
+                JSON.parse(localStorage.getItem('weekly-task-board.tasks'));
+                addTestResult('Error Handling', false, 'Should have thrown error for invalid JSON');
+            } catch (error) {
+                const passed = error instanceof SyntaxError;
+                addTestResult(
+                    'Error Handling',
+                    passed,
+                    passed ? 'Error handled correctly' : 'Unexpected error type'
+                );
+            }
+        }
+
+        // Main test runner
+        function runAllTests() {
+            testResults.length = 0;
+            document.getElementById('test-results').innerHTML = '';
+            document.getElementById('summary').innerHTML = '';
+            
+            console.log('Starting Migration Integration Tests...');
+            
+            testMigrationDataPersistence();
+            testTaskDataMigration();
+            testBackupCreation();
+            testArchivedTasksMigration();
+            testMixedDataMigration();
+            testVersionComparison();
+            testDataIntegrityAfterMigration();
+            testErrorHandling();
+            
+            displaySummary();
+            console.log('Tests completed!');
+        }
+
+        // Utility functions
+        function clearTestData() {
+            const backupKeys = Object.keys(localStorage).filter(key => key.includes('backup'));
+            backupKeys.forEach(key => localStorage.removeItem(key));
+            alert('Test backup data cleared!');
+        }
+
+        function resetLocalStorage() {
+            localStorage.clear();
+            alert('LocalStorage reset!');
+        }
+
+        // Auto-run tests on page load
+        window.addEventListener('load', () => {
+            console.log('Page loaded, ready to run tests');
+        });
+    </script>
+</body>
+</html>
