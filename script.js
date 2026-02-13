@@ -269,11 +269,7 @@ function loadTasks() {
         wednesday.setDate(monday.getDate() + 2);
         const wednesdayStr = formatDate(wednesday);
 
-        tasksData = [
-            { id: `task-${Date.now() + 1}`, name: "D&D機能を実装する", estimated_time: 8, actual_time: 0, priority: "high", assigned_date: null, due_date: null, details: "タスクをドラッグ＆ドロップで移動できるようにする", completed: false, category: "task", is_recurring: false, recurrence_pattern: null, recurrence_end_date: null },
-            { id: `task-${Date.now() + 2}`, name: "UIを修正する", estimated_time: 5, actual_time: 0, priority: "medium", assigned_date: tuesdayStr, due_date: wednesdayStr + 'T18:00', details: "新しいレイアウトを適用する", completed: false, category: "task", is_recurring: false, recurrence_pattern: null, recurrence_end_date: null },
-            { id: `task-${Date.now() + 3}`, name: "バグを修正する", estimated_time: 3, actual_time: 0, priority: "low", assigned_date: mondayStr, due_date: mondayStr + 'T23:59', details: "報告されたバグを調査・修正", completed: false, category: "bugfix", is_recurring: false, recurrence_pattern: null, recurrence_end_date: null },
-        ];
+        tasksData = [];
     } else {
         tasksData = JSON.parse(tasksJson);
         
