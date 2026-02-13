@@ -3,6 +3,7 @@
 const TASKS_STORAGE_KEY = 'weekly-task-board.tasks';
 const SETTINGS_STORAGE_KEY = 'weekly-task-board.settings';
 const ARCHIVE_STORAGE_KEY = 'weekly-task-board.archive';
+const TEMPLATES_STORAGE_KEY = 'weekly-task-board.templates';
 
 // --- Task Categories Definition ---
 const TASK_CATEGORIES = {
@@ -110,12 +111,150 @@ function getNextDate(daysToAdd) {
 }
 
 /**
+ * Migration version constant
+ */
+const CURRENT_MIGRATION_VERSION = '1.1';
+const MIGRATION_HISTORY_KEY = 'weekly-task-board.migration-history';
+
+/**
+ * Get migration history from localStorage
+ * @returns {object}
+ */
+function getMigrationHistory() {
+    const historyJson = localStorage.getItem(MIGRATION_HISTORY_KEY);
+    if (!historyJson) {
+        return {
+            version: '0.0',
+            lastMigrationDate: null,
+            migrations: []
+        };
+    }
+    try {
+        return JSON.parse(historyJson);
+    } catch (error) {
+        console.warn('マイグレーション履歴の読み込みに失敗:', error);
+        return {
+            version: '0.0',
+            lastMigrationDate: null,
+            migrations: []
+        };
+    }
+}
+
+/**
+ * Save migration history to localStorage
+ * @param {object} history
+ */
+function saveMigrationHistory(history) {
+    localStorage.setItem(MIGRATION_HISTORY_KEY, JSON.stringify(history));
+}
+
+/**
+ * Backup current tasks data before migration
+ * @returns {string} Backup key in localStorage
+ */
+function backupTasksBeforeMigration() {
+    const timestamp = new Date().toISOString();
+    const backupKey = `weekly-task-board.backup-${timestamp}`;
+    const currentTasks = localStorage.getItem(TASKS_STORAGE_KEY);
+    if (currentTasks) {
+        localStorage.setItem(backupKey, currentTasks);
+    }
+    return backupKey;
+}
+
+/**
+ * Migrate tasks to add actual_time field
+ * @param {object[]} tasksData
+ * @returns {object[]}
+ */
+function migrateTasksAddActualTime(tasksData) {
+    return tasksData.map(task => {
+        if (task.actual_time === undefined) {
+            return {
+                ...task,
+                actual_time: 0
+            };
+        }
+        return task;
+    });
+}
+
+/**
+ * Migrate tasks to add recurring task fields
+ * @param {object[]} tasksData
+ * @returns {object[]}
+ */
+function migrateTasksAddRecurringFields(tasksData) {
+    return tasksData.map(task => {
+        const updatedTask = { ...task };
+        
+        if (updatedTask.is_recurring === undefined) {
+            updatedTask.is_recurring = false;
+        }
+        if (updatedTask.recurrence_pattern === undefined) {
+            updatedTask.recurrence_pattern = null;
+        }
+        if (updatedTask.recurrence_end_date === undefined) {
+            updatedTask.recurrence_end_date = null;
+        }
+        
+        return updatedTask;
+    });
+}
+
+/**
+ * Execute all pending migrations
+ * @param {object[]} tasksData
+ * @returns {object[]}
+ */
+function executeMigrations(tasksData) {
+    const history = getMigrationHistory();
+    let migratedData = tasksData;
+    
+    // Version 0.0 -> 1.0: Add actual_time field
+    if (history.version < '1.0') {
+        console.log('マイグレーション実行: v0.0 -> v1.0 (actual_timeフィールド追加)');
+        migratedData = migrateTasksAddActualTime(migratedData);
+        
+        // マイグレーション履歴を更新
+        history.migrations.push({
+            version: '1.0',
+            date: new Date().toISOString(),
+            description: 'Added actual_time field to all tasks'
+        });
+        history.version = '1.0';
+        history.lastMigrationDate = new Date().toISOString();
+        saveMigrationHistory(history);
+    }
+    
+    // Version 1.0 -> 1.1: Add recurring task fields
+    if (history.version < '1.1') {
+        console.log('マイグレーション実行: v1.0 -> v1.1 (繰り返しタスクフィールド追加)');
+        migratedData = migrateTasksAddRecurringFields(migratedData);
+        
+        // マイグレーション履歴を更新
+        history.migrations.push({
+            version: '1.1',
+            date: new Date().toISOString(),
+            description: 'Added is_recurring, recurrence_pattern, and recurrence_end_date fields to all tasks'
+        });
+        history.version = '1.1';
+        history.lastMigrationDate = new Date().toISOString();
+        saveMigrationHistory(history);
+    }
+    
+    return migratedData;
+}
+
+/**
  * Load tasks from localStorage, adding sample data if it's empty.
  * @returns {object[]}
  */
 function loadTasks() {
     const tasksJson = localStorage.getItem(TASKS_STORAGE_KEY);
     let tasksData = [];
+    
     if (!tasksJson || JSON.parse(tasksJson).length === 0) {
         // LocalStorageが空の場合、現在の週に表示されるサンプルタスクを生成
         const today = new Date();
@@ -131,19 +270,41 @@ function loadTasks() {
         const wednesdayStr = formatDate(wednesday);
 
         tasksData = [
-            { id: `task-${Date.now() + 1}`, name: "D&D機能を実装する", estimated_time: 8, priority: "high", assigned_date: null, due_date: null, details: "タスクをドラッグ＆ドロップで移動できるようにする", completed: false, category: "task" },
-            { id: `task-${Date.now() + 2}`, name: "UIを修正する", estimated_time: 5, priority: "medium", assigned_date: tuesdayStr, due_date: wednesdayStr + 'T18:00', details: "新しいレイアウトを適用する", completed: false, category: "task" },
-            { id: `task-${Date.now() + 3}`, name: "バグを修正する", estimated_time: 3, priority: "low", assigned_date: mondayStr, due_date: mondayStr + 'T23:59', details: "報告されたバグを調査・修正", completed: false, category: "bugfix" },
+            { id: `task-${Date.now() + 1}`, name: "D&D機能を実装する", estimated_time: 8, actual_time: 0, priority: "high", assigned_date: null, due_date: null, details: "タスクをドラッグ＆ドロップで移動できるようにする", completed: false, category: "task", is_recurring: false, recurrence_pattern: null, recurrence_end_date: null },
+            { id: `task-${Date.now() + 2}`, name: "UIを修正する", estimated_time: 5, actual_time: 0, priority: "medium", assigned_date: tuesdayStr, due_date: wednesdayStr + 'T18:00', details: "新しいレイアウトを適用する", completed: false, category: "task", is_recurring: false, recurrence_pattern: null, recurrence_end_date: null },
+            { id: `task-${Date.now() + 3}`, name: "バグを修正する", estimated_time: 3, actual_time: 0, priority: "low", assigned_date: mondayStr, due_date: mondayStr + 'T23:59', details: "報告されたバグを調査・修正", completed: false, category: "bugfix", is_recurring: false, recurrence_pattern: null, recurrence_end_date: null },
         ];
     } else {
         tasksData = JSON.parse(tasksJson);
+        
+        // マイグレーション実行
+        try {
+            tasksData = executeMigrations(tasksData);
+        } catch (error) {
+            console.error('マイグレーション実行中にエラーが発生:', error);
+            // エラーが発生した場合は、基本的なマイグレーション処理を実行
+            tasksData = tasksData.map(task => ({
+                ...task,
+                actual_time: task.actual_time || 0
+            }));
+        }
     }
+    
+    // 最終的なデータ検証と正規化
     return tasksData.map(task => ({ 
         ...task, 
         completed: task.completed || false,
-        priority: task.priority || 'medium', // 既存タスクにデフォルト優先度を設定
-        category: task.category || 'task' // 既存タスクにデフォルトカテゴリを設定（マイグレーション処理）
-    }));
+        priority: task.priority || 'medium',
+        category: task.category || 'task',
+        actual_time: typeof task.actual_time === 'number' ? task.actual_time : 0,
+        is_recurring: typeof task.is_recurring === 'boolean' ? task.is_recurring : false,
+        recurrence_pattern: task.recurrence_pattern || null,
+        recurrence_end_date: task.recurrence_end_date || null
+    })).map(task => {
+        // 時間データのバリデーション
+        const validationResult = validateTaskTimeData(task);
+        return validationResult.task;
+    });
 }
 
 
@@ -182,16 +343,688 @@ function validateCategory(category) {
 }
 
 /**
- * Check if a task should be displayed based on current category filter.
+ * Determine if a task should be displayed based on category filter.
+ * Validates: Requirements 1.3 (カテゴリ別の時間分析)
+ * 
  * @param {object} task - The task to check.
- * @returns {boolean} True if task should be displayed.
+ * @param {string} filter - The category filter (optional, defaults to currentCategoryFilter).
+ * @returns {boolean} True if the task should be displayed, false otherwise.
  */
-function shouldDisplayTask(task) {
-    if (!currentCategoryFilter) {
-        return true; // Show all tasks when no filter is selected
+function shouldDisplayTask(task, filter = null) {
+    const categoryFilter = filter !== null ? filter : currentCategoryFilter;
+    
+    // If no filter is set, display all tasks
+    if (!categoryFilter) {
+        return true;
     }
-    const taskCategory = validateCategory(task.category);
-    return taskCategory === currentCategoryFilter;
+    
+    // Check if task's category matches the filter
+    return task.category === categoryFilter;
+}
+
+/**
+ * Determine the severity of time overrun
+ * @param {number} estimated - Estimated time
+ * @param {number} actual - Actual time
+ * @returns {string} Severity level: 'none', 'minor', 'moderate', 'severe'
+ */
+function getTimeOverrunSeverity(estimated, actual) {
+    if (!actual || actual === 0 || actual <= estimated) {
+        return 'none';
+    }
+    
+    const overrunPercent = ((actual - estimated) / estimated) * 100;
+    
+    if (overrunPercent <= 25) {
+        return 'minor';
+    } else if (overrunPercent <= 50) {
+        return 'moderate';
+    } else {
+        return 'severe';
+    }
+}
+
+/**
+ * Validate time data for a task
+ * @param {object} task - The task to validate
+ * @returns {object} Validation result with isValid flag and errors array
+ */
+function validateTaskTimeData(task) {
+    const errors = [];
+    const warnings = [];
+    
+    // Validate estimated_time
+    if (task.estimated_time === undefined || task.estimated_time === null) {
+        errors.push('estimated_time is missing');
+        task.estimated_time = 0;
+    } else if (typeof task.estimated_time !== 'number') {
+        errors.push(`estimated_time must be a number, got ${typeof task.estimated_time}`);
+        task.estimated_time = 0;
+    } else if (task.estimated_time < 0) {
+        errors.push('estimated_time cannot be negative');
+        task.estimated_time = 0;
+    } else if (!Number.isFinite(task.estimated_time)) {
+        errors.push('estimated_time must be a finite number');
+        task.estimated_time = 0;
+    }
+    
+    // Validate actual_time
+    if (task.actual_time === undefined || task.actual_time === null) {
+        errors.push('actual_time is missing');
+        task.actual_time = 0;
+    } else if (typeof task.actual_time !== 'number') {
+        errors.push(`actual_time must be a number, got ${typeof task.actual_time}`);
+        task.actual_time = 0;
+    } else if (task.actual_time < 0) {
+        errors.push('actual_time cannot be negative');
+        task.actual_time = 0;
+    } else if (!Number.isFinite(task.actual_time)) {
+        errors.push('actual_time must be a finite number');
+        task.actual_time = 0;
+    }
+    
+    // Check if actual_time exceeds estimated_time significantly
+    if (task.actual_time > task.estimated_time * 1.5) {
+        warnings.push(`actual_time (${task.actual_time}h) significantly exceeds estimated_time (${task.estimated_time}h)`);
+    }
+    
+    // Round to 2 decimal places
+    task.estimated_time = Math.round(task.estimated_time * 100) / 100;
+    task.actual_time = Math.round(task.actual_time * 100) / 100;
+    
+    return {
+        isValid: errors.length === 0,
+        errors,
+        warnings,
+        task
+    };
+}
+
+/**
+ * Validate all tasks' time data
+ * @param {object[]} tasksData - Array of tasks to validate
+ * @returns {object} Validation result with summary
+ */
+function validateAllTasksTimeData(tasksData) {
+    const validationResults = [];
+    let totalErrors = 0;
+    let totalWarnings = 0;
+    
+    tasksData.forEach((task, index) => {
+        const result = validateTaskTimeData(task);
+        validationResults.push({
+            taskIndex: index,
+            taskId: task.id,
+            taskName: task.name,
+            ...result
+        });
+        
+        totalErrors += result.errors.length;
+        totalWarnings += result.warnings.length;
+    });
+    
+    return {
+        isValid: totalErrors === 0,
+        totalErrors,
+        totalWarnings,
+        validationResults,
+        summary: {
+            totalTasks: tasksData.length,
+            validTasks: validationResults.filter(r => r.isValid).length,
+            invalidTasks: validationResults.filter(r => !r.isValid).length,
+            tasksWithWarnings: validationResults.filter(r => r.warnings.length > 0).length
+        }
+    };
+}
+
+/**
+ * Repair invalid time data in tasks
+ * @param {object[]} tasksData - Array of tasks to repair
+ * @returns {object} Repair result with details
+ */
+function repairTasksTimeData(tasksData) {
+    const repairResults = [];
+    let repairedCount = 0;
+    
+    tasksData.forEach((task, index) => {
+        const originalEstimatedTime = task.estimated_time;
+        const originalActualTime = task.actual_time;
+        
+        const result = validateTaskTimeData(task);
+        
+        if (!result.isValid || result.errors.length > 0) {
+            repairedCount++;
+            repairResults.push({
+                taskIndex: index,
+                taskId: task.id,
+                taskName: task.name,
+                originalEstimatedTime,
+                originalActualTime,
+                repairedEstimatedTime: task.estimated_time,
+                repairedActualTime: task.actual_time,
+                errors: result.errors
+            });
+        }
+    });
+    
+    return {
+        repairedCount,
+        repairResults,
+        summary: {
+            totalTasks: tasksData.length,
+            repairedTasks: repairedCount,
+            successRate: ((tasksData.length - repairedCount) / tasksData.length * 100).toFixed(1)
+        }
+    };
+}
+
+/**
+ * Statistics Engine - 統計計算エンジン
+ * 週間のタスク統計を計算するための関数群
+ */
+
+/**
+ * Calculate completion rate for the current week
+ * Validates: Requirements 1.1, 1.2
+ * 
+ * @param {Date} weekStartDate - The Monday of the week to calculate for (optional, defaults to current week)
+ * @returns {object} Completion rate statistics with the following structure:
+ *   {
+ *     week_start: string (YYYY-MM-DD),
+ *     total_tasks: number,
+ *     completed_tasks: number,
+ *     completion_rate: number (0-100),
+ *     is_valid: boolean
+ *   }
+ */
+function calculateCompletionRate(weekStartDate = null) {
+    try {
+        // Determine the week start date
+        const monday = weekStartDate ? getMonday(weekStartDate) : getMonday(currentDate);
+        const weekStartStr = formatDate(monday);
+        
+        // Calculate the end of the week
+        const endOfWeek = new Date(monday);
+        endOfWeek.setDate(monday.getDate() + 6);
+        const endOfWeekStr = formatDate(endOfWeek);
+        
+        // Count total and completed tasks for the current week
+        let totalTasks = 0;
+        let completedTasks = 0;
+        
+        // Count active tasks assigned to this week
+        tasks.forEach(task => {
+            if (task.assigned_date && task.assigned_date >= weekStartStr && task.assigned_date <= endOfWeekStr) {
+                totalTasks++;
+                if (task.completed) {
+                    completedTasks++;
+                }
+            }
+        });
+        
+        // Count archived (completed) tasks from this week
+        const archivedTasks = loadArchivedTasks();
+        archivedTasks.forEach(task => {
+            if (task.assigned_date && task.assigned_date >= weekStartStr && task.assigned_date <= endOfWeekStr) {
+                totalTasks++;
+                completedTasks++;
+            }
+        });
+        
+        // Calculate completion rate
+        let completionRate = 0;
+        if (totalTasks > 0) {
+            completionRate = (completedTasks / totalTasks) * 100;
+            // Round to 2 decimal places
+            completionRate = Math.round(completionRate * 100) / 100;
+        }
+        
+        return {
+            week_start: weekStartStr,
+            total_tasks: totalTasks,
+            completed_tasks: completedTasks,
+            completion_rate: completionRate,
+            is_valid: true
+        };
+    } catch (error) {
+        console.error('完了率計算エラー:', error);
+        return {
+            week_start: formatDate(getMonday(currentDate)),
+            total_tasks: 0,
+            completed_tasks: 0,
+            completion_rate: 0,
+            is_valid: false,
+            error: error.message
+        };
+    }
+}
+
+/**
+ * Get completion rate for a specific week
+ * Validates: Requirements 1.1, 1.2
+ * 
+ * @param {number} weeksOffset - Number of weeks to offset from current week (0 = current, -1 = last week, 1 = next week)
+ * @returns {object} Completion rate statistics
+ */
+function getCompletionRateForWeek(weeksOffset = 0) {
+    const targetDate = new Date(currentDate);
+    const monday = getMonday(targetDate);
+    monday.setDate(monday.getDate() + (weeksOffset * 7));
+    
+    return calculateCompletionRate(monday);
+}
+
+/**
+ * Calculate category-based time analysis for the current week
+ * Validates: Requirements 1.3
+ * 
+ * Analyzes time spent on each category by calculating:
+ * - Total estimated time per category
+ * - Total actual time per category
+ * - Time variance (actual - estimated) per category
+ * 
+ * @param {Date} weekStartDate - The Monday of the week to calculate for (optional, defaults to current week)
+ * @returns {object} Category breakdown with the following structure:
+ *   {
+ *     week_start: string (YYYY-MM-DD),
+ *     categories: {
+ *       [categoryKey]: {
+ *         name: string,
+ *         estimated_time: number,
+ *         actual_time: number,
+ *         variance: number (actual - estimated),
+ *         task_count: number,
+ *         completed_count: number
+ *       }
+ *     },
+ *     total_estimated_time: number,
+ *     total_actual_time: number,
+ *     is_valid: boolean
+ *   }
+ */
+function calculateCategoryTimeAnalysis(weekStartDate = null) {
+    try {
+        // Determine the week start date
+        const monday = weekStartDate ? getMonday(weekStartDate) : getMonday(currentDate);
+        const weekStartStr = formatDate(monday);
+        
+        // Calculate the end of the week
+        const endOfWeek = new Date(monday);
+        endOfWeek.setDate(monday.getDate() + 6);
+        const endOfWeekStr = formatDate(endOfWeek);
+        
+        // Initialize category breakdown object
+        const categoryBreakdown = {};
+        let totalEstimatedTime = 0;
+        let totalActualTime = 0;
+        
+        // Initialize all categories
+        Object.keys(TASK_CATEGORIES).forEach(categoryKey => {
+            categoryBreakdown[categoryKey] = {
+                name: TASK_CATEGORIES[categoryKey].name,
+                estimated_time: 0,
+                actual_time: 0,
+                variance: 0,
+                task_count: 0,
+                completed_count: 0
+            };
+        });
+        
+        // Analyze active tasks
+        tasks.forEach(task => {
+            if (task.assigned_date && task.assigned_date >= weekStartStr && task.assigned_date <= endOfWeekStr) {
+                const category = validateCategory(task.category);
+                
+                if (!categoryBreakdown[category]) {
+                    categoryBreakdown[category] = {
+                        name: TASK_CATEGORIES[category].name,
+                        estimated_time: 0,
+                        actual_time: 0,
+                        variance: 0,
+                        task_count: 0,
+                        completed_count: 0
+                    };
+                }
+                
+                categoryBreakdown[category].estimated_time += task.estimated_time || 0;
+                categoryBreakdown[category].actual_time += task.actual_time || 0;
+                categoryBreakdown[category].task_count++;
+                
+                if (task.completed) {
+                    categoryBreakdown[category].completed_count++;
+                }
+            }
+        });
+        
+        // Analyze archived tasks
+        const archivedTasks = loadArchivedTasks();
+        archivedTasks.forEach(task => {
+            if (task.assigned_date && task.assigned_date >= weekStartStr && task.assigned_date <= endOfWeekStr) {
+                const category = validateCategory(task.category);
+                
+                if (!categoryBreakdown[category]) {
+                    categoryBreakdown[category] = {
+                        name: TASK_CATEGORIES[category].name,
+                        estimated_time: 0,
+                        actual_time: 0,
+                        variance: 0,
+                        task_count: 0,
+                        completed_count: 0
+                    };
+                }
+                
+                categoryBreakdown[category].estimated_time += task.estimated_time || 0;
+                categoryBreakdown[category].actual_time += task.actual_time || 0;
+                categoryBreakdown[category].task_count++;
+                categoryBreakdown[category].completed_count++;
+            }
+        });
+        
+        // Calculate variance and totals
+        Object.keys(categoryBreakdown).forEach(categoryKey => {
+            const category = categoryBreakdown[categoryKey];
+            category.variance = category.actual_time - category.estimated_time;
+            category.variance = Math.round(category.variance * 100) / 100;
+            
+            totalEstimatedTime += category.estimated_time;
+            totalActualTime += category.actual_time;
+        });
+        
+        // Round totals to 2 decimal places
+        totalEstimatedTime = Math.round(totalEstimatedTime * 100) / 100;
+        totalActualTime = Math.round(totalActualTime * 100) / 100;
+        
+        return {
+            week_start: weekStartStr,
+            categories: categoryBreakdown,
+            total_estimated_time: totalEstimatedTime,
+            total_actual_time: totalActualTime,
+            is_valid: true
+        };
+    } catch (error) {
+        console.error('カテゴリ別時間分析エラー:', error);
+        return {
+            week_start: formatDate(getMonday(currentDate)),
+            categories: {},
+            total_estimated_time: 0,
+            total_actual_time: 0,
+            is_valid: false,
+            error: error.message
+        };
+    }
+}
+
+/**
+ * Calculate daily work time for the current week
+ * Validates: Requirements 1.4
+ * 
+ * Calculates the total estimated and actual time for each day of the week.
+ * 
+ * @param {Date} weekStartDate - The Monday of the week to calculate for (optional, defaults to current week)
+ * @returns {object} Daily breakdown with the following structure:
+ *   {
+ *     week_start: string (YYYY-MM-DD),
+ *     daily_breakdown: {
+ *       [dateString]: {
+ *         date: string (YYYY-MM-DD),
+ *         day_name: string (月, 火, etc.),
+ *         estimated_time: number,
+ *         actual_time: number,
+ *         variance: number (actual - estimated),
+ *         task_count: number,
+ *         completed_count: number
+ *       }
+ *     },
+ *     total_estimated_time: number,
+ *     total_actual_time: number,
+ *     is_valid: boolean
+ *   }
+ */
+function calculateDailyWorkTime(weekStartDate = null) {
+    try {
+        // Determine the week start date
+        const monday = weekStartDate ? getMonday(weekStartDate) : getMonday(currentDate);
+        const weekStartStr = formatDate(monday);
+        
+        // Day names in Japanese
+        const dayNames = ['月', '火', '水', '木', '金', '土', '日'];
+        
+        // Initialize daily breakdown
+        const dailyBreakdown = {};
+        let totalEstimatedTime = 0;
+        let totalActualTime = 0;
+        
+        // Initialize all days of the week
+        for (let i = 0; i < 7; i++) {
+            const date = new Date(monday);
+            date.setDate(monday.getDate() + i);
+            const dateStr = formatDate(date);
+            
+            dailyBreakdown[dateStr] = {
+                date: dateStr,
+                day_name: dayNames[i],
+                estimated_time: 0,
+                actual_time: 0,
+                variance: 0,
+                task_count: 0,
+                completed_count: 0
+            };
+        }
+        
+        // Analyze active tasks
+        tasks.forEach(task => {
+            if (task.assigned_date && task.assigned_date >= weekStartStr) {
+                const endOfWeek = new Date(monday);
+                endOfWeek.setDate(monday.getDate() + 6);
+                const endOfWeekStr = formatDate(endOfWeek);
+                
+                if (task.assigned_date <= endOfWeekStr) {
+                    const dateStr = task.assigned_date;
+                    
+                    if (dailyBreakdown[dateStr]) {
+                        dailyBreakdown[dateStr].estimated_time += task.estimated_time || 0;
+                        dailyBreakdown[dateStr].actual_time += task.actual_time || 0;
+                        dailyBreakdown[dateStr].task_count++;
+                        
+                        if (task.completed) {
+                            dailyBreakdown[dateStr].completed_count++;
+                        }
+                    }
+                }
+            }
+        });
+        
+        // Analyze archived tasks
+        const archivedTasks = loadArchivedTasks();
+        archivedTasks.forEach(task => {
+            if (task.assigned_date && task.assigned_date >= weekStartStr) {
+                const endOfWeek = new Date(monday);
+                endOfWeek.setDate(monday.getDate() + 6);
+                const endOfWeekStr = formatDate(endOfWeek);
+                
+                if (task.assigned_date <= endOfWeekStr) {
+                    const dateStr = task.assigned_date;
+                    
+                    if (dailyBreakdown[dateStr]) {
+                        dailyBreakdown[dateStr].estimated_time += task.estimated_time || 0;
+                        dailyBreakdown[dateStr].actual_time += task.actual_time || 0;
+                        dailyBreakdown[dateStr].task_count++;
+                        dailyBreakdown[dateStr].completed_count++;
+                    }
+                }
+            }
+        });
+        
+        // Calculate variance and totals
+        Object.keys(dailyBreakdown).forEach(dateStr => {
+            const day = dailyBreakdown[dateStr];
+            day.variance = day.actual_time - day.estimated_time;
+            day.variance = Math.round(day.variance * 100) / 100;
+            
+            totalEstimatedTime += day.estimated_time;
+            totalActualTime += day.actual_time;
+        });
+        
+        // Round totals to 2 decimal places
+        totalEstimatedTime = Math.round(totalEstimatedTime * 100) / 100;
+        totalActualTime = Math.round(totalActualTime * 100) / 100;
+        
+        return {
+            week_start: weekStartStr,
+            daily_breakdown: dailyBreakdown,
+            total_estimated_time: totalEstimatedTime,
+            total_actual_time: totalActualTime,
+            is_valid: true
+        };
+    } catch (error) {
+        console.error('日別作業時間計算エラー:', error);
+        return {
+            week_start: formatDate(getMonday(currentDate)),
+            daily_breakdown: {},
+            total_estimated_time: 0,
+            total_actual_time: 0,
+            is_valid: false,
+            error: error.message
+        };
+    }
+}
+
+/**
+ * Calculate estimated vs actual time analysis for the current week
+ * Validates: Requirements 1.5
+ * 
+ * Compares estimated and actual times to identify:
+ * - Overall time variance
+ * - Tasks with time overruns
+ * - Estimation accuracy
+ * 
+ * @param {Date} weekStartDate - The Monday of the week to calculate for (optional, defaults to current week)
+ * @returns {object} Estimated vs actual analysis with the following structure:
+ *   {
+ *     week_start: string (YYYY-MM-DD),
+ *     total_estimated_time: number,
+ *     total_actual_time: number,
+ *     total_variance: number (actual - estimated),
+ *     variance_percentage: number (variance / estimated * 100),
+ *     overrun_tasks: Array<{
+ *       id: string,
+ *       name: string,
+ *       estimated_time: number,
+ *       actual_time: number,
+ *       overrun_time: number,
+ *       overrun_percentage: number,
+ *       severity: string (minor, moderate, severe)
+ *     }>,
+ *     on_track_tasks: number,
+ *     overrun_task_count: number,
+ *     estimation_accuracy: number (0-100, higher is better),
+ *     is_valid: boolean
+ *   }
+ */
+function calculateEstimatedVsActualAnalysis(weekStartDate = null) {
+    try {
+        // Determine the week start date
+        const monday = weekStartDate ? getMonday(weekStartDate) : getMonday(currentDate);
+        const weekStartStr = formatDate(monday);
+        
+        // Calculate the end of the week
+        const endOfWeek = new Date(monday);
+        endOfWeek.setDate(monday.getDate() + 6);
+        const endOfWeekStr = formatDate(endOfWeek);
+        
+        let totalEstimatedTime = 0;
+        let totalActualTime = 0;
+        let onTrackTasks = 0;
+        const overrunTasks = [];
+        
+        // Analyze active tasks
+        tasks.forEach(task => {
+            if (task.assigned_date && task.assigned_date >= weekStartStr && task.assigned_date <= endOfWeekStr) {
+                const estimatedTime = task.estimated_time || 0;
+                const actualTime = task.actual_time || 0;
+                
+                totalEstimatedTime += estimatedTime;
+                totalActualTime += actualTime;
+                
+                // Check for time overrun
+                if (actualTime > estimatedTime) {
+                    const overrunTime = actualTime - estimatedTime;
+                    const overrunPercentage = estimatedTime > 0 ? (overrunTime / estimatedTime) * 100 : 0;
+                    const severity = getTimeOverrunSeverity(estimatedTime, actualTime);
+                    
+                    overrunTasks.push({
+                        id: task.id,
+                        name: task.name,
+                        estimated_time: estimatedTime,
+                        actual_time: actualTime,
+                        overrun_time: Math.round(overrunTime * 100) / 100,
+                        overrun_percentage: Math.round(overrunPercentage * 100) / 100,
+                        severity: severity
+                    });
+                } else {
+                    onTrackTasks++;
+                }
+            }
+        });
+        
+        // Analyze archived tasks
+        const archivedTasks = loadArchivedTasks();
+        archivedTasks.forEach(task => {
+            if (task.assigned_date && task.assigned_date >= weekStartStr && task.assigned_date <= endOfWeekStr) {
+                const estimatedTime = task.estimated_time || 0;
+                const actualTime = task.actual_time || 0;
+                
+                totalEstimatedTime += estimatedTime;
+                totalActualTime += actualTime;
+                
+                // Archived tasks are considered on track (completed)
+                onTrackTasks++;
+            }
+        });
+        
+        // Calculate variance
+        const totalVariance = totalActualTime - totalEstimatedTime;
+        const variancePercentage = totalEstimatedTime > 0 ? (totalVariance / totalEstimatedTime) * 100 : 0;
+        
+        // Calculate estimation accuracy (0-100, higher is better)
+        // Perfect estimation = 100, 50% overrun = 0
+        let estimationAccuracy = 100;
+        if (variancePercentage > 0) {
+            estimationAccuracy = Math.max(0, 100 - variancePercentage);
+        } else if (variancePercentage < 0) {
+            // Underestimation is also penalized, but less severely
+            estimationAccuracy = Math.max(0, 100 + (variancePercentage / 2));
+        }
+        estimationAccuracy = Math.round(estimationAccuracy * 100) / 100;
+        
+        return {
+            week_start: weekStartStr,
+            total_estimated_time: Math.round(totalEstimatedTime * 100) / 100,
+            total_actual_time: Math.round(totalActualTime * 100) / 100,
+            total_variance: Math.round(totalVariance * 100) / 100,
+            variance_percentage: Math.round(variancePercentage * 100) / 100,
+            overrun_tasks: overrunTasks,
+            on_track_tasks: onTrackTasks,
+            overrun_task_count: overrunTasks.length,
+            estimation_accuracy: estimationAccuracy,
+            is_valid: true
+        };
+    } catch (error) {
+        console.error('見積もり vs 実績分析エラー:', error);
+        return {
+            week_start: formatDate(getMonday(currentDate)),
+            total_estimated_time: 0,
+            total_actual_time: 0,
+            total_variance: 0,
+            variance_percentage: 0,
+            overrun_tasks: [],
+            on_track_tasks: 0,
+            overrun_task_count: 0,
+            estimation_accuracy: 0,
+            is_valid: false,
+            error: error.message
+        };
+    }
 }
 
 /**
@@ -435,12 +1268,72 @@ class WeekdayManager {
 }
 
 /**
+ * Migrate archived tasks to add actual_time field
+ * @param {object[]} archivedTasks
+ * @returns {object[]}
+ */
+function migrateArchivedTasksAddActualTime(archivedTasks) {
+    return archivedTasks.map(task => {
+        if (task.actual_time === undefined) {
+            return {
+                ...task,
+                actual_time: 0
+            };
+        }
+        return task;
+    });
+}
+
+/**
+ * Migrate archived tasks to add recurring task fields
+ * @param {object[]} archivedTasks
+ * @returns {object[]}
+ */
+function migrateArchivedTasksAddRecurringFields(archivedTasks) {
+    return archivedTasks.map(task => {
+        const updatedTask = { ...task };
+        
+        if (updatedTask.is_recurring === undefined) {
+            updatedTask.is_recurring = false;
+        }
+        if (updatedTask.recurrence_pattern === undefined) {
+            updatedTask.recurrence_pattern = null;
+        }
+        if (updatedTask.recurrence_end_date === undefined) {
+            updatedTask.recurrence_end_date = null;
+        }
+        
+        return updatedTask;
+    });
+}
+
+/**
  * Load archived tasks from localStorage.
  * @returns {object[]}
  */
 function loadArchivedTasks() {
     const archivedJson = localStorage.getItem(ARCHIVE_STORAGE_KEY);
-    return archivedJson ? JSON.parse(archivedJson) : [];
+    if (!archivedJson) {
+        return [];
+    }
+    
+    try {
+        let archivedTasks = JSON.parse(archivedJson);
+        
+        // マイグレーション実行
+        const history = getMigrationHistory();
+        if (history.version >= '1.0') {
+            archivedTasks = migrateArchivedTasksAddActualTime(archivedTasks);
+        }
+        if (history.version >= '1.1') {
+            archivedTasks = migrateArchivedTasksAddRecurringFields(archivedTasks);
+        }
+        
+        return archivedTasks;
+    } catch (error) {
+        console.error('アーカイブタスクの読み込みに失敗:', error);
+        return [];
+    }
 }
 
 /**
@@ -448,7 +1341,10 @@ function loadArchivedTasks() {
  * @param {object[]} archivedTasks
  */
 function saveArchivedTasks(archivedTasks) {
-    localStorage.setItem(ARCHIVE_STORAGE_KEY, JSON.stringify(archivedTasks));
+    // マイグレーション適用
+    let migratedTasks = migrateArchivedTasksAddActualTime(archivedTasks);
+    migratedTasks = migrateArchivedTasksAddRecurringFields(migratedTasks);
+    localStorage.setItem(ARCHIVE_STORAGE_KEY, JSON.stringify(migratedTasks));
 }
 
 /**
@@ -569,6 +1465,121 @@ function verifyCategoryData() {
 }
 
 /**
+ * Verify and repair migration data in LocalStorage.
+ */
+function verifyMigrationData() {
+    let dataModified = false;
+    
+    // タスクデータのactual_timeフィールド検証
+    tasks.forEach(task => {
+        if (task.actual_time === undefined || typeof task.actual_time !== 'number') {
+            task.actual_time = 0;
+            dataModified = true;
+            console.log(`Task "${task.name}" actual_time field corrected`);
+        }
+    });
+    
+    // タスクデータの繰り返しフィールド検証
+    tasks.forEach(task => {
+        if (task.is_recurring === undefined || typeof task.is_recurring !== 'boolean') {
+            task.is_recurring = false;
+            dataModified = true;
+            console.log(`Task "${task.name}" is_recurring field corrected`);
+        }
+        if (task.recurrence_pattern === undefined) {
+            task.recurrence_pattern = null;
+            dataModified = true;
+            console.log(`Task "${task.name}" recurrence_pattern field corrected`);
+        }
+        if (task.recurrence_end_date === undefined) {
+            task.recurrence_end_date = null;
+            dataModified = true;
+            console.log(`Task "${task.name}" recurrence_end_date field corrected`);
+        }
+    });
+    
+    // タスクデータの時間バリデーション
+    const timeValidationResult = validateAllTasksTimeData(tasks);
+    if (!timeValidationResult.isValid) {
+        console.warn(`Time data validation found ${timeValidationResult.totalErrors} errors`);
+        const repairResult = repairTasksTimeData(tasks);
+        if (repairResult.repairedCount > 0) {
+            dataModified = true;
+            console.log(`Repaired ${repairResult.repairedCount} tasks with invalid time data`);
+        }
+    }
+    
+    // アーカイブデータのactual_timeフィールド検証
+    const archivedTasks = loadArchivedTasks();
+    let archiveModified = false;
+    archivedTasks.forEach(task => {
+        if (task.actual_time === undefined || typeof task.actual_time !== 'number') {
+            task.actual_time = 0;
+            archiveModified = true;
+            console.log(`Archived task "${task.name}" actual_time field corrected`);
+        }
+    });
+    
+    // アーカイブデータの繰り返しフィールド検証
+    archivedTasks.forEach(task => {
+        if (task.is_recurring === undefined || typeof task.is_recurring !== 'boolean') {
+            task.is_recurring = false;
+            archiveModified = true;
+            console.log(`Archived task "${task.name}" is_recurring field corrected`);
+        }
+        if (task.recurrence_pattern === undefined) {
+            task.recurrence_pattern = null;
+            archiveModified = true;
+            console.log(`Archived task "${task.name}" recurrence_pattern field corrected`);
+        }
+        if (task.recurrence_end_date === undefined) {
+            task.recurrence_end_date = null;
+            archiveModified = true;
+            console.log(`Archived task "${task.name}" recurrence_end_date field corrected`);
+        }
+    });
+    
+    // アーカイブデータの時間バリデーション
+    const archivedTimeValidationResult = validateAllTasksTimeData(archivedTasks);
+    if (!archivedTimeValidationResult.isValid) {
+        console.warn(`Archived time data validation found ${archivedTimeValidationResult.totalErrors} errors`);
+        const repairResult = repairTasksTimeData(archivedTasks);
+        if (repairResult.repairedCount > 0) {
+            archiveModified = true;
+            console.log(`Repaired ${repairResult.repairedCount} archived tasks with invalid time data`);
+        }
+    }
+    
+    if (dataModified) {
+        console.log("Migration data verification completed - tasks updated.");
+        saveTasks();
+    }
+    
+    if (archiveModified) {
+        console.log("Migration data verification completed - archive updated.");
+        saveArchivedTasks(archivedTasks);
+    }
+    
+    return dataModified || archiveModified;
+}
+
+/**
+ * Get migration status information
+ * @returns {object}
+ */
+function getMigrationStatus() {
+    const history = getMigrationHistory();
+    return {
+        currentVersion: history.version,
+        targetVersion: CURRENT_MIGRATION_VERSION,
+        lastMigrationDate: history.lastMigrationDate,
+        migrationCount: history.migrations.length,
+        migrations: history.migrations,
+        isMigrationNeeded: history.version < CURRENT_MIGRATION_VERSION
+    };
+}
+
+/**
  * Moves incomplete tasks from past weeks to the unassigned list.
  */
 function carryOverOldTasks() {
@@ -590,6 +1601,394 @@ function carryOverOldTasks() {
     }
 }
 
+/**
+ * Template Management Functions
+ * テンプレート機能の実装 (10.1, 10.2, 10.3, 10.4)
+ */
+
+/**
+ * Load templates from localStorage
+ * @returns {object[]}
+ */
+function loadTemplates() {
+    const templatesJson = localStorage.getItem(TEMPLATES_STORAGE_KEY);
+    if (!templatesJson) {
+        return [];
+    }
+    try {
+        return JSON.parse(templatesJson);
+    } catch (error) {
+        console.warn('テンプレートの読み込みに失敗:', error);
+        return [];
+    }
+}
+
+/**
+ * Save templates to localStorage
+ * @param {object[]} templates
+ */
+function saveTemplates(templates) {
+    localStorage.setItem(TEMPLATES_STORAGE_KEY, JSON.stringify(templates));
+}
+
+/**
+ * Save current task as a template (10.1)
+ * @param {object} task - Task to save as template
+ * @param {string} templateName - Name for the template
+ * @returns {object} Created template
+ */
+function saveTaskAsTemplate(task, templateName) {
+    const templates = loadTemplates();
+    
+    const template = {
+        id: `template-${Date.now()}`,
+        name: templateName,
+        description: task.details || '',
+        base_task: {
+            name: task.name,
+            estimated_time: task.estimated_time,
+            priority: task.priority,
+            category: task.category,
+            details: task.details,
+            is_recurring: task.is_recurring,
+            recurrence_pattern: task.recurrence_pattern,
+            recurrence_end_date: task.recurrence_end_date
+        },
+        created_date: formatDate(new Date()),
+        usage_count: 0
+    };
+    
+    templates.push(template);
+    saveTemplates(templates);
+    
+    return template;
+}
+
+/**
+ * Get all templates (10.2)
+ * @returns {object[]}
+ */
+function getTemplates() {
+    return loadTemplates();
+}
+
+/**
+ * Create new task from template (10.3)
+ * @param {object} template - Template to use
+ * @param {string} assignedDate - Date to assign the task (optional)
+ * @returns {object} Created task
+ */
+function createTaskFromTemplate(template, assignedDate = null) {
+    const newTask = {
+        id: `task-${Date.now()}`,
+        name: template.base_task.name,
+        estimated_time: template.base_task.estimated_time,
+        actual_time: 0,
+        priority: template.base_task.priority,
+        category: template.base_task.category,
+        assigned_date: assignedDate || null,
+        due_date: null,
+        details: template.base_task.details,
+        completed: false,
+        is_recurring: template.base_task.is_recurring,
+        recurrence_pattern: template.base_task.recurrence_pattern,
+        recurrence_end_date: template.base_task.recurrence_end_date
+    };
+    
+    // Update template usage count
+    const templates = loadTemplates();
+    const templateIndex = templates.findIndex(t => t.id === template.id);
+    if (templateIndex > -1) {
+        templates[templateIndex].usage_count++;
+        saveTemplates(templates);
+    }
+    
+    return newTask;
+}
+
+/**
+ * Delete template (10.4)
+ * @param {string} templateId - Template ID to delete
+ * @returns {boolean} Success status
+ */
+function deleteTemplate(templateId) {
+    const templates = loadTemplates();
+    const filteredTemplates = templates.filter(t => t.id !== templateId);
+    
+    if (filteredTemplates.length < templates.length) {
+        saveTemplates(filteredTemplates);
+        return true;
+    }
+    
+    return false;
+}
+
+/**
+ * Duplicate a template with a new name
+ * @param {object} template - Template to duplicate
+ * @param {string} searchTerm - Current search term for re-rendering
+ * @param {string} sortBy - Current sort order for re-rendering
+ */
+function duplicateTemplate(template, searchTerm = '', sortBy = 'recent') {
+    const newTemplateName = prompt('新しいテンプレート名を入力してください:', `${template.name} (コピー)`);
+    
+    if (!newTemplateName) return;
+    
+    const templates = loadTemplates();
+    
+    const newTemplate = {
+        id: `template-${Date.now()}`,
+        name: newTemplateName,
+        description: template.description,
+        base_task: { ...template.base_task },
+        created_date: new Date().toISOString().split('T')[0],
+        usage_count: 0
+    };
+    
+    templates.push(newTemplate);
+    saveTemplates(templates);
+    
+    showNotification(`テンプレート「${newTemplateName}」を作成しました`, 'success');
+    filterAndRenderTemplates(searchTerm, sortBy);
+}
+
+/**
+ * RecurrenceEngine - 繰り返しタスク生成エンジン
+ * 毎日、毎週、毎月のパターンで新規タスクを自動生成
+ */
+class RecurrenceEngine {
+    constructor() {
+        this.RECURRENCE_PATTERNS = {
+            'daily': { name: '毎日', interval: 1 },
+            'weekly': { name: '毎週', interval: 7 },
+            'monthly': { name: '毎月', interval: 30 }
+        };
+    }
+    
+    /**
+     * 繰り返しタスクから新規タスクを生成
+     * @param {object} recurringTask - 繰り返しタスク設定
+     * @param {Date} targetDate - 生成対象の日付
+     * @returns {object|null} 生成されたタスク、または生成不可の場合はnull
+     */
+    generateTaskFromRecurrence(recurringTask, targetDate) {
+        // 繰り返しタスクの有効性チェック
+        if (!recurringTask.is_recurring || !recurringTask.recurrence_pattern) {
+            return null;
+        }
+        
+        // 終了日チェック
+        if (recurringTask.recurrence_end_date) {
+            const endDate = new Date(recurringTask.recurrence_end_date);
+            endDate.setHours(0, 0, 0, 0);
+            targetDate.setHours(0, 0, 0, 0);
+            
+            if (targetDate > endDate) {
+                return null;
+            }
+        }
+        
+        // 新規タスクを生成
+        const newTask = {
+            id: `task-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+            name: recurringTask.name,
+            estimated_time: recurringTask.estimated_time,
+            actual_time: 0,
+            priority: recurringTask.priority,
+            category: recurringTask.category,
+            assigned_date: formatDate(targetDate),
+            due_date: null,
+            details: recurringTask.details,
+            completed: false,
+            is_recurring: false,
+            recurrence_pattern: null,
+            recurrence_end_date: null
+        };
+        
+        return newTask;
+    }
+    
+    /**
+     * 毎日パターンの生成 (8.1)
+     * @param {object} recurringTask - 繰り返しタスク設定
+     * @param {Date} startDate - 開始日
+     * @param {Date} endDate - 終了日
+     * @returns {object[]} 生成されたタスク配列
+     */
+    generateDailyTasks(recurringTask, startDate, endDate) {
+        const generatedTasks = [];
+        const currentDate = new Date(startDate);
+        currentDate.setHours(0, 0, 0, 0);
+        
+        const end = new Date(endDate);
+        end.setHours(0, 0, 0, 0);
+        
+        while (currentDate <= end) {
+            const newTask = this.generateTaskFromRecurrence(recurringTask, new Date(currentDate));
+            if (newTask) {
+                generatedTasks.push(newTask);
+            }
+            currentDate.setDate(currentDate.getDate() + 1);
+        }
+        
+        return generatedTasks;
+    }
+    
+    /**
+     * 毎週パターンの生成 (8.2)
+     * @param {object} recurringTask - 繰り返しタスク設定
+     * @param {Date} startDate - 開始日
+     * @param {Date} endDate - 終了日
+     * @returns {object[]} 生成されたタスク配列
+     */
+    generateWeeklyTasks(recurringTask, startDate, endDate) {
+        const generatedTasks = [];
+        const currentDate = new Date(startDate);
+        currentDate.setHours(0, 0, 0, 0);
+        
+        const end = new Date(endDate);
+        end.setHours(0, 0, 0, 0);
+        
+        while (currentDate <= end) {
+            const newTask = this.generateTaskFromRecurrence(recurringTask, new Date(currentDate));
+            if (newTask) {
+                generatedTasks.push(newTask);
+            }
+            currentDate.setDate(currentDate.getDate() + 7);
+        }
+        
+        return generatedTasks;
+    }
+    
+    /**
+     * 毎月パターンの生成 (8.3)
+     * @param {object} recurringTask - 繰り返しタスク設定
+     * @param {Date} startDate - 開始日
+     * @param {Date} endDate - 終了日
+     * @returns {object[]} 生成されたタスク配列
+     */
+    generateMonthlyTasks(recurringTask, startDate, endDate) {
+        const generatedTasks = [];
+        const currentDate = new Date(startDate);
+        currentDate.setHours(0, 0, 0, 0);
+        
+        const end = new Date(endDate);
+        end.setHours(0, 0, 0, 0);
+        
+        const startDay = currentDate.getDate();
+        
+        while (currentDate <= end) {
+            const newTask = this.generateTaskFromRecurrence(recurringTask, new Date(currentDate));
+            if (newTask) {
+                generatedTasks.push(newTask);
+            }
+            
+            // 月を進める（日付をリセットしてから月を進める）
+            currentDate.setDate(1);
+            currentDate.setMonth(currentDate.getMonth() + 1);
+            
+            // 月末の日付調整（例：1月31日 -> 2月28日）
+            const lastDayOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate();
+            if (startDay > lastDayOfMonth) {
+                currentDate.setDate(lastDayOfMonth);
+            } else {
+                currentDate.setDate(startDay);
+            }
+        }
+        
+        return generatedTasks;
+    }
+    
+    /**
+     * 終了日の処理 (8.4)
+     * 繰り返しタスクの終了日を検証・更新
+     * @param {object} recurringTask - 繰り返しタスク設定
+     * @param {string} newEndDate - 新しい終了日 (YYYY-MM-DD形式)
+     * @returns {boolean} 更新成功の可否
+     */
+    updateRecurrenceEndDate(recurringTask, newEndDate) {
+        if (!recurringTask.is_recurring) {
+            console.warn('This task is not a recurring task');
+            return false;
+        }
+        
+        // 終了日の妥当性チェック
+        if (newEndDate) {
+            const endDate = new Date(newEndDate);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            
+            if (endDate < today) {
+                console.warn('End date cannot be in the past');
+                return false;
+            }
+        }
+        
+        recurringTask.recurrence_end_date = newEndDate || null;
+        return true;
+    }
+    
+    /**
+     * 繰り返しタスクの有効期限をチェック
+     * @param {object} recurringTask - 繰り返しタスク設定
+     * @returns {boolean} 有効期限内かどうか
+     */
+    isRecurrenceActive(recurringTask) {
+        if (!recurringTask.is_recurring) {
+            return false;
+        }
+        
+        if (recurringTask.recurrence_end_date) {
+            const endDate = new Date(recurringTask.recurrence_end_date);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            
+            return today <= endDate;
+        }
+        
+        return true;
+    }
+    
+    /**
+     * 指定期間内の繰り返しタスクをすべて生成
+     * @param {object[]} recurringTasks - 繰り返しタスク配列
+     * @param {Date} startDate - 開始日
+     * @param {Date} endDate - 終了日
+     * @returns {object[]} 生成されたすべてのタスク
+     */
+    generateAllRecurringTasks(recurringTasks, startDate, endDate) {
+        const allGeneratedTasks = [];
+        
+        recurringTasks.forEach(recurringTask => {
+            if (!this.isRecurrenceActive(recurringTask)) {
+                return;
+            }
+            
+            let generatedTasks = [];
+            
+            switch (recurringTask.recurrence_pattern) {
+                case 'daily':
+                    generatedTasks = this.generateDailyTasks(recurringTask, startDate, endDate);
+                    break;
+                case 'weekly':
+                    generatedTasks = this.generateWeeklyTasks(recurringTask, startDate, endDate);
+                    break;
+                case 'monthly':
+                    generatedTasks = this.generateMonthlyTasks(recurringTask, startDate, endDate);
+                    break;
+                default:
+                    console.warn(`Unknown recurrence pattern: ${recurringTask.recurrence_pattern}`);
+            }
+            
+            allGeneratedTasks.push(...generatedTasks);
+        });
+        
+        return allGeneratedTasks;
+    }
+}
+
+// グローバルインスタンス
+let recurrenceEngine;
 
 // --- Main Application Logic ---
 
@@ -606,6 +2005,9 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // タスク一括移動の初期化
     taskBulkMover = new TaskBulkMover();
+    
+    // 繰り返しタスク生成エンジンの初期化
+    recurrenceEngine = new RecurrenceEngine();
 
     // --- DOM Element Selections ---
     const addTaskBtn = document.getElementById('add-task-btn');
@@ -622,6 +2024,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const dueHourInput = document.getElementById('due-hour');
     const taskDetailsInput = document.getElementById('task-details');
     const duplicateTaskBtn = document.getElementById('duplicate-task-btn');
+    
+    // 繰り返しタスク設定UI要素
+    const isRecurringCheckbox = document.getElementById('is-recurring');
+    const recurrenceOptions = document.getElementById('recurrence-options');
+    const recurrencePatternSelect = document.getElementById('recurrence-pattern');
+    const recurrenceEndDateInput = document.getElementById('recurrence-end-date');
 
     const prevWeekBtn = document.getElementById('prev-week');
     const todayBtn = document.getElementById('today');
@@ -654,6 +2062,9 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // カテゴリデータの検証と修復
     verifyCategoryData();
+    
+    // マイグレーションデータの検証と修復
+    verifyMigrationData();
 
     // 設定値をUIに反映
     idealDailyMinutesInput.value = settings.ideal_daily_minutes;
@@ -675,11 +2086,79 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 💡 修正 2: 初期ロード時にタスクボードを描画する
     renderWeek();
+    
+    // ダッシュボード初期化
+    initializeDashboardToggle();
+    updateDashboard();
+
+    // テンプレート機能の初期化
+    initializeTemplatePanel();
 
     // --- Modal Logic ---
     addTaskBtn.addEventListener('click', () => {
         openTaskModal();
     });
+    
+    function initializeTemplatePanel() {
+        const templateToggleBtn = document.getElementById('template-toggle');
+        const templatePanel = document.getElementById('template-panel');
+        const closeTemplatePanelBtn = document.getElementById('close-template-panel');
+        const saveAsTemplateBtn = document.getElementById('save-as-template-btn');
+        const templateSearchInput = document.getElementById('template-search');
+        const templateSortSelect = document.getElementById('template-sort');
+        
+        if (!templateToggleBtn || !templatePanel) return;
+        
+        // Template panel toggle
+        templateToggleBtn.addEventListener('click', () => {
+            if (templatePanel.style.display === 'none') {
+                templatePanel.style.display = 'block';
+                renderTemplateList();
+            } else {
+                templatePanel.style.display = 'none';
+            }
+        });
+        
+        // Close template panel
+        if (closeTemplatePanelBtn) {
+            closeTemplatePanelBtn.addEventListener('click', () => {
+                templatePanel.style.display = 'none';
+            });
+        }
+        
+        // Template search
+        if (templateSearchInput) {
+            templateSearchInput.addEventListener('input', (e) => {
+                const searchTerm = e.target.value.toLowerCase();
+                filterAndRenderTemplates(searchTerm, templateSortSelect?.value || 'recent');
+            });
+        }
+        
+        // Template sort
+        if (templateSortSelect) {
+            templateSortSelect.addEventListener('change', (e) => {
+                const searchTerm = templateSearchInput?.value.toLowerCase() || '';
+                filterAndRenderTemplates(searchTerm, e.target.value);
+            });
+        }
+        
+        // Save as template button
+        if (saveAsTemplateBtn) {
+            saveAsTemplateBtn.addEventListener('click', () => {
+                if (editingTaskId) {
+                    const task = tasks.find(t => t.id === editingTaskId);
+                    if (task) {
+                        const templateName = prompt('テンプレート名を入力してください:', task.name);
+                        if (templateName) {
+                            saveTaskAsTemplate(task, templateName);
+                            showNotification(`テンプレート「${templateName}」を保存しました`, 'success');
+                            closeTaskModal();
+                        }
+                    }
+                }
+            });
+        }
+    }
     
     function openTaskModal(presetDate = null) {
         editingTaskId = null;
@@ -691,10 +2170,22 @@ document.addEventListener('DOMContentLoaded', () => {
             taskDateInput.value = presetDate;
         }
         
+        // 繰り返しタスク設定UIをリセット
+        isRecurringCheckbox.checked = false;
+        recurrenceOptions.style.display = 'none';
+        recurrencePatternSelect.value = '';
+        recurrenceEndDateInput.value = '';
+        
         taskForm.querySelector('button[type="submit"]').textContent = '登録';
         
         // 複製ボタンを非表示
         duplicateTaskBtn.style.display = 'none';
+        
+        // テンプレート保存ボタンを非表示
+        const saveAsTemplateBtn = document.getElementById('save-as-template-btn');
+        if (saveAsTemplateBtn) {
+            saveAsTemplateBtn.style.display = 'none';
+        }
         
         // スクロール抑制とアニメーション
         document.body.classList.add('modal-open');
@@ -794,6 +2285,25 @@ document.addEventListener('DOMContentLoaded', () => {
     // 日付入力フィールドをカレンダー専用に設定
     makeDateInputCalendarOnly(taskDateInput);
     makeDateInputCalendarOnly(dueDateInput);
+    makeDateInputCalendarOnly(recurrenceEndDateInput);
+    
+    // 繰り返しタスク設定UI (9.1, 9.2, 9.3)
+    // 繰り返しチェックボックスの変更イベント
+    isRecurringCheckbox.addEventListener('change', function() {
+        if (this.checked) {
+            recurrenceOptions.style.display = 'block';
+        } else {
+            recurrenceOptions.style.display = 'none';
+            recurrencePatternSelect.value = '';
+            recurrenceEndDateInput.value = '';
+        }
+    });
+    
+    // パターン選択の変更イベント
+    recurrencePatternSelect.addEventListener('change', function() {
+        // パターンが選択されたときの処理（将来の拡張用）
+        // 例：パターンに応じた説明文の表示など
+    });
     
     // 午前午後選択時の時間選択表示制御
     dueTimePeriodInput.addEventListener('change', function() {
@@ -950,6 +2460,13 @@ document.addEventListener('DOMContentLoaded', () => {
         editingTaskId = task.id;
         taskNameInput.value = task.name;
         estimatedTimeInput.value = task.estimated_time;
+        
+        // 実績時間フィールドの設定
+        const actualTimeInput = document.getElementById('actual-time');
+        if (actualTimeInput) {
+            actualTimeInput.value = task.actual_time || 0;
+        }
+        
         taskPriorityInput.value = task.priority || 'medium';
         taskCategoryInput.value = validateCategory(task.category);
         // 💡 修正: nullの場合は空文字列を設定し、HTML inputで表示できるようにする
@@ -970,10 +2487,29 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         
         taskDetailsInput.value = task.details || '';
+        
+        // 繰り返しタスク設定の復元
+        isRecurringCheckbox.checked = task.is_recurring || false;
+        if (task.is_recurring) {
+            recurrenceOptions.style.display = 'block';
+            recurrencePatternSelect.value = task.recurrence_pattern || '';
+            recurrenceEndDateInput.value = task.recurrence_end_date || '';
+        } else {
+            recurrenceOptions.style.display = 'none';
+            recurrencePatternSelect.value = '';
+            recurrenceEndDateInput.value = '';
+        }
+        
         taskForm.querySelector('button[type="submit"]').textContent = '更新';
         
         // 複製ボタンを表示
         duplicateTaskBtn.style.display = 'block';
+        
+        // テンプレート保存ボタンを表示
+        const saveAsTemplateBtn = document.getElementById('save-as-template-btn');
+        if (saveAsTemplateBtn) {
+            saveAsTemplateBtn.style.display = 'block';
+        }
         
         // スクロール抑制とアニメーション
         document.body.classList.add('modal-open');
@@ -990,15 +2526,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // 💡 修正 3: taskDateInput.valueが空文字列の場合はnullにする
         const assignedDateValue = taskDateInput.value || null;
+        
+        // 実績時間フィールドの取得
+        const actualTimeInput = document.getElementById('actual-time');
+        const actualTime = actualTimeInput ? parseFloat(actualTimeInput.value) || 0 : 0;
 
         const taskData = {
             name: taskNameInput.value,
             estimated_time: parseFloat(estimatedTimeInput.value),
+            actual_time: actualTime,
             priority: taskPriorityInput.value,
             category: validateCategory(taskCategoryInput.value),
             assigned_date: assignedDateValue,
             due_date: buildDueDateString(),
             details: taskDetailsInput.value,
+            is_recurring: isRecurringCheckbox.checked,
+            recurrence_pattern: isRecurringCheckbox.checked ? recurrencePatternSelect.value || null : null,
+            recurrence_end_date: isRecurringCheckbox.checked ? recurrenceEndDateInput.value || null : null
         };
 
         if (editingTaskId) {
@@ -1019,6 +2563,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         saveTasks();
         renderWeek();
+        updateDashboard();
         closeTaskModal();
         taskForm.reset();
     });
@@ -1036,6 +2581,29 @@ document.addEventListener('DOMContentLoaded', () => {
         // カテゴリクラスを追加
         const categoryKey = validateCategory(task.category);
         taskElement.classList.add(`category-${categoryKey}`);
+        
+        // 時間比較インジケーターを追加
+        if (task.actual_time && task.actual_time > 0) {
+            const timeDiff = task.actual_time - task.estimated_time;
+            if (timeDiff > 0) {
+                taskElement.classList.add('time-overrun-indicator');
+                
+                // 時間超過度合いに応じたクラスを追加
+                const severity = getTimeOverrunSeverity(task.estimated_time, task.actual_time);
+                if (severity === 'minor') {
+                    taskElement.classList.add('time-overrun-minor');
+                } else if (severity === 'moderate') {
+                    taskElement.classList.add('time-overrun-moderate');
+                } else if (severity === 'severe') {
+                    taskElement.classList.add('time-overrun-severe');
+                }
+            } else if (timeDiff < 0) {
+                taskElement.classList.add('time-underrun-indicator');
+            } else {
+                taskElement.classList.add('time-match-indicator');
+            }
+        }
+        
         taskElement.dataset.taskId = task.id;
         taskElement.dataset.category = categoryKey;
         taskElement.draggable = true;
@@ -1053,13 +2621,35 @@ document.addEventListener('DOMContentLoaded', () => {
         const priorityLabels = { high: '高', medium: '中', low: '低' };
         const priorityLabel = priorityLabels[task.priority] || '中';
         
+        // 実績時間の表示と比較情報
+        let timeDisplayHTML = `<div class="task-time">`;
+        timeDisplayHTML += `${task.estimated_time}h`;
+        
+        if (task.actual_time && task.actual_time > 0) {
+            const timeDiff = task.actual_time - task.estimated_time;
+            const timeDiffPercent = ((timeDiff / task.estimated_time) * 100).toFixed(0);
+            
+            if (timeDiff > 0) {
+                // 実績が見積もりを超えた場合
+                const severity = getTimeOverrunSeverity(task.estimated_time, task.actual_time);
+                timeDisplayHTML += ` <span class="time-overrun time-overrun-${severity}">(+${timeDiff}h, +${timeDiffPercent}%)</span>`;
+            } else if (timeDiff < 0) {
+                // 実績が見積もりより少ない場合
+                timeDisplayHTML += ` <span class="time-underrun">(${timeDiff}h, ${timeDiffPercent}%)</span>`;
+            } else {
+                // 実績が見積もりと同じ場合
+                timeDisplayHTML += ` <span class="time-match">(一致)</span>`;
+            }
+        }
+        timeDisplayHTML += '</div>';
+        
         taskElement.innerHTML = `
             <div class="category-bar" style="background-color: ${categoryInfo.color};"></div>
             <div class="task-header">
                 <input type="checkbox" class="task-checkbox" ${task.completed ? 'checked' : ''}>
                 <div class="task-name">${task.name}</div>
                 <span class="task-priority ${task.priority || 'medium'}">${priorityLabel}</span>
-                <div class="task-time">${task.estimated_time}h</div>
+                ${timeDisplayHTML}
             </div>
             ${dueDateHTML}
         `;
@@ -1078,11 +2668,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 setTimeout(() => {
                     archiveCompletedTasks();
                     renderWeek();
+                    updateDashboard();
                 }, 1800);
             } else {
                 // チェック解除時は即座に更新
                 saveTasks();
                 renderWeek();
+                updateDashboard();
             }
         });
 
@@ -1277,6 +2869,9 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // グリッド列数を更新
         updateGridColumns();
+        
+        // ダッシュボードを更新
+        updateDashboard();
         
         isRendering = false;
     }
@@ -1716,22 +3311,26 @@ document.addEventListener('DOMContentLoaded', () => {
     function exportData() {
         const archivedTasks = loadArchivedTasks();
         
-        // カテゴリ情報を含むデータの準備
+        // カテゴリ情報と繰り返しタスク情報を含むデータの準備
         const data = { 
             tasks: tasks, 
             settings: settings,
             archive: archivedTasks,
             exportInfo: {
                 exportDate: new Date().toISOString(),
-                version: "1.0",
-                categoriesIncluded: true
+                version: "1.1",
+                categoriesIncluded: true,
+                recurringTasksIncluded: true
             }
         };
         
-        // エクスポート前にカテゴリ情報の存在を確認
+        // エクスポート前にカテゴリ情報と繰り返しタスク情報の存在を確認
         const tasksWithCategories = tasks.filter(task => task.category).length;
         const archivedWithCategories = archivedTasks.filter(task => task.category).length;
-        console.log(`Exporting ${tasks.length} tasks (${tasksWithCategories} with categories) and ${archivedTasks.length} archived tasks (${archivedWithCategories} with categories)`);
+        const tasksWithRecurrence = tasks.filter(task => task.is_recurring).length;
+        const archivedWithRecurrence = archivedTasks.filter(task => task.is_recurring).length;
+        
+        console.log(`Exporting ${tasks.length} tasks (${tasksWithCategories} with categories, ${tasksWithRecurrence} recurring) and ${archivedTasks.length} archived tasks (${archivedWithCategories} with categories, ${archivedWithRecurrence} recurring)`);
         
         const dataStr = JSON.stringify(data, null, 2);
         const blob = new Blob([dataStr], { type: 'application/json' });
@@ -1745,7 +3344,7 @@ document.addEventListener('DOMContentLoaded', () => {
         URL.revokeObjectURL(url);
         
         // エクスポート完了メッセージ
-        console.log("Data export completed with category information included.");
+        console.log("Data export completed with category information and recurring task data included.");
     }
 
     function importData(file) {
@@ -1756,13 +3355,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 let importStats = {
                     tasksImported: 0,
                     tasksWithCategories: 0,
+                    tasksWithRecurrence: 0,
                     archivedImported: 0,
                     archivedWithCategories: 0,
-                    categoriesFixed: 0
+                    archivedWithRecurrence: 0,
+                    categoriesFixed: 0,
+                    recurringTasksImported: 0
                 };
                 
                 if (importedData.tasks) {
-                    // タスク配列を上書き（カテゴリ情報の検証とマイグレーション処理を含む）
+                    // タスク配列を上書き（カテゴリ情報と繰り返しタスク情報の検証を含む）
                     tasks = importedData.tasks.map(task => {
                         const originalCategory = task.category;
                         const validatedCategory = validateCategory(task.category);
@@ -1774,15 +3376,25 @@ document.addEventListener('DOMContentLoaded', () => {
                             importStats.tasksWithCategories++;
                         }
                         
+                        // 繰り返しタスク情報の検証
+                        const isRecurring = task.is_recurring === true;
+                        if (isRecurring) {
+                            importStats.tasksWithRecurrence++;
+                            importStats.recurringTasksImported++;
+                        }
+                        
                         return { 
                             ...task, 
                             completed: task.completed || false,
-                            category: validatedCategory
+                            category: validatedCategory,
+                            is_recurring: isRecurring,
+                            recurrence_pattern: isRecurring ? (task.recurrence_pattern || null) : null,
+                            recurrence_end_date: isRecurring ? (task.recurrence_end_date || null) : null
                         };
                     });
                     importStats.tasksImported = tasks.length;
                     saveTasks();
-                    console.log(`Imported ${importStats.tasksImported} tasks, ${importStats.tasksWithCategories} with categories`);
+                    console.log(`Imported ${importStats.tasksImported} tasks, ${importStats.tasksWithCategories} with categories, ${importStats.tasksWithRecurrence} recurring`);
                 }
                 
                 if (importedData.settings) {
@@ -1794,7 +3406,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 
                 if (importedData.archive) {
-                    // アーカイブデータを上書き（カテゴリ情報の検証を含む）
+                    // アーカイブデータを上書き（カテゴリ情報と繰り返しタスク情報の検証を含む）
                     const validatedArchive = importedData.archive.map(task => {
                         const originalCategory = task.category;
                         const validatedCategory = validateCategory(task.category);
@@ -1806,14 +3418,24 @@ document.addEventListener('DOMContentLoaded', () => {
                             importStats.archivedWithCategories++;
                         }
                         
+                        // 繰り返しタスク情報の検証
+                        const isRecurring = task.is_recurring === true;
+                        if (isRecurring) {
+                            importStats.archivedWithRecurrence++;
+                            importStats.recurringTasksImported++;
+                        }
+                        
                         return {
                             ...task,
-                            category: validatedCategory
+                            category: validatedCategory,
+                            is_recurring: isRecurring,
+                            recurrence_pattern: isRecurring ? (task.recurrence_pattern || null) : null,
+                            recurrence_end_date: isRecurring ? (task.recurrence_end_date || null) : null
                         };
                     });
                     importStats.archivedImported = validatedArchive.length;
                     saveArchivedTasks(validatedArchive);
-                    console.log(`Imported ${importStats.archivedImported} archived tasks, ${importStats.archivedWithCategories} with categories`);
+                    console.log(`Imported ${importStats.archivedImported} archived tasks, ${importStats.archivedWithCategories} with categories, ${importStats.archivedWithRecurrence} recurring`);
                 }
                 
                 renderWeek();
@@ -1822,6 +3444,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 let message = 'データのインポートが完了しました。';
                 if (importStats.categoriesFixed > 0) {
                     message += `\n${importStats.categoriesFixed}個のカテゴリが修正されました。`;
+                }
+                if (importStats.recurringTasksImported > 0) {
+                    message += `\n${importStats.recurringTasksImported}個の繰り返しタスク情報がインポートされました。`;
                 }
                 alert(message);
                 
@@ -2264,3 +3889,353 @@ document.addEventListener('DOMContentLoaded', () => {
     clearArchiveBtn.addEventListener('click', clearAllArchive);
 
 }); // DOMContentLoaded 終了
+
+
+/**
+ * ダッシュボード更新関数
+ * 週間統計情報を計算してダッシュボードに表示
+ */
+function updateDashboard() {
+    try {
+        // 統計情報を計算
+        const completionRate = calculateCompletionRate();
+        const categoryAnalysis = calculateCategoryTimeAnalysis();
+        const dailyWorkTime = calculateDailyWorkTime();
+        
+        // 完了率を更新
+        const completionRateValue = document.getElementById('completion-rate-value');
+        if (completionRateValue) {
+            completionRateValue.textContent = `${completionRate.completion_rate}%`;
+        }
+        
+        // 完了タスク数を更新
+        const completedTasksValue = document.getElementById('completed-tasks-value');
+        if (completedTasksValue) {
+            completedTasksValue.textContent = `${completionRate.completed_tasks}/${completionRate.total_tasks}`;
+        }
+        
+        // 見積時間を更新
+        const estimatedTimeValue = document.getElementById('estimated-time-value');
+        if (estimatedTimeValue) {
+            const estimatedHours = Math.floor(categoryAnalysis.total_estimated_time);
+            const estimatedMinutes = Math.round((categoryAnalysis.total_estimated_time % 1) * 60);
+            estimatedTimeValue.textContent = `${estimatedHours}h ${estimatedMinutes}m`;
+        }
+        
+        // 実績時間を更新
+        const actualTimeValue = document.getElementById('actual-time-value');
+        if (actualTimeValue) {
+            const actualHours = Math.floor(categoryAnalysis.total_actual_time);
+            const actualMinutes = Math.round((categoryAnalysis.total_actual_time % 1) * 60);
+            actualTimeValue.textContent = `${actualHours}h ${actualMinutes}m`;
+        }
+        
+        // カテゴリ別時間分析を更新
+        updateCategoryBreakdown(categoryAnalysis);
+        
+        // 日別作業時間を更新
+        updateDailyBreakdown(dailyWorkTime);
+        
+    } catch (error) {
+        console.error('ダッシュボード更新エラー:', error);
+    }
+}
+
+/**
+ * カテゴリ別時間分析を表示
+ * @param {object} categoryAnalysis - カテゴリ別分析データ
+ */
+function updateCategoryBreakdown(categoryAnalysis) {
+    const categoryBreakdownEl = document.getElementById('category-breakdown');
+    if (!categoryBreakdownEl) return;
+    
+    categoryBreakdownEl.innerHTML = '';
+    
+    // カテゴリ情報を取得して表示
+    Object.keys(categoryAnalysis.categories).forEach(categoryKey => {
+        const category = categoryAnalysis.categories[categoryKey];
+        
+        // タスク数が0の場合はスキップ
+        if (category.task_count === 0) {
+            return;
+        }
+        
+        const categoryInfo = getCategoryInfo(categoryKey);
+        
+        const categoryItem = document.createElement('div');
+        categoryItem.className = 'category-item';
+        categoryItem.style.borderLeftColor = categoryInfo.color;
+        
+        const completionRate = category.task_count > 0 
+            ? Math.round((category.completed_count / category.task_count) * 100) 
+            : 0;
+        
+        categoryItem.innerHTML = `
+            <div class="category-item-name" style="color: ${categoryInfo.color};">
+                ${categoryInfo.name}
+            </div>
+            <div class="category-item-stats">
+                <div class="category-item-stat">
+                    <div class="category-item-stat-label">見積</div>
+                    <div class="category-item-stat-value">${category.estimated_time.toFixed(1)}h</div>
+                </div>
+                <div class="category-item-stat">
+                    <div class="category-item-stat-label">実績</div>
+                    <div class="category-item-stat-value">${category.actual_time.toFixed(1)}h</div>
+                </div>
+                <div class="category-item-stat">
+                    <div class="category-item-stat-label">完了率</div>
+                    <div class="category-item-stat-value">${completionRate}%</div>
+                </div>
+                <div class="category-item-stat">
+                    <div class="category-item-stat-label">タスク数</div>
+                    <div class="category-item-stat-value">${category.completed_count}/${category.task_count}</div>
+                </div>
+            </div>
+        `;
+        
+        categoryBreakdownEl.appendChild(categoryItem);
+    });
+}
+
+/**
+ * 日別作業時間を表示
+ * @param {object} dailyWorkTime - 日別作業時間データ
+ */
+function updateDailyBreakdown(dailyWorkTime) {
+    const dailyBreakdownEl = document.getElementById('daily-breakdown');
+    if (!dailyBreakdownEl) return;
+    
+    dailyBreakdownEl.innerHTML = '';
+    
+    // 日別データを表示
+    Object.keys(dailyWorkTime.daily_breakdown).forEach(dateStr => {
+        const day = dailyWorkTime.daily_breakdown[dateStr];
+        
+        const dailyItem = document.createElement('div');
+        dailyItem.className = 'daily-item';
+        
+        // 日付をフォーマット
+        const date = new Date(dateStr);
+        const dateFormatted = `${date.getMonth() + 1}/${date.getDate()}`;
+        
+        // 見積時間と実績時間の差分を計算
+        const variance = day.actual_time - day.estimated_time;
+        const varianceClass = variance > 0 ? 'overrun' : variance < 0 ? 'underrun' : 'match';
+        const varianceText = variance > 0 ? `+${variance.toFixed(1)}h` : `${variance.toFixed(1)}h`;
+        
+        dailyItem.innerHTML = `
+            <div class="daily-item-day">${day.day_name}曜日</div>
+            <div class="daily-item-date">${dateFormatted}</div>
+            <div class="daily-item-stats">
+                <div class="daily-item-stat">
+                    <span class="daily-item-stat-label">見積</span>
+                    <span class="daily-item-stat-value">${day.estimated_time.toFixed(1)}h</span>
+                </div>
+                <div class="daily-item-stat">
+                    <span class="daily-item-stat-label">実績</span>
+                    <span class="daily-item-stat-value">${day.actual_time.toFixed(1)}h</span>
+                </div>
+                <div class="daily-item-stat">
+                    <span class="daily-item-stat-label">差分</span>
+                    <span class="daily-item-stat-value time-${varianceClass}">${varianceText}</span>
+                </div>
+            </div>
+            <div class="daily-item-tasks">
+                完了: ${day.completed_count}/${day.task_count}
+            </div>
+        `;
+        
+        dailyBreakdownEl.appendChild(dailyItem);
+    });
+}
+
+/**
+ * ダッシュボード表示切り替え機能
+ */
+function initializeDashboardToggle() {
+    const toggleBtn = document.getElementById('toggle-dashboard');
+    const dashboardContent = document.getElementById('dashboard-content');
+    
+    if (!toggleBtn || !dashboardContent) return;
+    
+    toggleBtn.addEventListener('click', () => {
+        dashboardContent.classList.toggle('collapsed');
+        toggleBtn.textContent = dashboardContent.classList.contains('collapsed') ? '+' : '−';
+    });
+}
+
+/**
+ * Render template list in template panel
+ */
+function renderTemplateList() {
+    filterAndRenderTemplates('', 'recent');
+}
+
+/**
+ * Filter and render templates based on search term and sort order
+ * @param {string} searchTerm - Search term to filter templates
+ * @param {string} sortBy - Sort order: 'recent', 'name', or 'usage'
+ */
+function filterAndRenderTemplates(searchTerm = '', sortBy = 'recent') {
+    const templateList = document.getElementById('template-list');
+    const templateEmpty = document.getElementById('template-empty');
+    
+    if (!templateList || !templateEmpty) return;
+    
+    let templates = getTemplates();
+    
+    // Filter by search term
+    if (searchTerm) {
+        templates = templates.filter(template => 
+            template.name.toLowerCase().includes(searchTerm) ||
+            template.base_task.name.toLowerCase().includes(searchTerm) ||
+            template.base_task.details.toLowerCase().includes(searchTerm)
+        );
+    }
+    
+    // Sort templates
+    switch (sortBy) {
+        case 'name':
+            templates.sort((a, b) => a.name.localeCompare(b.name, 'ja'));
+            break;
+        case 'usage':
+            templates.sort((a, b) => b.usage_count - a.usage_count);
+            break;
+        case 'recent':
+        default:
+            templates.sort((a, b) => new Date(b.created_date) - new Date(a.created_date));
+            break;
+    }
+    
+    if (templates.length === 0) {
+        templateList.innerHTML = '';
+        templateEmpty.style.display = 'block';
+        return;
+    }
+    
+    templateEmpty.style.display = 'none';
+    templateList.innerHTML = '';
+    
+    templates.forEach(template => {
+        const templateItem = document.createElement('div');
+        templateItem.className = 'template-item';
+        
+        const categoryInfo = getCategoryInfo(template.base_task.category);
+        
+        templateItem.innerHTML = `
+            <div class="template-item-header">
+                <div class="template-item-title">${template.name}</div>
+                <div class="template-item-actions">
+                    <button class="template-use-btn" data-template-id="${template.id}" title="このテンプレートから新規タスクを作成" aria-label="テンプレートを使用">使用</button>
+                    <button class="template-duplicate-btn" data-template-id="${template.id}" title="このテンプレートを複製" aria-label="テンプレートを複製">複製</button>
+                    <button class="template-delete-btn" data-template-id="${template.id}" title="このテンプレートを削除" aria-label="テンプレートを削除">削除</button>
+                </div>
+            </div>
+            <div class="template-item-content">
+                <div class="template-item-task-name">${template.base_task.name}</div>
+                <div class="template-item-meta">
+                    <span class="template-item-category" style="background-color: ${categoryInfo.bgColor}; color: ${categoryInfo.color};">
+                        ${categoryInfo.name}
+                    </span>
+                    <span class="template-item-time">見積: ${template.base_task.estimated_time}h</span>
+                    <span class="template-item-priority priority-${template.base_task.priority}">
+                        優先度: ${['high', 'medium', 'low'].includes(template.base_task.priority) ? (['高', '中', '低'][['high', 'medium', 'low'].indexOf(template.base_task.priority)]) : '中'}
+                    </span>
+                </div>
+                ${template.base_task.details ? `<div class="template-item-description">${template.base_task.details}</div>` : ''}
+                <div class="template-item-footer">
+                    <span class="template-item-created">作成: ${template.created_date}</span>
+                    <span class="template-item-usage">使用回数: ${template.usage_count}</span>
+                </div>
+            </div>
+        `;
+        
+        templateList.appendChild(templateItem);
+    });
+    
+    // Add event listeners for template actions
+    document.querySelectorAll('.template-use-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const templateId = e.target.dataset.templateId;
+            const template = templates.find(t => t.id === templateId);
+            if (template) {
+                createAndAddTaskFromTemplate(template);
+            }
+        });
+    });
+    
+    document.querySelectorAll('.template-duplicate-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const templateId = e.target.dataset.templateId;
+            const template = templates.find(t => t.id === templateId);
+            if (template) {
+                duplicateTemplate(template, searchTerm, sortBy);
+            }
+        });
+    });
+    
+    document.querySelectorAll('.template-delete-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const templateId = e.target.dataset.templateId;
+            if (confirm('このテンプレートを削除してもよろしいですか？')) {
+                deleteTemplate(templateId);
+                filterAndRenderTemplates(searchTerm, sortBy);
+            }
+        });
+    });
+}
+
+/**
+ * Create and add task from template
+ * @param {object} template
+ */
+function createAndAddTaskFromTemplate(template) {
+    const newTask = createTaskFromTemplate(template);
+    tasks.push(newTask);
+    saveTasks();
+    renderWeek();
+    updateDashboard();
+    
+    // Close template panel
+    const templatePanel = document.getElementById('template-panel');
+    if (templatePanel) {
+        templatePanel.style.display = 'none';
+    }
+    
+    // Show notification
+    showNotification(`テンプレート「${template.name}」から新規タスクを作成しました`, 'success');
+}
+
+/**
+ * Show notification message
+ * @param {string} message
+ * @param {string} type - 'success', 'info', 'warning', 'error'
+ */
+function showNotification(message, type = 'info') {
+    const notification = document.createElement('div');
+    notification.className = `notification notification-${type}`;
+    notification.textContent = message;
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background-color: ${type === 'success' ? '#27ae60' : type === 'error' ? '#e74c3c' : type === 'warning' ? '#f39c12' : '#4a90e2'};
+        color: white;
+        padding: 12px 20px;
+        border-radius: 6px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        z-index: 10000;
+        font-size: 0.9em;
+    `;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.style.opacity = '0';
+        notification.style.transition = 'opacity 0.3s ease';
+        setTimeout(() => {
+            notification.remove();
+        }, 300);
+    }, 3000);
+}

@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>繰り返しタスク生成エンジン - 統合テスト</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .test-container {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #333;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 10px;
+        }
+        
+        h2 {
+            color: #555;
+            margin-top: 20px;
+        }
+        
+        .test-case {
+            margin: 15px 0;
+            padding: 15px;
+            border-left: 4px solid #3498db;
+            background-color: #f9f9f9;
+        }
+        
+        .test-case.passed {
+            border-left-color: #27ae60;
+            background-color: #f0fdf4;
+        }
+        
+        .test-case.failed {
+            border-left-color: #e74c3c;
+            background-color: #fef2f2;
+        }
+        
+        .test-title {
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+        
+        .test-result {
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        
+        .status-badge.pass {
+            background-color: #27ae60;
+            color: white;
+        }
+        
+        .status-badge.fail {
+            background-color: #e74c3c;
+            color: white;
+        }
+        
+        .summary {
+            background-color: #ecf0f1;
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 20px;
+        }
+        
+        .summary-stat {
+            display: inline-block;
+            margin-right: 30px;
+            font-size: 16px;
+        }
+        
+        .summary-stat strong {
+            color: #3498db;
+        }
+        
+        .task-list {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #f9f9f9;
+            border-radius: 4px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .task-item {
+            padding: 8px;
+            margin: 5px 0;
+            background-color: white;
+            border-left: 3px solid #3498db;
+            border-radius: 2px;
+            font-size: 13px;
+        }
+        
+        .task-item.daily {
+            border-left-color: #3498db;
+        }
+        
+        .task-item.weekly {
+            border-left-color: #27ae60;
+        }
+        
+        .task-item.monthly {
+            border-left-color: #f39c12;
+        }
+        
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+        
+        button:hover {
+            background-color: #2980b9;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔄 繰り返しタスク生成エンジン - 統合テスト</h1>
+    
+    <div class="test-container">
+        <h2>テスト実行</h2>
+        <button onclick="runAllTests()">すべてのテストを実行</button>
+        <button onclick="clearResults()">結果をクリア</button>
+    </div>
+    
+    <div id="results" class="test-container" style="display: none;">
+        <h2>テスト結果</h2>
+        <div id="test-results"></div>
+        <div class="summary">
+            <div class="summary-stat">合計: <strong id="total">0</strong></div>
+            <div class="summary-stat">成功: <strong id="passed" style="color: #27ae60;">0</strong></div>
+            <div class="summary-stat">失敗: <strong id="failed" style="color: #e74c3c;">0</strong></div>
+            <div class="summary-stat">成功率: <strong id="rate">0%</strong></div>
+        </div>
+    </div>
+    
+    <script>
+        // RecurrenceEngineクラスの実装
+        class RecurrenceEngine {
+            constructor() {
+                this.RECURRENCE_PATTERNS = {
+                    'daily': { name: '毎日', interval: 1 },
+                    'weekly': { name: '毎週', interval: 7 },
+                    'monthly': { name: '毎月', interval: 30 }
+                };
+            }
+            
+            generateTaskFromRecurrence(recurringTask, targetDate) {
+                if (!recurringTask.is_recurring || !recurringTask.recurrence_pattern) {
+                    return null;
+                }
+                
+                if (recurringTask.recurrence_end_date) {
+                    const endDate = new Date(recurringTask.recurrence_end_date);
+                    endDate.setHours(0, 0, 0, 0);
+                    targetDate.setHours(0, 0, 0, 0);
+                    
+                    if (targetDate > endDate) {
+                        return null;
+                    }
+                }
+                
+                const newTask = {
+                    id: `task-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+                    name: recurringTask.name,
+                    estimated_time: recurringTask.estimated_time,
+                    actual_time: 0,
+                    priority: recurringTask.priority,
+                    category: recurringTask.category,
+                    assigned_date: formatDate(targetDate),
+                    due_date: null,
+                    details: recurringTask.details,
+                    completed: false,
+                    is_recurring: false,
+                    recurrence_pattern: null,
+                    recurrence_end_date: null
+                };
+                
+                return newTask;
+            }
+            
+            generateDailyTasks(recurringTask, startDate, endDate) {
+                const generatedTasks = [];
+                const currentDate = new Date(startDate);
+                currentDate.setHours(0, 0, 0, 0);
+                
+                const end = new Date(endDate);
+                end.setHours(0, 0, 0, 0);
+                
+                while (currentDate <= end) {
+                    const newTask = this.generateTaskFromRecurrence(recurringTask, new Date(currentDate));
+                    if (newTask) {
+                        generatedTasks.push(newTask);
+                    }
+                    currentDate.setDate(currentDate.getDate() + 1);
+                }
+                
+                return generatedTasks;
+            }
+            
+            generateWeeklyTasks(recurringTask, startDate, endDate) {
+                const generatedTasks = [];
+                const currentDate = new Date(startDate);
+                currentDate.setHours(0, 0, 0, 0);
+                
+                const end = new Date(endDate);
+                end.setHours(0, 0, 0, 0);
+                
+                while (currentDate <= end) {
+                    const newTask = this.generateTaskFromRecurrence(recurringTask, new Date(currentDate));
+                    if (newTask) {
+                        generatedTasks.push(newTask);
+                    }
+                    currentDate.setDate(currentDate.getDate() + 7);
+                }
+                
+                return generatedTasks;
+            }
+            
+            generateMonthlyTasks(recurringTask, startDate, endDate) {
+                const generatedTasks = [];
+                const currentDate = new Date(startDate);
+                currentDate.setHours(0, 0, 0, 0);
+                
+                const end = new Date(endDate);
+                end.setHours(0, 0, 0, 0);
+                
+                const startDay = currentDate.getDate();
+                
+                while (currentDate <= end) {
+                    const newTask = this.generateTaskFromRecurrence(recurringTask, new Date(currentDate));
+                    if (newTask) {
+                        generatedTasks.push(newTask);
+                    }
+                    
+                    currentDate.setDate(1);
+                    currentDate.setMonth(currentDate.getMonth() + 1);
+                    
+                    const lastDayOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate();
+                    if (startDay > lastDayOfMonth) {
+                        currentDate.setDate(lastDayOfMonth);
+                    } else {
+                        currentDate.setDate(startDay);
+                    }
+                }
+                
+                return generatedTasks;
+            }
+            
+            isRecurrenceActive(recurringTask) {
+                if (!recurringTask.is_recurring) {
+                    return false;
+                }
+                
+                if (recurringTask.recurrence_end_date) {
+                    const endDate = new Date(recurringTask.recurrence_end_date);
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
+                    
+                    return today <= endDate;
+                }
+                
+                return true;
+            }
+            
+            generateAllRecurringTasks(recurringTasks, startDate, endDate) {
+                const allGeneratedTasks = [];
+                
+                recurringTasks.forEach(recurringTask => {
+                    if (!this.isRecurrenceActive(recurringTask)) {
+                        return;
+                    }
+                    
+                    let generatedTasks = [];
+                    
+                    switch (recurringTask.recurrence_pattern) {
+                        case 'daily':
+                            generatedTasks = this.generateDailyTasks(recurringTask, startDate, endDate);
+                            break;
+                        case 'weekly':
+                            generatedTasks = this.generateWeeklyTasks(recurringTask, startDate, endDate);
+                            break;
+                        case 'monthly':
+                            generatedTasks = this.generateMonthlyTasks(recurringTask, startDate, endDate);
+                            break;
+                    }
+                    
+                    allGeneratedTasks.push(...generatedTasks);
+                });
+                
+                return allGeneratedTasks;
+            }
+        }
+        
+        function formatDate(date) {
+            const y = date.getFullYear();
+            const m = String(date.getMonth() + 1).padStart(2, '0');
+            const d = String(date.getDate()).padStart(2, '0');
+            return `${y}-${m}-${d}`;
+        }
+        
+        let testResults = [];
+        
+        function addTestResult(testName, passed, details = '') {
+            testResults.push({ testName, passed, details });
+        }
+        
+        function runAllTests() {
+            testResults = [];
+            const engine = new RecurrenceEngine();
+            
+            // テスト1: 毎日パターン
+            const dailyTask = {
+                id: 'task-1',
+                name: '毎日のレビュー',
+                estimated_time: 1,
+                priority: 'medium',
+                category: 'review',
+                details: '日次レビュー',
+                is_recurring: true,
+                recurrence_pattern: 'daily',
+                recurrence_end_date: null
+            };
+            
+            const dailyTasks = engine.generateDailyTasks(dailyTask, new Date('2024-01-01'), new Date('2024-01-07'));
+            addTestResult('毎日パターン (7日間)', dailyTasks.length === 7, `生成: ${dailyTasks.length}タスク`);
+            
+            // テスト2: 毎週パターン
+            const weeklyTask = {
+                id: 'task-2',
+                name: '週次ミーティング',
+                estimated_time: 2,
+                priority: 'high',
+                category: 'meeting',
+                details: '週次ミーティング',
+                is_recurring: true,
+                recurrence_pattern: 'weekly',
+                recurrence_end_date: null
+            };
+            
+            const weeklyTasks = engine.generateWeeklyTasks(weeklyTask, new Date('2024-01-01'), new Date('2024-01-29'));
+            addTestResult('毎週パターン (4週間)', weeklyTasks.length === 5, `生成: ${weeklyTasks.length}タスク`);
+            
+            // テスト3: 毎月パターン
+            const monthlyTask = {
+                id: 'task-3',
+                name: '月次レポート',
+                estimated_time: 4,
+                priority: 'high',
+                category: 'document',
+                details: '月次レポート作成',
+                is_recurring: true,
+                recurrence_pattern: 'monthly',
+                recurrence_end_date: null
+            };
+            
+            const monthlyTasks = engine.generateMonthlyTasks(monthlyTask, new Date('2024-01-15'), new Date('2024-03-15'));
+            addTestResult('毎月パターン (3ヶ月)', monthlyTasks.length === 3, `生成: ${monthlyTasks.length}タスク`);
+            
+            // テスト4: 終了日の処理
+            const limitedTask = {
+                id: 'task-4',
+                name: '期間限定タスク',
+                estimated_time: 1,
+                priority: 'medium',
+                category: 'task',
+                details: '期間限定',
+                is_recurring: true,
+                recurrence_pattern: 'daily',
+                recurrence_end_date: '2024-01-05'
+            };
+            
+            const limitedTasks = engine.generateDailyTasks(limitedTask, new Date('2024-01-01'), new Date('2024-01-10'));
+            addTestResult('終了日の処理', limitedTasks.length === 5, `生成: ${limitedTasks.length}タスク (終了日: 2024-01-05)`);
+            
+            // テスト5: 複数の繰り返しタスク
+            const allTasks = engine.generateAllRecurringTasks(
+                [dailyTask, weeklyTask, monthlyTask],
+                new Date('2024-01-01'),
+                new Date('2024-01-31')
+            );
+            addTestResult('複数の繰り返しタスク', allTasks.length > 0, `生成: ${allTasks.length}タスク`);
+            
+            // テスト6: 月末の日付調整
+            const monthEndTask = {
+                id: 'task-6',
+                name: '月末タスク',
+                estimated_time: 1,
+                priority: 'medium',
+                category: 'task',
+                details: 'テスト',
+                is_recurring: true,
+                recurrence_pattern: 'monthly',
+                recurrence_end_date: null
+            };
+            
+            const monthEndTasks = engine.generateMonthlyTasks(monthEndTask, new Date('2024-01-31'), new Date('2024-03-31'));
+            const isCorrect = monthEndTasks.length === 3 && 
+                            monthEndTasks[0].assigned_date === '2024-01-31' &&
+                            monthEndTasks[1].assigned_date === '2024-02-29' &&
+                            monthEndTasks[2].assigned_date === '2024-03-31';
+            addTestResult('月末の日付調整', isCorrect, `生成: ${monthEndTasks.map(t => t.assigned_date).join(', ')}`);
+            
+            displayResults();
+        }
+        
+        function displayResults() {
+            const resultsDiv = document.getElementById('results');
+            const testResultsDiv = document.getElementById('test-results');
+            
+            let html = '';
+            let passed = 0;
+            let failed = 0;
+            
+            testResults.forEach(result => {
+                passed += result.passed ? 1 : 0;
+                failed += result.passed ? 0 : 1;
+                
+                const className = result.passed ? 'passed' : 'failed';
+                const badge = result.passed ? 
+                    '<span class="status-badge pass">✅ PASS</span>' : 
+                    '<span class="status-badge fail">❌ FAIL</span>';
+                
+                html += `
+                    <div class="test-case ${className}">
+                        <div class="test-title">${result.testName}${badge}</div>
+                        <div class="test-result">${result.details}</div>
+                    </div>
+                `;
+            });
+            
+            testResultsDiv.innerHTML = html;
+            
+            const total = testResults.length;
+            const rate = total > 0 ? ((passed / total) * 100).toFixed(1) : 0;
+            
+            document.getElementById('total').textContent = total;
+            document.getElementById('passed').textContent = passed;
+            document.getElementById('failed').textContent = failed;
+            document.getElementById('rate').textContent = rate + '%';
+            
+            resultsDiv.style.display = 'block';
+        }
+        
+        function clearResults() {
+            testResults = [];
+            document.getElementById('results').style.display = 'none';
+        }
+    </script>
+</body>
+</html>

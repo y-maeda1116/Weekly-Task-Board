@@ -62,6 +62,7 @@
                 </div>
             </div>
             <div id="data-management">
+                <button id="template-toggle">📋 テンプレート</button>
                 <button id="export-data-btn">エクスポート</button>
                 <button id="import-data-btn">インポート</button>
                 <input type="file" id="import-file-input" style="display: none;" accept=".json">
@@ -71,6 +72,46 @@
         </div>
         <h2 id="week-title"></h2>
     </header>
+    <!-- ダッシュボードパネル -->
+    <div id="dashboard-panel" class="dashboard-panel">
+        <div class="dashboard-header">
+            <h2>📊 週間統計</h2>
+            <button id="toggle-dashboard" class="toggle-btn" aria-label="ダッシュボード表示切り替え">−</button>
+        </div>
+        <div id="dashboard-content" class="dashboard-content">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <span class="stat-label">完了率</span>
+                    <span class="stat-value" id="completion-rate-value">0%</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-label">完了タスク</span>
+                    <span class="stat-value" id="completed-tasks-value">0/0</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-label">見積時間</span>
+                    <span class="stat-value" id="estimated-time-value">0h</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-label">実績時間</span>
+                    <span class="stat-value" id="actual-time-value">0h</span>
+                </div>
+            </div>
+            <div class="chart-container">
+                <h3>カテゴリ別時間分析</h3>
+                <div id="category-breakdown" class="category-breakdown">
+                    <!-- カテゴリ別の時間分析がここに表示される -->
+                </div>
+            </div>
+            <div class="daily-breakdown-container">
+                <h3>日別作業時間</h3>
+                <div id="daily-breakdown" class="daily-breakdown">
+                    <!-- 日別の作業時間がここに表示される -->
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div id="app-container">
         <main id="task-board">
             <div class="day-column" id="monday">
@@ -142,6 +183,30 @@
         </div>
     </div>
 
+    <!-- テンプレート管理パネル -->
+    <div id="template-panel" class="template-panel" style="display: none;">
+        <div class="template-panel-header">
+            <h2>📋 テンプレート管理</h2>
+            <button id="close-template-panel" class="close-btn">&times;</button>
+        </div>
+        <div class="template-panel-toolbar">
+            <input type="text" id="template-search" placeholder="テンプレートを検索..." class="template-search">
+            <select id="template-sort" class="template-sort">
+                <option value="recent">最新順</option>
+                <option value="name">名前順</option>
+                <option value="usage">使用回数順</option>
+            </select>
+        </div>
+        <div id="template-panel-content" class="template-panel-content">
+            <div id="template-list" class="template-list">
+                <!-- テンプレート一覧がここに表示される -->
+            </div>
+            <div id="template-empty" class="template-empty">
+                テンプレートがまだ登録されていません
+            </div>
+        </div>
+    </div>
+
     <!-- タスク追加モーダル -->
     <div id="task-modal" class="modal">
         <div class="modal-content">
@@ -153,6 +218,9 @@
 
                 <label for="estimated-time">見積もり時間 (時間):</label>
                 <input type="number" id="estimated-time" min="0" step="0.5" required>
+
+                <label for="actual-time">実績時間 (時間):</label>
+                <input type="number" id="actual-time" min="0" step="0.5" value="0">
 
                 <label for="task-priority">優先度:</label>
                 <select id="task-priority" required>
@@ -204,9 +272,38 @@
                 <label for="task-details">詳細メモ:</label>
                 <textarea id="task-details"></textarea>
 
+                <!-- 繰り返しタスク設定セクション -->
+                <fieldset id="recurrence-fieldset">
+                    <legend>繰り返し設定</legend>
+                    
+                    <label for="is-recurring">
+                        <input type="checkbox" id="is-recurring">
+                        繰り返しタスクにする
+                    </label>
+
+                    <div id="recurrence-options" style="display: none;">
+                        <!-- パターン選択UI (9.2) -->
+                        <label for="recurrence-pattern">繰り返しパターン:</label>
+                        <select id="recurrence-pattern">
+                            <option value="">選択してください</option>
+                            <option value="daily">毎日</option>
+                            <option value="weekly">毎週</option>
+                            <option value="monthly">毎月</option>
+                        </select>
+
+                        <!-- 終了日設定UI (9.3) -->
+                        <label for="recurrence-end-date">終了日:</label>
+                        <div id="recurrence-end-date-container">
+                            <input type="date" id="recurrence-end-date" readonly>
+                            <span class="recurrence-info">終了日を指定しない場合は空白のままにしてください</span>
+                        </div>
+                    </div>
+                </fieldset>
+
                 <div id="form-buttons">
                     <button type="submit">登録</button>
                     <button type="button" id="duplicate-task-btn" style="display: none;">📋 複製</button>
+                    <button type="button" id="save-as-template-btn" style="display: none;">💾 テンプレートとして保存</button>
                 </div>
             </form>
         </div>
