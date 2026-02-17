@@ -4050,14 +4050,30 @@ function updateDailyBreakdown(dailyWorkTime) {
  * ダッシュボード表示切り替え機能
  */
 function initializeDashboardToggle() {
-    const toggleBtn = document.getElementById('toggle-dashboard');
-    const dashboardContent = document.getElementById('dashboard-content');
+    const statisticsToggleBtn = document.getElementById('statistics-toggle');
+    const dashboardPanel = document.getElementById('dashboard-panel');
+    const closeDashboardBtn = document.getElementById('close-dashboard');
     
-    if (!toggleBtn || !dashboardContent) return;
+    if (!statisticsToggleBtn || !dashboardPanel) return;
     
-    toggleBtn.addEventListener('click', () => {
-        dashboardContent.classList.toggle('collapsed');
-        toggleBtn.textContent = dashboardContent.classList.contains('collapsed') ? '+' : '−';
+    // 統計ボタンクリックで統計パネルを表示
+    statisticsToggleBtn.addEventListener('click', () => {
+        dashboardPanel.style.display = 'block';
+        updateDashboard();
+    });
+    
+    // 閉じるボタンで統計パネルを非表示
+    if (closeDashboardBtn) {
+        closeDashboardBtn.addEventListener('click', () => {
+            dashboardPanel.style.display = 'none';
+        });
+    }
+    
+    // パネル外をクリックで閉じる
+    dashboardPanel.addEventListener('click', (e) => {
+        if (e.target === dashboardPanel) {
+            dashboardPanel.style.display = 'none';
+        }
     });
 }
 

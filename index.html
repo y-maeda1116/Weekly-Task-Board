@@ -63,6 +63,7 @@
             </div>
             <div id="data-management">
                 <button id="template-toggle">📋 テンプレート</button>
+                <button id="statistics-toggle">📊 統計</button>
                 <button id="export-data-btn">エクスポート</button>
                 <button id="import-data-btn">インポート</button>
                 <input type="file" id="import-file-input" style="display: none;" accept=".json">
@@ -115,10 +116,10 @@
     </div>
 
     <!-- ダッシュボードパネル -->
-    <div id="dashboard-panel" class="dashboard-panel">
+    <div id="dashboard-panel" class="dashboard-panel" style="display: none;">
         <div class="dashboard-header">
             <h2>📊 週間統計</h2>
-            <button id="toggle-dashboard" class="toggle-btn" aria-label="ダッシュボード表示切り替え">−</button>
+            <button id="close-dashboard" class="close-btn">&times;</button>
         </div>
         <div id="dashboard-content" class="dashboard-content">
             <div class="stats-grid">
