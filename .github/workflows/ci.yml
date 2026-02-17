@@ -1,0 +1,81 @@
+name: CI - Test Suite
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x]
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+    
+    - name: Run Unit Tests
+      run: |
+        echo "Running unit tests..."
+        node test-time-validation.js
+        node test-time-persistence.js
+        node test-statistics-engine.js
+        node test-completion-rate.js
+        node test-recurrence-engine.js
+        node test-recurring-persistence.js
+        node test-template-functionality.js
+        node test-weekday-functionality.js
+        node test-category-functionality.js
+        node test-time-overrun-visual.js
+        node test-time-comparison.js
+        node test-export-import-time.js
+        node test-migration-functionality.js
+        node test-comprehensive-unit.js
+        node test-integration-task13.js
+    
+    - name: Run Performance Tests
+      run: |
+        echo "Running performance tests..."
+        node test-weekday-performance.js
+    
+    - name: Verify Implementation
+      run: |
+        echo "Verifying implementation..."
+        node verify-implementation.js
+    
+    - name: Check Code Quality
+      run: |
+        echo "Checking code quality..."
+        # HTMLファイルの基本的な検証
+        if ! grep -q "<!DOCTYPE html>" index.html; then
+          echo "Error: index.html is not a valid HTML file"
+          exit 1
+        fi
+        
+        # CSSファイルの存在確認
+        if [ ! -f "style.css" ]; then
+          echo "Error: style.css not found"
+          exit 1
+        fi
+        
+        # JavaScriptファイルの存在確認
+        if [ ! -f "script.js" ]; then
+          echo "Error: script.js not found"
+          exit 1
+        fi
+        
+        echo "Code quality check passed!"
+    
+    - name: Generate Test Report
+      if: always()
+      run: |
+        echo "Test execution completed"
+        echo "All tests have been executed"

@@ -1,0 +1,35 @@
+{
+  "name": "weekly-task-board",
+  "version": "1.0.0",
+  "description": "効率的なタスク管理のためのウィークリータスクボード",
+  "main": "script.js",
+  "scripts": {
+    "test": "node run-tests.js",
+    "test:unit": "node test-comprehensive-unit.js",
+    "test:integration": "node test-integration-task13.js",
+    "test:time": "node test-time-validation.js && node test-time-persistence.js",
+    "test:statistics": "node test-statistics-engine.js && node test-completion-rate.js",
+    "test:recurrence": "node test-recurrence-engine.js && node test-recurring-persistence.js",
+    "test:template": "node test-template-functionality.js",
+    "test:weekday": "node test-weekday-functionality.js && node test-weekday-performance.js",
+    "test:category": "node test-category-functionality.js",
+    "test:all": "node test-time-validation.js && node test-time-persistence.js && node test-statistics-engine.js && node test-completion-rate.js && node test-recurrence-engine.js && node test-recurring-persistence.js && node test-template-functionality.js && node test-weekday-functionality.js && node test-category-functionality.js && node test-time-overrun-visual.js && node test-time-comparison.js && node test-export-import-time.js && node test-migration-functionality.js && node test-comprehensive-unit.js && node test-integration-task13.js && node test-weekday-performance.js",
+    "verify": "node verify-implementation.js"
+  },
+  "keywords": [
+    "task",
+    "management",
+    "weekly",
+    "board",
+    "productivity"
+  ],
+  "author": "",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/y-maeda1116/Weekly-Task-Board.git"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

@@ -12,6 +12,10 @@
 - **理想稼働時間の設定**: 1日の理想的な稼働時間を設定し、それを超えた場合に警告を表示します。
 - **完了チェック**: タスクごとに完了状態を管理できます。
 - **データのエクスポート/インポート**: タスクと設定データをJSONファイルとしてエクスポート・インポートできます。
+- **統計・分析機能**: 完了率、カテゴリ別時間分析、日別作業時間を表示します。
+- **時間管理**: 実績時間を記録し、見積もり vs 実績を比較できます。
+- **繰り返しタスク**: 毎日/毎週/毎月のパターンで自動生成されるタスクを設定できます。
+- **テンプレート機能**: よく使うタスクをテンプレートとして保存・再利用できます。
 
 ## 使い方
 
@@ -22,6 +26,7 @@
 3.  **タスクの編集**: タスクカードをクリックすると、編集モーダルが開きます。
 4.  **週の移動**: ヘッダーの「前週へ」「次週へ」ボタンで表示する週を切り替えるか、日付ピッカーで特定の日付が含まれる週にジャンプします。
 5.  **データ管理**: 「エクスポート」ボタンで現在のデータをバックアップし、「インポート」ボタンで以前のデータを復元できます。
+6.  **統計確認**: ヘッダーの「📊 統計」ボタンで週間統計を表示します。
 
 ## 技術スタック
 
@@ -29,3 +34,57 @@
 - CSS
 - JavaScript (Vanilla JS)
 - ローカルストレージ (データ永続化)
+
+## CI/CD
+
+このプロジェクトはGitHub Actionsを使用して自動テストを実行しています。
+
+### テスト実行
+
+ローカルでテストを実行するには:
+
+```bash
+# すべてのテストを実行
+npm test
+
+# 特定のテストカテゴリを実行
+npm run test:unit          # ユニットテスト
+npm run test:integration   # 統合テスト
+npm run test:time          # 時間管理テスト
+npm run test:statistics    # 統計テスト
+npm run test:recurrence    # 繰り返しタスクテスト
+npm run test:template      # テンプレートテスト
+npm run test:weekday       # 曜日機能テスト
+npm run test:category      # カテゴリテスト
+npm run test:all           # すべてのテスト
+npm run verify             # 実装検証
+```
+
+### GitHub Actions ワークフロー
+
+- **トリガー**: mainおよびdevelopブランチへのpush、またはPull Request
+- **実行内容**:
+  - Node.js 18.x, 20.xでのテスト実行
+  - 全ユニットテストの実行
+  - パフォーマンステストの実行
+  - コード品質チェック
+  - 実装検証
+
+### テストファイル
+
+- `test-time-validation.js` - 時間データバリデーション
+- `test-time-persistence.js` - 時間データ永続化
+- `test-statistics-engine.js` - 統計計算エンジン
+- `test-completion-rate.js` - 完了率計算
+- `test-recurrence-engine.js` - 繰り返しタスク生成
+- `test-recurring-persistence.js` - 繰り返しタスク永続化
+- `test-template-functionality.js` - テンプレート機能
+- `test-weekday-functionality.js` - 曜日機能
+- `test-category-functionality.js` - カテゴリ機能
+- `test-time-overrun-visual.js` - 時間超過表示
+- `test-time-comparison.js` - 時間比較
+- `test-export-import-time.js` - エクスポート/インポート
+- `test-migration-functionality.js` - マイグレーション
+- `test-comprehensive-unit.js` - 包括的ユニットテスト
+- `test-integration-task13.js` - 統合テスト
+- `test-weekday-performance.js` - パフォーマンステスト
