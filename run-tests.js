@@ -84,25 +84,25 @@ function validateHTML(filePath, fileName) {
 
 // Unit Tests
 console.log('=== Unit Tests ===');
-runTest('test-time-validation.js', 'Time Validation Tests');
-runTest('test-time-persistence.js', 'Time Persistence Tests');
-runTest('test-statistics-engine.js', 'Statistics Engine Tests');
-runTest('test-completion-rate.js', 'Completion Rate Tests');
-runTest('test-recurrence-engine.js', 'Recurrence Engine Tests');
-runTest('test-recurring-persistence.js', 'Recurring Persistence Tests');
-runTest('test-template-functionality.js', 'Template Functionality Tests');
-runTest('test-weekday-functionality.js', 'Weekday Functionality Tests');
-runTest('test-category-functionality.js', 'Category Functionality Tests');
-runTest('test-time-overrun-visual.js', 'Time Overrun Visual Tests');
-runTest('test-time-comparison.js', 'Time Comparison Tests');
-runTest('test-export-import-time.js', 'Export/Import Time Tests');
-runTest('test-migration-functionality.js', 'Migration Functionality Tests');
-runTest('test-comprehensive-unit.js', 'Comprehensive Unit Tests');
-runTest('test-integration-task13.js', 'Integration Tests');
+runTest('tests/unit/test-time-validation.js', 'Time Validation Tests');
+runTest('tests/unit/test-time-persistence.js', 'Time Persistence Tests');
+runTest('tests/unit/test-statistics-engine.js', 'Statistics Engine Tests');
+runTest('tests/unit/test-completion-rate.js', 'Completion Rate Tests');
+runTest('tests/unit/test-recurrence-engine.js', 'Recurrence Engine Tests');
+runTest('tests/unit/test-recurring-persistence.js', 'Recurring Persistence Tests');
+runTest('tests/unit/test-template-functionality.js', 'Template Functionality Tests');
+runTest('tests/unit/test-weekday-functionality.js', 'Weekday Functionality Tests');
+runTest('tests/unit/test-category-functionality.js', 'Category Functionality Tests');
+runTest('tests/unit/test-time-overrun-visual.js', 'Time Overrun Visual Tests');
+runTest('tests/unit/test-time-comparison.js', 'Time Comparison Tests');
+runTest('tests/unit/test-export-import-time.js', 'Export/Import Time Tests');
+runTest('tests/unit/test-migration-functionality.js', 'Migration Functionality Tests');
+runTest('tests/unit/test-comprehensive-unit.js', 'Comprehensive Unit Tests');
+runTest('tests/unit/test-integration-task13.js', 'Integration Tests');
 
 // Performance Tests
 console.log('=== Performance Tests ===');
-runTest('test-weekday-performance.js', 'Weekday Performance Tests');
+runTest('tests/performance/test-weekday-performance.js', 'Weekday Performance Tests');
 
 // Code Quality Checks
 console.log('=== Code Quality Checks ===');
