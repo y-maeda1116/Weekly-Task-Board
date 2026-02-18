@@ -234,15 +234,17 @@
 
         function displayResult(containerId, results) {
             const container = document.getElementById(containerId);
-            let html = '';
+            container.textContent = '';
             
             results.forEach((result, index) => {
                 const className = result.success ? 'success' : 'error';
                 const testName = result.testName || `テスト${index + 1}`;
-                html += `<div class="${className}">• ${testName}: ${result.message}</div>`;
+                
+                const resultDiv = document.createElement('div');
+                resultDiv.className = className;
+                resultDiv.textContent = `• ${testName}: ${result.message}`;
+                container.appendChild(resultDiv);
             });
-            
-            container.innerHTML = html;
         }
 
         function updateProgress() {
@@ -261,31 +263,70 @@
 
         function displayAllResults() {
             const container = document.getElementById('results-container');
-            let html = '';
+            container.textContent = '';
             
             globalTestResults.details.forEach(result => {
                 const className = result.status === 'passed' ? 'result-success' : 'result-error';
                 const icon = result.status === 'passed' ? '✅' : '❌';
-                html += `<div class="result-item ${className}">${icon} ${result.name}: ${result.message}</div>`;
+                
+                const resultDiv = document.createElement('div');
+                resultDiv.className = `result-item ${className}`;
+                resultDiv.textContent = `${icon} ${result.name}: ${result.message}`;
+                container.appendChild(resultDiv);
             });
-            
-            container.innerHTML = html;
             
             // サマリー表示
             const summary = document.getElementById('test-summary');
+            summary.textContent = '';
+            
             const successRate = globalTestResults.total > 0 ? ((globalTestResults.passed / globalTestResults.total) * 100).toFixed(1) : 0;
-            summary.innerHTML = `
-                <h4>📈 テスト結果サマリー</h4>
-                <p><strong>総テスト数:</strong> ${globalTestResults.total}</p>
-                <p><strong>成功:</strong> ${globalTestResults.passed}</p>
-                <p><strong>失敗:</strong> ${globalTestResults.failed}</p>
-                <p><strong>成功率:</strong> ${successRate}%</p>
-                ${globalTestResults.failed === 0 ? 
-                    '<p class="success">🎉 すべてのテストが成功しました！</p>' : 
-                    '<p class="error">⚠️ 一部のテストが失敗しました。</p>'
-                }
-            `;
+            
+            const titleH4 = document.createElement('h4');
+            titleH4.textContent = '📈 テスト結果サマリー';
+            summary.appendChild(titleH4);
+            
+            const totalP = document.createElement('p');
+            const totalStrong = document.createElement('strong');
+            totalStrong.textContent = '総テスト数:';
+            totalP.appendChild(totalStrong);
+            totalP.appendChild(document.createTextNode(` ${globalTestResults.total}`));
+            summary.appendChild(totalP);
+            
+            const passedP = document.createElement('p');
+            const passedStrong = document.createElement('strong');
+            passedStrong.textContent = '成功:';
+            passedP.appendChild(passedStrong);
+            passedP.appendChild(document.createTextNode(` ${globalTestResults.passed}`));
+            summary.appendChild(passedP);
+            
+            const failedP = document.createElement('p');
+            const failedStrong = document.createElement('strong');
+            failedStrong.textContent = '失敗:';
+            failedP.appendChild(failedStrong);
+            failedP.appendChild(document.createTextNode(` ${globalTestResults.failed}`));
+            summary.appendChild(failedP);
+            
+            const rateP = document.createElement('p');
+            const rateStrong = document.createElement('strong');
+            rateStrong.textContent = '成功率:';
+            rateP.appendChild(rateStrong);
+            rateP.appendChild(document.createTextNode(` ${successRate}%`));
+            summary.appendChild(rateP);
+            
+            if (globalTestResults.failed === 0) {
+                const successP = document.createElement('p');
+                successP.className = 'success';
+                successP.textContent = '🎉 すべてのテストが成功しました！';
+                summary.appendChild(successP);
+            } else {
+                const errorP = document.createElement('p');
+                errorP.className = 'error';
+                errorP.textContent = '⚠️ 一部のテストが失敗しました。';
+                summary.appendChild(errorP);
+            }
+            
             summary.style.display = 'block';
+        }
             
             updateProgress();
         }
@@ -674,10 +715,14 @@
             // テストデータの表示
             const testDataDiv = document.createElement('div');
             testDataDiv.className = 'test-data';
-            testDataDiv.innerHTML = `
-                <h4>📋 テスト対象カテゴリ定義</h4>
-                <pre>${JSON.stringify(TASK_CATEGORIES, null, 2)}</pre>
-            `;
+            
+            const titleH4 = document.createElement('h4');
+            titleH4.textContent = '📋 テスト対象カテゴリ定義';
+            testDataDiv.appendChild(titleH4);
+            
+            const preElement = document.createElement('pre');
+            preElement.textContent = JSON.stringify(TASK_CATEGORIES, null, 2);
+            testDataDiv.appendChild(preElement);
             
             document.querySelector('.test-container').appendChild(testDataDiv);
         };
