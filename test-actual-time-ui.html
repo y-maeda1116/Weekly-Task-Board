@@ -150,16 +150,26 @@
             const testCase = document.createElement('div');
             testCase.className = `test-case ${passed ? 'passed' : 'failed'}`;
             
-            testCase.innerHTML = `
-                <div class="test-name">${testName}</div>
-                <div class="test-result">
-                    <span class="${passed ? 'passed' : 'failed'}">
-                        ${passed ? '✅ PASSED' : '❌ FAILED'}
-                    </span>
-                    ${message ? ` - ${message}` : ''}
-                </div>
-            `;
+            const testNameDiv = document.createElement('div');
+            testNameDiv.className = 'test-name';
+            testNameDiv.textContent = testName;
             
+            const testResultDiv = document.createElement('div');
+            testResultDiv.className = 'test-result';
+            
+            const statusSpan = document.createElement('span');
+            statusSpan.className = passed ? 'passed' : 'failed';
+            statusSpan.textContent = passed ? '✅ PASSED' : '❌ FAILED';
+            
+            testResultDiv.appendChild(statusSpan);
+            
+            if (message) {
+                const messageText = document.createTextNode(` - ${message}`);
+                testResultDiv.appendChild(messageText);
+            }
+            
+            testCase.appendChild(testNameDiv);
+            testCase.appendChild(testResultDiv);
             resultsDiv.appendChild(testCase);
         }
 
@@ -169,15 +179,49 @@
             const total = testResults.length;
 
             const summaryDiv = document.getElementById('summary');
-            summaryDiv.innerHTML = `
-                <div class="summary">
-                    <div class="summary-title">📊 Test Summary</div>
-                    <div class="summary-item">Total Tests: <strong>${total}</strong></div>
-                    <div class="summary-item"><span class="passed">✅ Passed: ${passed}</span></div>
-                    <div class="summary-item"><span class="failed">❌ Failed: ${failed}</span></div>
-                    <div class="summary-item">Success Rate: <strong>${total > 0 ? ((passed/total)*100).toFixed(1) : 0}%</strong></div>
-                </div>
-            `;
+            summaryDiv.textContent = '';
+            
+            const summaryContainer = document.createElement('div');
+            summaryContainer.className = 'summary';
+            
+            const titleDiv = document.createElement('div');
+            titleDiv.className = 'summary-title';
+            titleDiv.textContent = '📊 Test Summary';
+            summaryContainer.appendChild(titleDiv);
+            
+            const totalDiv = document.createElement('div');
+            totalDiv.className = 'summary-item';
+            const totalStrong = document.createElement('strong');
+            totalStrong.textContent = total.toString();
+            totalDiv.appendChild(document.createTextNode('Total Tests: '));
+            totalDiv.appendChild(totalStrong);
+            summaryContainer.appendChild(totalDiv);
+            
+            const passedDiv = document.createElement('div');
+            passedDiv.className = 'summary-item';
+            const passedSpan = document.createElement('span');
+            passedSpan.className = 'passed';
+            passedSpan.textContent = `✅ Passed: ${passed}`;
+            passedDiv.appendChild(passedSpan);
+            summaryContainer.appendChild(passedDiv);
+            
+            const failedDiv = document.createElement('div');
+            failedDiv.className = 'summary-item';
+            const failedSpan = document.createElement('span');
+            failedSpan.className = 'failed';
+            failedSpan.textContent = `❌ Failed: ${failed}`;
+            failedDiv.appendChild(failedSpan);
+            summaryContainer.appendChild(failedDiv);
+            
+            const rateDiv = document.createElement('div');
+            rateDiv.className = 'summary-item';
+            const rateStrong = document.createElement('strong');
+            rateStrong.textContent = `${total > 0 ? ((passed/total)*100).toFixed(1) : 0}%`;
+            rateDiv.appendChild(document.createTextNode('Success Rate: '));
+            rateDiv.appendChild(rateStrong);
+            summaryContainer.appendChild(rateDiv);
+            
+            summaryDiv.appendChild(summaryContainer);
         }
 
         // Test Suite 1: Form Field Existence
@@ -363,8 +407,14 @@
         // Main test runner
         function runAllTests() {
             testResults.length = 0;
-            document.getElementById('test-results').innerHTML = '';
-            document.getElementById('summary').innerHTML = '';
+            const testResultsDiv = document.getElementById('test-results');
+            while (testResultsDiv.firstChild) {
+                testResultsDiv.removeChild(testResultsDiv.firstChild);
+            }
+            const summaryDiv = document.getElementById('summary');
+            while (summaryDiv.firstChild) {
+                summaryDiv.removeChild(summaryDiv.firstChild);
+            }
             
             console.log('Starting Actual Time UI Tests...');
             
