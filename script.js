@@ -2607,37 +2607,8 @@ document.addEventListener('DOMContentLoaded', () => {
         // カテゴリ情報を取得
         const categoryInfo = getCategoryInfo(categoryKey);
 
-        let dueDateHTML = '';
-        if (task.due_date) {
-            const dueDate = new Date(task.due_date);
-            const formattedDate = `${dueDate.getMonth() + 1}/${dueDate.getDate()} ${String(dueDate.getHours()).padStart(2, '0')}:${String(dueDate.getMinutes()).padStart(2, '0')}`;
-            dueDateHTML = `<div class="task-due-date">期限: ${formattedDate}</div>`;
-        }
-
         const priorityLabels = { high: '高', medium: '中', low: '低' };
         const priorityLabel = priorityLabels[task.priority] || '中';
-        
-        // 実績時間の表示と比較情報
-        let timeDisplayHTML = `<div class="task-time">`;
-        timeDisplayHTML += `${task.estimated_time}h`;
-        
-        if (task.actual_time && task.actual_time > 0) {
-            const timeDiff = task.actual_time - task.estimated_time;
-            const timeDiffPercent = ((timeDiff / task.estimated_time) * 100).toFixed(0);
-            
-            if (timeDiff > 0) {
-                // 実績が見積もりを超えた場合
-                const severity = getTimeOverrunSeverity(task.estimated_time, task.actual_time);
-                timeDisplayHTML += ` <span class="time-overrun time-overrun-${severity}">(+${timeDiff}h, +${timeDiffPercent}%)</span>`;
-            } else if (timeDiff < 0) {
-                // 実績が見積もりより少ない場合
-                timeDisplayHTML += ` <span class="time-underrun">(${timeDiff}h, ${timeDiffPercent}%)</span>`;
-            } else {
-                // 実績が見積もりと同じ場合
-                timeDisplayHTML += ` <span class="time-match">(一致)</span>`;
-            }
-        }
-        timeDisplayHTML += '</div>';
         
         // Create elements safely without innerHTML to prevent XSS
         const categoryBar = document.createElement('div');
@@ -2662,7 +2633,27 @@ document.addEventListener('DOMContentLoaded', () => {
         
         const timeDiv = document.createElement('div');
         timeDiv.className = 'task-time';
-        timeDiv.innerHTML = timeDisplayHTML;
+        timeDiv.textContent = `${task.estimated_time}h`;
+        
+        if (task.actual_time && task.actual_time > 0) {
+            const timeDiff = task.actual_time - task.estimated_time;
+            const timeDiffPercent = ((timeDiff / task.estimated_time) * 100).toFixed(0);
+            
+            const timeSpan = document.createElement('span');
+            if (timeDiff > 0) {
+                const severity = getTimeOverrunSeverity(task.estimated_time, task.actual_time);
+                timeSpan.className = `time-overrun time-overrun-${severity}`;
+                timeSpan.textContent = `(+${timeDiff}h, +${timeDiffPercent}%)`;
+            } else if (timeDiff < 0) {
+                timeSpan.className = 'time-underrun';
+                timeSpan.textContent = `(${timeDiff}h, ${timeDiffPercent}%)`;
+            } else {
+                timeSpan.className = 'time-match';
+                timeSpan.textContent = '(一致)';
+            }
+            timeDiv.appendChild(document.createTextNode(' '));
+            timeDiv.appendChild(timeSpan);
+        }
         
         taskHeader.appendChild(checkbox);
         taskHeader.appendChild(taskNameDiv);
@@ -2681,8 +2672,7 @@ document.addEventListener('DOMContentLoaded', () => {
             taskElement.appendChild(dueDateDiv);
         }
 
-        // 💡 タスク修正/完了チェックボックスのイベントリスナー
-        const checkbox = taskElement.querySelector('.task-checkbox');
+        // タスク修正/完了チェックボックスのイベントリスナー
         checkbox.addEventListener('click', (e) => {
             e.stopPropagation();
             task.completed = e.target.checked;
@@ -2705,7 +2695,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        // 💡 タスク修正/編集モーダルを開くイベントリスナー
+        // タスク修正/編集モーダルを開くイベントリスナー
         taskElement.addEventListener('click', () => openEditModal(task));
         taskElement.addEventListener('dragstart', handleDragStart);
         taskElement.addEventListener('dragend', handleDragEnd);
@@ -2755,7 +2745,10 @@ document.addEventListener('DOMContentLoaded', () => {
             const totalTimeEl = col.querySelector('.daily-total-time');
             if (totalTimeEl) { totalTimeEl.textContent = ''; totalTimeEl.classList.remove('overload'); }
         });
-        unassignedColumn.querySelector('#unassigned-list').innerHTML = '';
+        const unassignedList = unassignedColumn.querySelector('#unassigned-list');
+        while (unassignedList.firstChild) {
+            unassignedList.removeChild(unassignedList.firstChild);
+        }
 
         const weekDates = [];
         const dailyTotals = {};
@@ -2808,7 +2801,12 @@ document.addEventListener('DOMContentLoaded', () => {
             column.dataset.date = dateStr;
 
             const h3 = column.querySelector('h3');
-            h3.innerHTML = `${dayNames[index]} (${date.getMonth() + 1}/${date.getDate()}) <span class="daily-total-time"></span>`;
+            h3.textContent = `${dayNames[index]} (${date.getMonth() + 1}/${date.getDate()})`;
+            
+            // daily-total-time スパンを作成
+            const totalTimeSpan = document.createElement('span');
+            totalTimeSpan.className = 'daily-total-time';
+            h3.appendChild(totalTimeSpan);
             
             // 曜日の表示/非表示を設定
             if (weekdayManager) {
@@ -2862,6 +2860,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const totalTimeEl = column.querySelector('.daily-total-time');
             if (totalTimeEl) {
+                totalTimeEl.textContent = '';
                 if (totalMinutes > 0) {
                     const hours = Math.floor(totalMinutes / 60);
                     const minutes = totalMinutes % 60;
@@ -2869,15 +2868,28 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (completedMinutes > 0) {
                         const completedHours = Math.floor(completedMinutes / 60);
                         const completedMins = completedMinutes % 60;
-                        totalTimeEl.innerHTML = `
-                            <span class="total-time">(${hours}h ${minutes}m)</span>
-                            <span class="completed-time">完了: ${completedHours}h ${completedMins}m</span>
-                        `;
+                        
+                        const totalTimeSpan = document.createElement('span');
+                        totalTimeSpan.className = 'total-time';
+                        totalTimeSpan.textContent = `(${hours}h ${minutes}m)`;
+                        
+                        const completedTimeSpan = document.createElement('span');
+                        completedTimeSpan.className = 'completed-time';
+                        completedTimeSpan.textContent = `完了: ${completedHours}h ${completedMins}m`;
+                        
+                        totalTimeEl.appendChild(totalTimeSpan);
+                        totalTimeEl.appendChild(completedTimeSpan);
                     } else {
-                        totalTimeEl.innerHTML = `<span class="total-time">(${hours}h ${minutes}m)</span>`;
+                        const totalTimeSpan = document.createElement('span');
+                        totalTimeSpan.className = 'total-time';
+                        totalTimeSpan.textContent = `(${hours}h ${minutes}m)`;
+                        totalTimeEl.appendChild(totalTimeSpan);
                     }
                 } else {
-                    totalTimeEl.innerHTML = '<span class="total-time">(0h 0m)</span>';
+                    const totalTimeSpan = document.createElement('span');
+                    totalTimeSpan.className = 'total-time';
+                    totalTimeSpan.textContent = '(0h 0m)';
+                    totalTimeEl.appendChild(totalTimeSpan);
                 }
 
                 if (totalMinutes > settings.ideal_daily_minutes) {
@@ -3774,14 +3786,12 @@ document.addEventListener('DOMContentLoaded', () => {
         taskElement.appendChild(archivedTaskActions);
         
         // 復元ボタンのイベントリスナー
-        const restoreBtn = taskElement.querySelector('.restore-task-btn');
         restoreBtn.addEventListener('click', (e) => {
             e.stopPropagation();
             restoreTaskFromArchive(task.id, taskElement);
         });
         
         // 削除ボタンのイベントリスナー
-        const deleteBtn = taskElement.querySelector('.delete-task-btn');
         deleteBtn.addEventListener('click', (e) => {
             e.stopPropagation();
             deleteTaskFromArchive(task.id, taskElement);
