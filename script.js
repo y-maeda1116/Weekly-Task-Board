@@ -2639,16 +2639,47 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         timeDisplayHTML += '</div>';
         
-        taskElement.innerHTML = `
-            <div class="category-bar" style="background-color: ${categoryInfo.color};"></div>
-            <div class="task-header">
-                <input type="checkbox" class="task-checkbox" ${task.completed ? 'checked' : ''}>
-                <div class="task-name">${task.name}</div>
-                <span class="task-priority ${task.priority || 'medium'}">${priorityLabel}</span>
-                ${timeDisplayHTML}
-            </div>
-            ${dueDateHTML}
-        `;
+        // Create elements safely without innerHTML to prevent XSS
+        const categoryBar = document.createElement('div');
+        categoryBar.className = 'category-bar';
+        categoryBar.style.backgroundColor = categoryInfo.color;
+        
+        const taskHeader = document.createElement('div');
+        taskHeader.className = 'task-header';
+        
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.className = 'task-checkbox';
+        checkbox.checked = task.completed;
+        
+        const taskNameDiv = document.createElement('div');
+        taskNameDiv.className = 'task-name';
+        taskNameDiv.textContent = task.name;
+        
+        const prioritySpan = document.createElement('span');
+        prioritySpan.className = `task-priority ${task.priority || 'medium'}`;
+        prioritySpan.textContent = priorityLabel;
+        
+        const timeDiv = document.createElement('div');
+        timeDiv.className = 'task-time';
+        timeDiv.innerHTML = timeDisplayHTML;
+        
+        taskHeader.appendChild(checkbox);
+        taskHeader.appendChild(taskNameDiv);
+        taskHeader.appendChild(prioritySpan);
+        taskHeader.appendChild(timeDiv);
+        
+        taskElement.appendChild(categoryBar);
+        taskElement.appendChild(taskHeader);
+        
+        if (task.due_date) {
+            const dueDateDiv = document.createElement('div');
+            dueDateDiv.className = 'task-due-date';
+            const dueDate = new Date(task.due_date);
+            const formattedDate = `${dueDate.getMonth() + 1}/${dueDate.getDate()} ${String(dueDate.getHours()).padStart(2, '0')}:${String(dueDate.getMinutes()).padStart(2, '0')}`;
+            dueDateDiv.textContent = `期限: ${formattedDate}`;
+            taskElement.appendChild(dueDateDiv);
+        }
 
         // 💡 タスク修正/完了チェックボックスのイベントリスナー
         const checkbox = taskElement.querySelector('.task-checkbox');
@@ -3684,24 +3715,63 @@ document.addEventListener('DOMContentLoaded', () => {
             datesHTML += `期限: ${dueDate.getMonth() + 1}/${dueDate.getDate()} ${String(dueDate.getHours()).padStart(2, '0')}:${String(dueDate.getMinutes()).padStart(2, '0')}`;
         }
         
-        taskElement.innerHTML = `
-            <div class="category-bar" style="background-color: ${categoryInfo.color};"></div>
-            <div class="archived-task-header">
-                <div class="archived-task-name">${task.name}</div>
-                <div class="archived-task-time">${task.estimated_time}h</div>
-            </div>
-            ${datesHTML ? `<div class="archived-task-dates">${datesHTML}</div>` : ''}
-            ${task.details ? `<div class="archived-task-details">${task.details}</div>` : ''}
-            <div class="archived-task-completed-date">完了: ${formattedArchivedDate}</div>
-            <div class="archived-task-actions">
-                <button class="restore-task-btn" data-task-id="${task.id}">
-                    ↩️ 復元
-                </button>
-                <button class="delete-task-btn" data-task-id="${task.id}">
-                    🗑️ 削除
-                </button>
-            </div>
-        `;
+        // Create elements safely without innerHTML to prevent XSS
+        const categoryBar = document.createElement('div');
+        categoryBar.className = 'category-bar';
+        categoryBar.style.backgroundColor = categoryInfo.color;
+        
+        const archivedTaskHeader = document.createElement('div');
+        archivedTaskHeader.className = 'archived-task-header';
+        
+        const archivedTaskName = document.createElement('div');
+        archivedTaskName.className = 'archived-task-name';
+        archivedTaskName.textContent = task.name;
+        
+        const archivedTaskTime = document.createElement('div');
+        archivedTaskTime.className = 'archived-task-time';
+        archivedTaskTime.textContent = `${task.estimated_time}h`;
+        
+        archivedTaskHeader.appendChild(archivedTaskName);
+        archivedTaskHeader.appendChild(archivedTaskTime);
+        
+        taskElement.appendChild(categoryBar);
+        taskElement.appendChild(archivedTaskHeader);
+        
+        if (datesHTML) {
+            const archivedTaskDates = document.createElement('div');
+            archivedTaskDates.className = 'archived-task-dates';
+            archivedTaskDates.textContent = datesHTML;
+            taskElement.appendChild(archivedTaskDates);
+        }
+        
+        if (task.details) {
+            const archivedTaskDetails = document.createElement('div');
+            archivedTaskDetails.className = 'archived-task-details';
+            archivedTaskDetails.textContent = task.details;
+            taskElement.appendChild(archivedTaskDetails);
+        }
+        
+        const archivedTaskCompletedDate = document.createElement('div');
+        archivedTaskCompletedDate.className = 'archived-task-completed-date';
+        archivedTaskCompletedDate.textContent = `完了: ${formattedArchivedDate}`;
+        taskElement.appendChild(archivedTaskCompletedDate);
+        
+        const archivedTaskActions = document.createElement('div');
+        archivedTaskActions.className = 'archived-task-actions';
+        
+        const restoreBtn = document.createElement('button');
+        restoreBtn.className = 'restore-task-btn';
+        restoreBtn.dataset.taskId = task.id;
+        restoreBtn.textContent = '↩️ 復元';
+        
+        const deleteBtn = document.createElement('button');
+        deleteBtn.className = 'delete-task-btn';
+        deleteBtn.dataset.taskId = task.id;
+        deleteBtn.textContent = '🗑️ 削除';
+        
+        archivedTaskActions.appendChild(restoreBtn);
+        archivedTaskActions.appendChild(deleteBtn);
+        taskElement.appendChild(archivedTaskActions);
         
         // 復元ボタンのイベントリスナー
         const restoreBtn = taskElement.querySelector('.restore-task-btn');
