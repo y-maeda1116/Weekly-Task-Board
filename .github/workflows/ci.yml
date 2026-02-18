@@ -28,26 +28,26 @@ jobs:
     - name: Run Unit Tests
       run: |
         echo "Running unit tests..."
-        node test-time-validation.js
-        node test-time-persistence.js
-        node test-statistics-engine.js
-        node test-completion-rate.js
-        node test-recurrence-engine.js
-        node test-recurring-persistence.js
-        node test-template-functionality.js
-        node test-weekday-functionality.js
-        node test-category-functionality.js
-        node test-time-overrun-visual.js
-        node test-time-comparison.js
-        node test-export-import-time.js
-        node test-migration-functionality.js
-        node test-comprehensive-unit.js
-        node test-integration-task13.js
+        node tests/unit/test-time-validation.js
+        node tests/unit/test-time-persistence.js
+        node tests/unit/test-statistics-engine.js
+        node tests/unit/test-completion-rate.js
+        node tests/unit/test-recurrence-engine.js
+        node tests/unit/test-recurring-persistence.js
+        node tests/unit/test-template-functionality.js
+        node tests/unit/test-weekday-functionality.js
+        node tests/unit/test-category-functionality.js
+        node tests/unit/test-time-overrun-visual.js
+        node tests/unit/test-time-comparison.js
+        node tests/unit/test-export-import-time.js
+        node tests/unit/test-migration-functionality.js
+        node tests/unit/test-comprehensive-unit.js
+        node tests/unit/test-integration-task13.js
     
     - name: Run Performance Tests
       run: |
         echo "Running performance tests..."
-        node test-weekday-performance.js
+        node tests/performance/test-weekday-performance.js
     
     - name: Verify Implementation
       run: |
