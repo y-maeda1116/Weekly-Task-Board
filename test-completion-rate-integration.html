@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>完了率計算 統合テスト</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-container {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #333;
+        }
+        .test-result {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .test-result.pass {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .test-result.fail {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .stats-display {
+            background-color: #e7f3ff;
+            border: 1px solid #b3d9ff;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+            border-bottom: 1px solid #d0e8ff;
+        }
+        .stat-row:last-child {
+            border-bottom: none;
+        }
+        .stat-label {
+            font-weight: bold;
+            color: #0066cc;
+        }
+        .stat-value {
+            color: #333;
+        }
+        .summary {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f0f0f0;
+            border-radius: 4px;
+            border-left: 4px solid #0066cc;
+        }
+        .summary-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        button {
+            background-color: #0066cc;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 14px;
+        }
+        button:hover {
+            background-color: #0052a3;
+        }
+    </style>
+</head>
+<body>
+    <h1>📊 完了率計算 統合テスト</h1>
+    
+    <div class="test-container">
+        <div class="test-title">テスト操作</div>
+        <button onclick="runAllTests()">すべてのテストを実行</button>
+        <button onclick="clearResults()">結果をクリア</button>
+    </div>
+
+    <div id="results-container"></div>
+
+    <script src="script.js"></script>
+    <script>
+        // Test utilities
+        function displayResult(testName, passed, details = '') {
+            const container = document.getElementById('results-container');
+            const resultDiv = document.createElement('div');
+            resultDiv.className = 'test-container';
+            
+            const titleDiv = document.createElement('div');
+            titleDiv.className = 'test-title';
+            titleDiv.textContent = testName;
+            resultDiv.appendChild(titleDiv);
+            
+            const statusDiv = document.createElement('div');
+            statusDiv.className = `test-result ${passed ? 'pass' : 'fail'}`;
+            statusDiv.textContent = passed ? '✅ PASS' : '❌ FAIL';
+            resultDiv.appendChild(statusDiv);
+            
+            if (details) {
+                const detailsDiv = document.createElement('div');
+                detailsDiv.className = 'stats-display';
+                detailsDiv.innerHTML = details;
+                resultDiv.appendChild(detailsDiv);
+            }
+            
+            container.appendChild(resultDiv);
+        }
+
+        function formatStats(stats) {
+            return `
+                <div class="stat-row">
+                    <span class="stat-label">週開始日:</span>
+                    <span class="stat-value">${stats.week_start}</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">総タスク数:</span>
+                    <span class="stat-value">${stats.total_tasks}</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">完了タスク数:</span>
+                    <span class="stat-value">${stats.completed_tasks}</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">完了率:</span>
+                    <span class="stat-value">${stats.completion_rate}%</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">有効:</span>
+                    <span class="stat-value">${stats.is_valid ? 'はい' : 'いいえ'}</span>
+                </div>
+            `;
+        }
+
+        function clearResults() {
+            document.getElementById('results-container').innerHTML = '';
+        }
+
+        // Test 1: No tasks
+        function test1_NoTasks() {
+            localStorage.clear();
+            tasks = [];
+            const result = calculateCompletionRate();
+            
+            const passed = result.total_tasks === 0 && 
+                          result.completed_tasks === 0 && 
+                          result.completion_rate === 0 &&
+                          result.is_valid === true;
+            
+            displayResult('テスト1: タスクなし', passed, formatStats(result));
+            return passed;
+        }
+
+        // Test 2: All tasks completed
+        function test2_AllCompleted() {
+            localStorage.clear();
+            tasks = [];
+            
+            const monday = getMonday(new Date());
+            const mondayStr = formatDate(monday);
+            
+            tasks = [
+                { id: '1', name: 'Task 1', assigned_date: mondayStr, completed: true },
+                { id: '2', name: 'Task 2', assigned_date: mondayStr, completed: true },
+                { id: '3', name: 'Task 3', assigned_date: mondayStr, completed: true }
+            ];
+            
+            const result = calculateCompletionRate();
+            
+            const passed = result.total_tasks === 3 && 
+                          result.completed_tasks === 3 && 
+                          result.completion_rate === 100;
+            
+            displayResult('テスト2: すべてのタスクが完了', passed, formatStats(result));
+            return passed;
+        }
+
+        // Test 3: Half tasks completed
+        function test3_HalfCompleted() {
+            localStorage.clear();
+            tasks = [];
+            
+            const monday = getMonday(new Date());
+            const mondayStr = formatDate(monday);
+            
+            tasks = [
+                { id: '1', name: 'Task 1', assigned_date: mondayStr, completed: true },
+                { id: '2', name: 'Task 2', assigned_date: mondayStr, completed: false },
+                { id: '3', name: 'Task 3', assigned_date: mondayStr, completed: false }
+            ];
+            
+            const result = calculateCompletionRate();
+            
+            const passed = result.total_tasks === 3 && 
+                          result.completed_tasks === 1 && 
+                          result.completion_rate === 33.33;
+            
+            displayResult('テスト3: 半分のタスクが完了', passed, formatStats(result));
+            return passed;
+        }
+
+        // Test 4: Unassigned tasks not counted
+        function test4_UnassignedNotCounted() {
+            localStorage.clear();
+            tasks = [];
+            
+            const monday = getMonday(new Date());
+            const mondayStr = formatDate(monday);
+            
+            tasks = [
+                { id: '1', name: 'Task 1', assigned_date: mondayStr, completed: true },
+                { id: '2', name: 'Task 2', assigned_date: null, completed: false }
+            ];
+            
+            const result = calculateCompletionRate();
+            
+            const passed = result.total_tasks === 1 && 
+                          result.completed_tasks === 1 && 
+                          result.completion_rate === 100;
+            
+            displayResult('テスト4: 未割り当てタスクはカウントされない', passed, formatStats(result));
+            return passed;
+        }
+
+        // Test 5: Archived tasks counted
+        function test5_ArchivedTasksCounted() {
+            localStorage.clear();
+            tasks = [];
+            
+            const monday = getMonday(new Date());
+            const mondayStr = formatDate(monday);
+            
+            tasks = [
+                { id: '1', name: 'Task 1', assigned_date: mondayStr, completed: false }
+            ];
+            
+            const archivedTasks = [
+                { id: '2', name: 'Task 2', assigned_date: mondayStr, completed: true }
+            ];
+            
+            localStorage.setItem('weekly-task-board.archive', JSON.stringify(archivedTasks));
+            
+            const result = calculateCompletionRate();
+            
+            const passed = result.total_tasks === 2 && 
+                          result.completed_tasks === 1 && 
+                          result.completion_rate === 50;
+            
+            displayResult('テスト5: アーカイブタスクがカウントされる', passed, formatStats(result));
+            return passed;
+        }
+
+        // Test 6: Multiple days in week
+        function test6_MultipleDays() {
+            localStorage.clear();
+            tasks = [];
+            
+            const monday = getMonday(new Date());
+            const tuesday = new Date(monday);
+            tuesday.setDate(monday.getDate() + 1);
+            const wednesday = new Date(monday);
+            wednesday.setDate(monday.getDate() + 2);
+            
+            const mondayStr = formatDate(monday);
+            const tuesdayStr = formatDate(tuesday);
+            const wednesdayStr = formatDate(wednesday);
+            
+            tasks = [
+                { id: '1', name: 'Task 1', assigned_date: mondayStr, completed: true },
+                { id: '2', name: 'Task 2', assigned_date: tuesdayStr, completed: true },
+                { id: '3', name: 'Task 3', assigned_date: wednesdayStr, completed: false }
+            ];
+            
+            const result = calculateCompletionRate();
+            
+            const passed = result.total_tasks === 3 && 
+                          result.completed_tasks === 2 && 
+                          result.completion_rate === 66.67;
+            
+            displayResult('テスト6: 複数日のタスク', passed, formatStats(result));
+            return passed;
+        }
+
+        // Test 7: getCompletionRateForWeek with offset
+        function test7_WeekOffset() {
+            localStorage.clear();
+            tasks = [];
+            
+            const monday = getMonday(new Date());
+            const mondayStr = formatDate(monday);
+            
+            tasks = [
+                { id: '1', name: 'Task 1', assigned_date: mondayStr, completed: true }
+            ];
+            
+            const result = getCompletionRateForWeek(0);
+            
+            const passed = result.total_tasks === 1 && 
+                          result.completion_rate === 100;
+            
+            displayResult('テスト7: getCompletionRateForWeek(0)', passed, formatStats(result));
+            return passed;
+        }
+
+        // Test 8: Result structure
+        function test8_ResultStructure() {
+            localStorage.clear();
+            tasks = [];
+            
+            const result = calculateCompletionRate();
+            
+            const passed = result.hasOwnProperty('week_start') &&
+                          result.hasOwnProperty('total_tasks') &&
+                          result.hasOwnProperty('completed_tasks') &&
+                          result.hasOwnProperty('completion_rate') &&
+                          result.hasOwnProperty('is_valid');
+            
+            displayResult('テスト8: 結果の構造', passed, formatStats(result));
+            return passed;
+        }
+
+        // Run all tests
+        function runAllTests() {
+            clearResults();
+            
+            const results = [
+                test1_NoTasks(),
+                test2_AllCompleted(),
+              
