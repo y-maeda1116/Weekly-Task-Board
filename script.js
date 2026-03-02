@@ -2008,7 +2008,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- DOM Element Selections ---
     const addTaskBtn = document.getElementById('add-task-btn');
     const modal = document.getElementById('task-modal');
-    const closeModalBtn = document.querySelector('.close-btn');
+    const closeModalBtn = modal.querySelector('.close-btn');
     const taskForm = document.getElementById('task-form');
     const taskNameInput = document.getElementById('task-name');
     const estimatedTimeInput = document.getElementById('estimated-time');
@@ -3973,10 +3973,18 @@ document.addEventListener('DOMContentLoaded', () => {
  */
 function updateDashboard() {
     try {
-        // 統計情報を計算
-        const completionRate = calculateCompletionRate();
-        const categoryAnalysis = calculateCategoryTimeAnalysis();
-        const dailyWorkTime = calculateDailyWorkTime();
+        // 統計パネルの日付を取得
+        const dashboardDatePicker = document.getElementById('dashboard-date-picker');
+        let targetDate = new Date();
+        
+        if (dashboardDatePicker && dashboardDatePicker.value) {
+            targetDate = new Date(dashboardDatePicker.value + 'T00:00:00');
+        }
+        
+        // 統計情報を計算（指定された週のデータを使用）
+        const completionRate = calculateCompletionRateForDate(targetDate);
+        const categoryAnalysis = calculateCategoryTimeAnalysisForDate(targetDate);
+        const dailyWorkTime = calculateDailyWorkTimeForDate(targetDate);
         
         // 完了率を更新
         const completionRateValue = document.getElementById('completion-rate-value');
@@ -4133,12 +4141,19 @@ function initializeDashboardToggle() {
     const statisticsToggleBtn = document.getElementById('statistics-toggle');
     const dashboardPanel = document.getElementById('dashboard-panel');
     const closeDashboardBtn = document.getElementById('close-dashboard');
+    const dashboardDatePicker = document.getElementById('dashboard-date-picker');
+    const dashboardPrevWeekBtn = document.getElementById('dashboard-prev-week');
+    const dashboardNextWeekBtn = document.getElementById('dashboard-next-week');
     
     if (!statisticsToggleBtn || !dashboardPanel) return;
+    
+    let dashboardWeekOffset = 0;
     
     // 統計ボタンクリックで統計パネルを表示
     statisticsToggleBtn.addEventListener('click', () => {
         dashboardPanel.style.display = 'block';
+        dashboardWeekOffset = 0;
+        updateDashboardDateDisplay();
         updateDashboard();
     });
     
@@ -4147,6 +4162,34 @@ function initializeDashboardToggle() {
         closeDashboardBtn.addEventListener('click', () => {
             dashboardPanel.style.display = 'none';
         });
+    }
+    
+    // 前週ボタン
+    if (dashboardPrevWeekBtn) {
+        dashboardPrevWeekBtn.addEventListener('click', () => {
+            dashboardWeekOffset--;
+            updateDashboardDateDisplay();
+            updateDashboard();
+        });
+    }
+    
+    // 次週ボタン
+    if (dashboardNextWeekBtn) {
+        dashboardNextWeekBtn.addEventListener('click', () => {
+            dashboardWeekOffset++;
+            updateDashboardDateDisplay();
+            updateDashboard();
+        });
+    }
+    
+    // 日付ピッカーの更新表示
+    function updateDashboardDateDisplay() {
+        if (dashboardDatePicker) {
+            const monday = getMonday(new Date());
+            const weekMonday = new Date(monday);
+            weekMonday.setDate(monday.getDate() + (dashboardWeekOffset * 7));
+            dashboardDatePicker.value = formatDate(weekMonday);
+        }
     }
     
     // パネル外をクリックで閉じる
@@ -4330,4 +4373,106 @@ function showNotification(message, type = 'info') {
             notification.remove();
         }, 300);
     }, 3000);
+}
+
+
+/**
+ * 指定された日付の週の完了率を計算
+ */
+function calculateCompletionRateForDate(targetDate) {
+    const monday = getMonday(targetDate);
+    const sunday = new Date(monday);
+    sunday.setDate(monday.getDate() + 6);
+    
+    const mondayStr = formatDate(monday);
+    const sundayStr = formatDate(sunday);
+    
+    const allTasks = loadTasks();
+    const archivedTasks = loadArchivedTasks();
+    const weekTasks = allTasks.concat(archivedTasks).filter(task => {
+        if (!task.assigned_date) return false;
+        return task.assigned_date >= mondayStr && task.assigned_date <= sundayStr;
+    });
+    
+    const completedCount = weekTasks.filter(t => t.completed).length;
+    const completionRate = weekTasks.length > 0 ? Math.round((completedCount / weekTasks.length) * 100) : 0;
+    
+    return {
+        total_tasks: weekTasks.length,
+        completed_tasks: completedCount,
+        completion_rate: completionRate,
+        is_valid: true
+    };
+}
+
+/**
+ * 指定された日付の週のカテゴリ別時間分析を計算
+ */
+function calculateCategoryTimeAnalysisForDate(targetDate) {
+    const monday = getMonday(targetDate);
+    const sunday = new Date(monday);
+    sunday.setDate(monday.getDate() + 6);
+    
+    const mondayStr = formatDate(monday);
+    const sundayStr = formatDate(sunday);
+    
+    const allTasks = loadTasks();
+    const archivedTasks = loadArchivedTasks();
+    const weekTasks = allTasks.concat(archivedTasks).filter(task => {
+        if (!task.assigned_date) return false;
+        return task.assigned_date >= mondayStr && task.assigned_date <= sundayStr;
+    });
+    
+    const categories = {};
+    let totalEstimatedTime = 0;
+    let totalActualTime = 0;
+    
+    weekTasks.forEach(task => {
+        const category = task.category || 'task';
+        if (!categories[category]) {
+            categories[category] = {
+                task_count: 0,
+                completed_count: 0,
+                estimated_time: 0,
+                actual_time: 0
+            };
+        }
+        
+        categories[category].task_count++;
+        if (task.completed) categories[category].completed_count++;
+        categories[category].estimated_time += task.estimated_time || 0;
+        categories[category].actual_time += task.actual_time || 0;
+        
+        totalEstimatedTime += task.estimated_time || 0;
+        totalActualTime += task.actual_time || 0;
+    });
+    
+    return {
+        categories: categories,
+        total_estimated_time: totalEstimatedTime / 60,
+        total_actual_time: totalActualTime / 60
+    };
+}
+
+/**
+ * 指定された日付の週の日別作業時間を計算
+ */
+function calculateDailyWorkTimeForDate(targetDate) {
+    const monday = getMonday(targetDate);
+    const dailyTime = {};
+    
+    for (let i = 0; i < 7; i++) {
+        const date = new Date(monday);
+        date.setDate(monday.getDate() + i);
+        const dateStr = formatDate(date);
+        
+        const allTasks = loadTasks();
+        const archivedTasks = loadArchivedTasks();
+        const dayTasks = allTasks.concat(archivedTasks).filter(task => task.assigned_date === dateStr);
+        
+        const totalTime = dayTasks.reduce((sum, task) => sum + (task.estimated_time || 0), 0);
+        dailyTime[dateStr] = totalTime / 60;
+    }
+    
+    return dailyTime;
 }
