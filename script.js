@@ -2394,7 +2394,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    closeModalBtn.addEventListener('click', () => {
+    closeModalBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
         closeTaskModal();
     });
 
@@ -4149,6 +4151,16 @@ function initializeDashboardToggle() {
     
     let dashboardWeekOffset = 0;
     
+    // 日付ピッカーの更新表示
+    function updateDashboardDateDisplay() {
+        if (dashboardDatePicker) {
+            const monday = getMonday(new Date());
+            const weekMonday = new Date(monday);
+            weekMonday.setDate(monday.getDate() + (dashboardWeekOffset * 7));
+            dashboardDatePicker.value = formatDate(weekMonday);
+        }
+    }
+    
     // 統計ボタンクリックで統計パネルを表示
     statisticsToggleBtn.addEventListener('click', () => {
         dashboardPanel.style.display = 'block';
@@ -4180,16 +4192,6 @@ function initializeDashboardToggle() {
             updateDashboardDateDisplay();
             updateDashboard();
         });
-    }
-    
-    // 日付ピッカーの更新表示
-    function updateDashboardDateDisplay() {
-        if (dashboardDatePicker) {
-            const monday = getMonday(new Date());
-            const weekMonday = new Date(monday);
-            weekMonday.setDate(monday.getDate() + (dashboardWeekOffset * 7));
-            dashboardDatePicker.value = formatDate(weekMonday);
-        }
     }
     
     // パネル外をクリックで閉じる
