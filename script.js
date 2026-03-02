@@ -4094,9 +4094,14 @@ function updateDailyBreakdown(dailyWorkTime) {
     
     dailyBreakdownEl.innerHTML = '';
     
+    // dailyWorkTimeがnullまたはundefinedの場合は処理を中止
+    if (!dailyWorkTime) return;
+    
     // 日別データを表示
-    Object.keys(dailyWorkTime.daily_breakdown).forEach(dateStr => {
-        const day = dailyWorkTime.daily_breakdown[dateStr];
+    const dailyData = dailyWorkTime.daily_breakdown || dailyWorkTime;
+    
+    Object.keys(dailyData).forEach(dateStr => {
+        const day = dailyData[dateStr];
         
         const dailyItem = document.createElement('div');
         dailyItem.className = 'daily-item';
@@ -4106,21 +4111,23 @@ function updateDailyBreakdown(dailyWorkTime) {
         const dateFormatted = `${date.getMonth() + 1}/${date.getDate()}`;
         
         // 見積時間と実績時間の差分を計算
-        const variance = day.actual_time - day.estimated_time;
+        const estimatedTime = day.estimated_time || 0;
+        const actualTime = day.actual_time || 0;
+        const variance = actualTime - estimatedTime;
         const varianceClass = variance > 0 ? 'overrun' : variance < 0 ? 'underrun' : 'match';
         const varianceText = variance > 0 ? `+${variance.toFixed(1)}h` : `${variance.toFixed(1)}h`;
         
         dailyItem.innerHTML = `
-            <div class="daily-item-day">${day.day_name}曜日</div>
+            <div class="daily-item-day">${day.day_name || ''}曜日</div>
             <div class="daily-item-date">${dateFormatted}</div>
             <div class="daily-item-stats">
                 <div class="daily-item-stat">
                     <span class="daily-item-stat-label">見積</span>
-                    <span class="daily-item-stat-value">${day.estimated_time.toFixed(1)}h</span>
+                    <span class="daily-item-stat-value">${estimatedTime.toFixed(1)}h</span>
                 </div>
                 <div class="daily-item-stat">
                     <span class="daily-item-stat-label">実績</span>
-                    <span class="daily-item-stat-value">${day.actual_time.toFixed(1)}h</span>
+                    <span class="daily-item-stat-value">${actualTime.toFixed(1)}h</span>
                 </div>
                 <div class="daily-item-stat">
                     <span class="daily-item-stat-label">差分</span>
@@ -4128,7 +4135,7 @@ function updateDailyBreakdown(dailyWorkTime) {
                 </div>
             </div>
             <div class="daily-item-tasks">
-                完了: ${day.completed_count}/${day.task_count}
+                完了: ${day.completed_count || 0}/${day.task_count || 0}
             </div>
         `;
         
