@@ -4468,7 +4468,7 @@ function calculateCategoryTimeAnalysisForDate(targetDate) {
  */
 function calculateDailyWorkTimeForDate(targetDate) {
     const monday = getMonday(targetDate);
-    const dailyTime = {};
+    const dailyBreakdown = {};
     
     for (let i = 0; i < 7; i++) {
         const date = new Date(monday);
@@ -4479,9 +4479,22 @@ function calculateDailyWorkTimeForDate(targetDate) {
         const archivedTasks = loadArchivedTasks();
         const dayTasks = allTasks.concat(archivedTasks).filter(task => task.assigned_date === dateStr);
         
-        const totalTime = dayTasks.reduce((sum, task) => sum + (task.estimated_time || 0), 0);
-        dailyTime[dateStr] = totalTime / 60;
+        const totalEstimatedTime = dayTasks.reduce((sum, task) => sum + (task.estimated_time || 0), 0);
+        const totalActualTime = dayTasks.reduce((sum, task) => sum + (task.actual_time || 0), 0);
+        const completedCount = dayTasks.filter(t => t.completed).length;
+        
+        const dayNames = ['日', '月', '火', '水', '木', '金', '土'];
+        
+        dailyBreakdown[dateStr] = {
+            day_name: dayNames[date.getDay()],
+            estimated_time: totalEstimatedTime / 60,
+            actual_time: totalActualTime / 60,
+            task_count: dayTasks.length,
+            completed_count: completedCount
+        };
     }
     
-    return dailyTime;
+    return {
+        daily_breakdown: dailyBreakdown
+    };
 }
