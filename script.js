@@ -3108,6 +3108,7 @@ let recurrenceEngine;
      */
     function handleWeekdayChange(dayName, visible) {
         console.log(`Weekday change: ${dayName} = ${visible}`);
+        console.log('Version: 2024-03-03-v2 (animation check removed)');
         
         weekdayManager.toggleWeekday(dayName, visible);
         console.log(`After toggle: ${dayName} visible = ${weekdayManager.isWeekdayVisible(dayName)}`);
