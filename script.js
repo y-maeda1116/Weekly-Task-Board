@@ -1989,9 +1989,10 @@ let recurrenceEngine;
 
 // --- Main Application Logic ---
 
-document.addEventListener('DOMContentLoaded', () => {
+// スクリプトはHTMLの最後に配置されているため、DOMは完全に読み込まれている
+// したがって、DOMContentLoadedイベントを待つ必要はない
 
-    // 1. データの初期化
+// 1. データの初期化
     tasks = loadTasks();
     settings = loadSettings();
     // 💡 修正 1: currentDateを現在の日付で初期化し、週の基点を定める
@@ -4044,8 +4045,6 @@ document.addEventListener('DOMContentLoaded', () => {
     archiveToggleBtn.addEventListener('click', showArchiveView);
     closeArchiveBtn.addEventListener('click', hideArchiveView);
     clearArchiveBtn.addEventListener('click', clearAllArchive);
-
-}); // DOMContentLoaded 終了
 
 
 /**
