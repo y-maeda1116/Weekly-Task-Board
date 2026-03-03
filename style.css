@@ -451,7 +451,6 @@ button:hover {
     height: 18px;
     accent-color: var(--primary-color);
 }
-}
 
 /* ダークモード用の曜日設定 */
 [data-theme="dark"] #weekday-settings label {
