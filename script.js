@@ -3109,12 +3109,6 @@ let recurrenceEngine;
     function handleWeekdayChange(dayName, visible) {
         console.log(`Weekday change: ${dayName} = ${visible}`);
         
-        // アニメーション中は処理をスキップ
-        if (document.querySelector('.day-column.hiding, .day-column.showing')) {
-            console.log('Animation in progress, skipping');
-            return;
-        }
-        
         weekdayManager.toggleWeekday(dayName, visible);
         console.log(`After toggle: ${dayName} visible = ${weekdayManager.isWeekdayVisible(dayName)}`);
         
