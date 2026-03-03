@@ -1839,12 +1839,31 @@ class RecurrenceEngine {
      */
     generateWeeklyTasks(recurringTask, startDate, endDate) {
         const generatedTasks = [];
-        const currentDate = new Date(startDate);
-        currentDate.setHours(0, 0, 0, 0);
+        
+        // 元のタスクの日付を取得
+        if (!recurringTask.assigned_date) {
+            return generatedTasks;
+        }
+        
+        const originalDate = new Date(recurringTask.assigned_date);
+        originalDate.setHours(0, 0, 0, 0);
+        
+        const start = new Date(startDate);
+        start.setHours(0, 0, 0, 0);
         
         const end = new Date(endDate);
         end.setHours(0, 0, 0, 0);
         
+        // 元のタスクの曜日を取得
+        const originalDayOfWeek = originalDate.getDay();
+        
+        // startDateから最初の該当曜日を見つける
+        let currentDate = new Date(start);
+        const currentDayOfWeek = currentDate.getDay();
+        const daysUntilTarget = (originalDayOfWeek - currentDayOfWeek + 7) % 7;
+        currentDate.setDate(currentDate.getDate() + daysUntilTarget);
+        
+        // 該当曜日のタスクを生成
         while (currentDate <= end) {
             const newTask = this.generateTaskFromRecurrence(recurringTask, new Date(currentDate));
             if (newTask) {
