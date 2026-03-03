@@ -3016,16 +3016,20 @@ document.addEventListener('DOMContentLoaded', () => {
     function initializeWeekdaySettings() {
         const weekdayCheckboxes = document.querySelectorAll('#weekday-checkboxes input[type="checkbox"]');
         
+        console.log(`Found ${weekdayCheckboxes.length} checkboxes`);
+        
         // チェックボックスの初期状態を設定
         weekdayCheckboxes.forEach((checkbox, index) => {
             const dayName = weekdayManager.dayNames[index];
             checkbox.checked = weekdayManager.isWeekdayVisible(dayName);
             
-            // イベントリスナーを追加（キャプチャフェーズで処理）
+            console.log(`Setting up checkbox for ${dayName}`);
+            
+            // イベントリスナーを追加
             checkbox.addEventListener('change', (e) => {
-                e.stopPropagation();
+                console.log(`Change event fired for ${dayName}`);
                 handleWeekdayChange(dayName, e.target.checked);
-            }, false);
+            });
         });
     }
     
@@ -3035,12 +3039,17 @@ document.addEventListener('DOMContentLoaded', () => {
      * @param {boolean} visible - 表示するかどうか
      */
     function handleWeekdayChange(dayName, visible) {
+        console.log(`Weekday change: ${dayName} = ${visible}`);
+        
         // アニメーション中は処理をスキップ
         if (document.querySelector('.day-column.hiding, .day-column.showing')) {
+            console.log('Animation in progress, skipping');
             return;
         }
         
         weekdayManager.toggleWeekday(dayName, visible);
+        console.log(`After toggle: ${dayName} visible = ${weekdayManager.isWeekdayVisible(dayName)}`);
+        
         updateWeekdayVisibility();
         
         // アニメーション完了後にrenderWeekを実行
@@ -3054,6 +3063,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (movedCount > 0) {
                 showWeekdayNotification(`${weekdayManager.dayLabels[weekdayManager.dayNames.indexOf(dayName)]}曜日の${movedCount}個のタスクを未割り当てに移動しました`);
             }
+        } else {
+            console.log(`${dayName} is now visible`);
         }
     }
     
