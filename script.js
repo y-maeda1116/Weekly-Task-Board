@@ -1,5 +1,4 @@
 // --- Global State and LocalStorage Functions ---
-console.log('script.js loaded');
 
 const TASKS_STORAGE_KEY = 'weekly-task-board.tasks';
 const SETTINGS_STORAGE_KEY = 'weekly-task-board.settings';
@@ -2000,7 +1999,6 @@ let recurrenceEngine;
     
     // 曜日管理の初期化
     weekdayManager = new WeekdayManager();
-    console.log('weekdayManager initialized:', weekdayManager);
     
     // タスク一括移動の初期化
     taskBulkMover = new TaskBulkMover();
@@ -2074,7 +2072,6 @@ let recurrenceEngine;
     // カテゴリフィルターの初期化
     initializeCategoryFilter();
     
-    console.log('About to call initializeWeekdaySettings');
     // 曜日設定UIの初期化
     initializeWeekdaySettings();
     
@@ -3052,53 +3049,18 @@ let recurrenceEngine;
      * Initialize weekday settings UI.
      */
     function initializeWeekdaySettings() {
-        console.log('initializeWeekdaySettings called');
-        
-        const weekdayCheckboxesContainer = document.getElementById('weekday-checkboxes');
-        console.log('weekday-checkboxes container:', weekdayCheckboxesContainer);
-        
         const weekdayCheckboxes = document.querySelectorAll('#weekday-checkboxes input[type="checkbox"]');
-        console.log(`Found ${weekdayCheckboxes.length} checkboxes`);
-        
-        if (weekdayCheckboxes.length === 0) {
-            console.warn('No checkboxes found! Checking alternative selectors...');
-            const allCheckboxes = document.querySelectorAll('input[type="checkbox"]');
-            console.log(`Total checkboxes in page: ${allCheckboxes.length}`);
-            allCheckboxes.forEach((cb, idx) => {
-                console.log(`Checkbox ${idx}:`, cb.id, cb.parentElement?.textContent);
-            });
-        }
         
         // チェックボックスの初期状態を設定
         weekdayCheckboxes.forEach((checkbox, index) => {
             const dayName = weekdayManager.dayNames[index];
             checkbox.checked = weekdayManager.isWeekdayVisible(dayName);
             
-            console.log(`Setting up checkbox for ${dayName}`, checkbox.id);
-            
             // イベントリスナーを追加
             checkbox.addEventListener('change', (e) => {
-                console.log(`Change event fired for ${dayName}`);
                 handleWeekdayChange(dayName, e.target.checked);
             });
-            
-            // テスト用：クリックイベントも追加
-            checkbox.addEventListener('click', (e) => {
-                console.log(`Click event fired for ${dayName}`, e.target.checked);
-            });
         });
-        
-        // テスト用：直接チェックボックスをクリックしてみる
-        console.log('Testing checkbox click...');
-        const testCheckbox = document.getElementById('show-monday');
-        if (testCheckbox) {
-            console.log('Found show-monday checkbox:', testCheckbox);
-            testCheckbox.addEventListener('click', () => {
-                console.log('show-monday clicked!');
-            });
-        } else {
-            console.warn('show-monday checkbox not found!');
-        }
     }
     
     /**
@@ -3107,11 +3069,7 @@ let recurrenceEngine;
      * @param {boolean} visible - 表示するかどうか
      */
     function handleWeekdayChange(dayName, visible) {
-        console.log(`Weekday change: ${dayName} = ${visible}`);
-        console.log('Version: 2024-03-03-v2 (animation check removed)');
-        
         weekdayManager.toggleWeekday(dayName, visible);
-        console.log(`After toggle: ${dayName} visible = ${weekdayManager.isWeekdayVisible(dayName)}`);
         
         updateWeekdayVisibility();
         
@@ -3126,8 +3084,6 @@ let recurrenceEngine;
             if (movedCount > 0) {
                 showWeekdayNotification(`${weekdayManager.dayLabels[weekdayManager.dayNames.indexOf(dayName)]}曜日の${movedCount}個のタスクを未割り当てに移動しました`);
             }
-        } else {
-            console.log(`${dayName} is now visible`);
         }
     }
     
