@@ -23,52 +23,66 @@
     <header>
         <h1>ウィークリータスクボード</h1>
         <div id="header-controls">
-            <button id="add-task-btn">タスクを追加</button>
-            <div id="category-filter">
-                <label for="filter-category">カテゴリフィルター:</label>
-                <select id="filter-category">
-                    <option value="">すべて表示</option>
-                    <option value="task">タスク</option>
-                    <option value="meeting">打ち合わせ</option>
-                    <option value="review">レビュー</option>
-                    <option value="bugfix">バグ修正</option>
-                    <option value="document">ドキュメント作成</option>
-                    <option value="research">学習・調査</option>
-                </select>
+            <!-- グループ1: メイン操作 -->
+            <div id="header-group-main">
+                <button id="add-task-btn">タスクを追加</button>
             </div>
-            <div id="weekday-settings">
-                <label>表示する曜日:</label>
-                <div id="weekday-checkboxes" role="group" aria-label="曜日表示設定">
-                    <label><input type="checkbox" id="show-monday" checked aria-describedby="weekday-help"> 月</label>
-                    <label><input type="checkbox" id="show-tuesday" checked aria-describedby="weekday-help"> 火</label>
-                    <label><input type="checkbox" id="show-wednesday" checked aria-describedby="weekday-help"> 水</label>
-                    <label><input type="checkbox" id="show-thursday" checked aria-describedby="weekday-help"> 木</label>
-                    <label><input type="checkbox" id="show-friday" checked aria-describedby="weekday-help"> 金</label>
-                    <label><input type="checkbox" id="show-saturday" checked aria-describedby="weekday-help"> 土</label>
-                    <label><input type="checkbox" id="show-sunday" checked aria-describedby="weekday-help"> 日</label>
+
+            <!-- グループ2: フィルター・表示設定 -->
+            <div id="header-group-filters">
+                <div id="category-filter">
+                    <select id="filter-category">
+                        <option value="">すべて表示</option>
+                        <option value="task">タスク</option>
+                        <option value="meeting">打ち合わせ</option>
+                        <option value="review">レビュー</option>
+                        <option value="bugfix">バグ修正</option>
+                        <option value="document">ドキュメント作成</option>
+                        <option value="research">学習・調査</option>
+                    </select>
                 </div>
-                <div id="weekday-help" class="sr-only">チェックを外すとその曜日が非表示になり、タスクは未割り当てエリアに移動します</div>
+                <div id="user-settings">
+                    <input type="number" id="ideal-daily-minutes" value="480" step="30" title="1日の理想稼働時間">
+                </div>
+                <button id="weekday-filter-btn" title="表示する曜日を選択">曜日設定</button>
+                <div id="weekday-settings" style="display: none;">
+                    <div id="weekday-checkboxes" role="group" aria-label="曜日表示設定">
+                        <label><input type="checkbox" id="show-monday" checked> 月</label>
+                        <label><input type="checkbox" id="show-tuesday" checked> 火</label>
+                        <label><input type="checkbox" id="show-wednesday" checked> 水</label>
+                        <label><input type="checkbox" id="show-thursday" checked> 木</label>
+                        <label><input type="checkbox" id="show-friday" checked> 金</label>
+                        <label><input type="checkbox" id="show-saturday" checked> 土</label>
+                        <label><input type="checkbox" id="show-sunday" checked> 日</label>
+                    </div>
+                    <div id="weekday-help" class="sr-only">チェックを外すとその曜日が非表示になり、タスクは未割り当てエリアに移動します</div>
+                </div>
             </div>
-            <div id="user-settings">
-                <label for="ideal-daily-minutes">1日の理想稼働時間 (分):</label>
-                <input type="number" id="ideal-daily-minutes" value="480" step="30">
-            </div>
-            <div id="navigation">
-                <button id="prev-week">前週へ</button>
-                <button id="today">今週に戻る</button>
-                <button id="next-week">次週へ</button>
+
+            <!-- グループ3: ナビゲーション -->
+            <div id="header-group-navigation">
+                <button id="prev-week">前週</button>
+                <button id="today">今週</button>
+                <button id="next-week">次週</button>
                 <div id="date-picker-wrapper">
                     <input type="date" id="date-picker" readonly>
                 </div>
             </div>
-            <div id="data-management">
-                <button id="template-toggle">📋 テンプレート</button>
-                <button id="statistics-toggle">📊 統計</button>
-                <button id="export-data-btn">エクスポート</button>
-                <button id="import-data-btn">インポート</button>
+
+            <!-- グループ4: ユーティリティ -->
+            <div id="header-group-utility">
+                <button id="statistics-toggle" title="統計">📊</button>
+                <button id="template-toggle" title="テンプレート">📋</button>
+                <button id="theme-toggle" title="テーマ切替">🌙</button>
+                <div id="more-menu" style="position: relative; display: inline-block;">
+                    <button id="more-menu-btn" title="その他">︙</button>
+                    <div id="more-menu-dropdown" style="display: none; position: absolute; right: 0; top: 100%; background: var(--card-background); border: 1px solid var(--border-color); border-radius: 4px; box-shadow: 0 2px 8px var(--shadow-color); z-index: 1000; min-width: 150px;">
+                        <button id="export-data-btn" style="display: block; width: 100%; text-align: left; padding: 10px 15px; border: none; background: none; cursor: pointer; border-bottom: 1px solid var(--border-color);">エクスポート</button>
+                        <button id="import-data-btn" style="display: block; width: 100%; text-align: left; padding: 10px 15px; border: none; background: none; cursor: pointer; border-bottom: 1px solid var(--border-color);">インポート</button>
+                        <button id="archive-toggle" style="display: block; width: 100%; text-align: left; padding: 10px 15px; border: none; background: none; cursor: pointer;">アーカイブ</button>
+                    </div>
+                </div>
                 <input type="file" id="import-file-input" style="display: none;" accept=".json">
-                <button id="archive-toggle">📁 アーカイブ</button>
-                <button id="theme-toggle">🌙 ダーク</button>
             </div>
         </div>
         <h2 id="week-title"></h2>

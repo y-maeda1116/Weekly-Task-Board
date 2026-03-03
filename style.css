@@ -52,7 +52,189 @@ h1 {
     flex-wrap: wrap;
     justify-content: flex-start;
     align-items: center;
-    gap: 15px;
+    gap: 20px;
+    padding: 10px 0;
+}
+
+/* ヘッダーグループのスタイル */
+#header-group-main,
+#header-group-filters,
+#header-group-navigation,
+#header-group-utility {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* グループ間の区切り線 */
+#header-group-main {
+    padding-right: 15px;
+    border-right: 2px solid var(--border-color);
+}
+
+#header-group-filters {
+    padding-right: 15px;
+    border-right: 2px solid var(--border-color);
+}
+
+#header-group-navigation {
+    padding-right: 15px;
+    border-right: 2px solid var(--border-color);
+}
+
+/* メイン操作ボタン */
+#add-task-btn {
+    padding: 10px 16px;
+    font-size: 0.95em;
+    font-weight: 600;
+    background-color: var(--primary-color);
+    color: white;
+}
+
+#add-task-btn:hover {
+    opacity: 0.9;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(74, 144, 226, 0.3);
+}
+
+/* フィルターグループ */
+#category-filter select {
+    padding: 8px 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background-color: var(--card-background);
+    color: var(--font-color);
+    font-size: 0.9em;
+    cursor: pointer;
+    min-width: 120px;
+}
+
+#user-settings input {
+    width: 60px;
+    padding: 6px 8px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background-color: var(--card-background);
+    color: var(--font-color);
+    font-size: 0.9em;
+}
+
+#weekday-filter-btn {
+    padding: 8px 12px;
+    font-size: 0.9em;
+}
+
+/* 曜日設定ドロップダウン */
+#weekday-settings {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background-color: var(--card-background);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    padding: 12px;
+    box-shadow: 0 4px 12px var(--shadow-color);
+    z-index: 1000;
+    margin-top: 5px;
+}
+
+#weekday-checkboxes {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+#weekday-checkboxes label {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.9em;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 3px;
+    transition: background-color 0.2s;
+}
+
+#weekday-checkboxes label:hover {
+    background-color: rgba(74, 144, 226, 0.1);
+}
+
+#weekday-checkboxes input[type="checkbox"] {
+    cursor: pointer;
+    width: 16px;
+    height: 16px;
+    accent-color: var(--primary-color);
+}
+
+/* ナビゲーションボタン */
+#header-group-navigation button {
+    padding: 8px 12px;
+    font-size: 0.9em;
+}
+
+#date-picker {
+    background-color: var(--card-background);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    padding: 6px 10px;
+    color: var(--font-color);
+    font-size: 0.9em;
+    cursor: pointer;
+    min-width: 110px;
+    text-align: center;
+}
+
+/* ユーティリティボタン */
+#header-group-utility button {
+    padding: 8px 10px;
+    font-size: 0.95em;
+    background-color: transparent;
+    border: 1px solid var(--border-color);
+    color: var(--font-color);
+    cursor: pointer;
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+
+#header-group-utility button:hover {
+    background-color: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+}
+
+/* その他メニュー */
+#more-menu {
+    position: relative;
+}
+
+#more-menu-dropdown {
+    background-color: var(--card-background);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    box-shadow: 0 4px 12px var(--shadow-color);
+    z-index: 1000;
+    min-width: 150px;
+}
+
+#more-menu-dropdown button {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: 10px 15px;
+    border: none;
+    background: none;
+    color: var(--font-color);
+    cursor: pointer;
+    font-size: 0.9em;
+    transition: background-color 0.2s;
+}
+
+#more-menu-dropdown button:hover {
+    background-color: rgba(74, 144, 226, 0.1);
+}
+
+#more-menu-dropdown button:not(:last-child) {
+    border-bottom: 1px solid var(--border-color);
 }
 
 #week-title {

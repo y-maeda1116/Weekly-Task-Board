@@ -2074,6 +2074,40 @@ document.addEventListener('DOMContentLoaded', () => {
     // 曜日設定UIの初期化
     initializeWeekdaySettings();
     
+    // 曜日設定ボタンのイベントリスナー
+    const weekdayFilterBtn = document.getElementById('weekday-filter-btn');
+    const weekdaySettings = document.getElementById('weekday-settings');
+    if (weekdayFilterBtn && weekdaySettings) {
+        weekdayFilterBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            weekdaySettings.style.display = weekdaySettings.style.display === 'none' ? 'block' : 'none';
+        });
+        
+        // 外側をクリックしたら閉じる
+        document.addEventListener('click', (e) => {
+            if (!weekdayFilterBtn.contains(e.target) && !weekdaySettings.contains(e.target)) {
+                weekdaySettings.style.display = 'none';
+            }
+        });
+    }
+    
+    // その他メニューのイベントリスナー
+    const moreMenuBtn = document.getElementById('more-menu-btn');
+    const moreMenuDropdown = document.getElementById('more-menu-dropdown');
+    if (moreMenuBtn && moreMenuDropdown) {
+        moreMenuBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            moreMenuDropdown.style.display = moreMenuDropdown.style.display === 'none' ? 'block' : 'none';
+        });
+        
+        // 外側をクリックしたら閉じる
+        document.addEventListener('click', (e) => {
+            if (!moreMenuBtn.contains(e.target) && !moreMenuDropdown.contains(e.target)) {
+                moreMenuDropdown.style.display = 'none';
+            }
+        });
+    }
+    
     // コンテキストメニューの初期化
     initializeContextMenu();
     
