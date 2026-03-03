@@ -2776,6 +2776,39 @@ let recurrenceEngine;
         isRendering = true;
 
         const monday = getMonday(currentDate);
+        
+        // 繰り返しタスクを自動生成
+        const startOfWeek = new Date(monday);
+        const endOfWeek = new Date(monday);
+        endOfWeek.setDate(monday.getDate() + 6);
+        
+        // 繰り返しタスクを取得
+        const recurringTasks = tasks.filter(task => task.is_recurring && task.recurrence_pattern);
+        
+        if (recurringTasks.length > 0 && recurrenceEngine) {
+            const generatedTasks = recurrenceEngine.generateAllRecurringTasks(
+                recurringTasks,
+                startOfWeek,
+                endOfWeek
+            );
+            
+            // 生成されたタスクを追加（重複チェック）
+            generatedTasks.forEach(generatedTask => {
+                const isDuplicate = tasks.some(existingTask => 
+                    existingTask.name === generatedTask.name &&
+                    existingTask.assigned_date === generatedTask.assigned_date &&
+                    !existingTask.is_recurring
+                );
+                
+                if (!isDuplicate) {
+                    tasks.push(generatedTask);
+                }
+            });
+            
+            if (generatedTasks.length > 0) {
+                saveTasks();
+            }
+        }
 
         dayColumns.forEach(col => {
             col.querySelectorAll('.task').forEach(task => task.remove());
