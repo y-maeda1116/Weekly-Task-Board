@@ -49,8 +49,10 @@ h1 {
 
 #header-controls {
     display: flex;
-    justify-content: space-between;
+    flex-wrap: wrap;
+    justify-content: flex-start;
     align-items: center;
+    gap: 15px;
 }
 
 #week-title {
@@ -292,47 +294,59 @@ button {
     background-color: var(--primary-color);
     color: white;
     border: none;
-    padding: 10px 15px;
+    padding: 8px 12px;
     border-radius: 4px;
     cursor: pointer;
-    font-size: 1em;
+    font-size: 0.95em;
+    white-space: nowrap;
+    transition: all 0.2s ease;
 }
 
 button:hover {
-    opacity: 0.9;
+    opacity: 0.85;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
 
 /* User settings in header */
 #user-settings {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
 }
 
 #user-settings label {
     font-size: 0.9em;
+    font-weight: 500;
+    white-space: nowrap;
 }
 
 #user-settings input {
-    width: 80px;
-    padding: 5px;
+    width: 70px;
+    padding: 6px 8px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background-color: var(--card-background);
+    color: var(--font-color);
+    font-size: 0.9em;
 }
 
 /* Category filter in header */
 #category-filter {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
 }
 
 #category-filter label {
     font-size: 0.9em;
     color: var(--font-color);
     white-space: nowrap;
+    font-weight: 500;
 }
 
 #category-filter select {
-    padding: 8px 12px;
+    padding: 8px 10px;
     border: 1px solid var(--border-color);
     border-radius: 4px;
     background-color: var(--card-background);
@@ -340,7 +354,7 @@ button:hover {
     font-size: 0.9em;
     cursor: pointer;
     transition: all 0.2s ease;
-    min-width: 140px;
+    min-width: 130px;
 }
 
 #category-filter select:hover {
@@ -392,9 +406,11 @@ button:hover {
 /* Weekday settings styles */
 #weekday-settings {
     display: flex;
-    align-items: center;
-    gap: 10px;
-    margin: 0 15px;
+    flex-direction: column;
+    gap: 8px;
+    margin: 0;
+    flex-basis: 100%;
+    order: 10;
 }
 
 #weekday-settings label {
@@ -405,29 +421,36 @@ button:hover {
 
 #weekday-checkboxes {
     display: flex;
-    gap: 8px;
+    gap: 6px;
     flex-wrap: wrap;
 }
 
 #weekday-checkboxes label {
     display: flex;
     align-items: center;
-    gap: 4px;
-    font-size: 0.85em;
+    gap: 5px;
+    font-size: 0.9em;
     cursor: pointer;
-    padding: 4px 8px;
+    padding: 6px 10px;
     border-radius: 4px;
-    transition: background-color 0.2s;
+    border: 1px solid transparent;
+    transition: all 0.2s;
     user-select: none;
+    background-color: rgba(74, 144, 226, 0.05);
 }
 
 #weekday-checkboxes label:hover {
-    background-color: var(--hover-color, rgba(74, 144, 226, 0.1));
+    background-color: rgba(74, 144, 226, 0.15);
+    border-color: var(--primary-color);
 }
 
 #weekday-checkboxes input[type="checkbox"] {
     margin: 0;
     cursor: pointer;
+    width: 18px;
+    height: 18px;
+    accent-color: var(--primary-color);
+}
 }
 
 /* ダークモード用の曜日設定 */
@@ -1645,6 +1668,32 @@ input[type="datetime-local"][readonly]:focus {
 #date-picker-wrapper {
     position: relative;
     display: inline-block;
+}
+
+#navigation {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+#navigation button {
+    padding: 8px 12px;
+    font-size: 0.9em;
+}
+
+#data-management {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+#add-task-btn {
+    padding: 8px 12px;
+    font-size: 0.95em;
+    font-weight: 500;
+    background-color: var(--primary-color);
 }
 
 #date-picker {

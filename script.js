@@ -3021,10 +3021,11 @@ document.addEventListener('DOMContentLoaded', () => {
             const dayName = weekdayManager.dayNames[index];
             checkbox.checked = weekdayManager.isWeekdayVisible(dayName);
             
-            // イベントリスナーを追加
+            // イベントリスナーを追加（キャプチャフェーズで処理）
             checkbox.addEventListener('change', (e) => {
+                e.stopPropagation();
                 handleWeekdayChange(dayName, e.target.checked);
-            });
+            }, false);
         });
     }
     
