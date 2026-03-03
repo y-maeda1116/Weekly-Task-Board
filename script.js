@@ -1992,163 +1992,162 @@ let recurrenceEngine;
 // したがって、DOMContentLoadedイベントを待つ必要はない
 
 // 1. データの初期化
-    tasks = loadTasks();
-    settings = loadSettings();
-    // 💡 修正 1: currentDateを現在の日付で初期化し、週の基点を定める
-    currentDate = new Date();
-    
-    // 曜日管理の初期化
-    weekdayManager = new WeekdayManager();
-    
-    // タスク一括移動の初期化
-    taskBulkMover = new TaskBulkMover();
-    
-    // 繰り返しタスク生成エンジンの初期化
-    recurrenceEngine = new RecurrenceEngine();
+tasks = loadTasks();
+settings = loadSettings();
+currentDate = new Date();
 
-    // --- DOM Element Selections ---
-    const addTaskBtn = document.getElementById('add-task-btn');
-    const modal = document.getElementById('task-modal');
-    const closeModalBtn = modal.querySelector('.close-btn');
-    const taskForm = document.getElementById('task-form');
-    const taskNameInput = document.getElementById('task-name');
-    const estimatedTimeInput = document.getElementById('estimated-time');
-    const taskPriorityInput = document.getElementById('task-priority');
-    const taskCategoryInput = document.getElementById('task-category');
-    const taskDateInput = document.getElementById('task-date');
-    const dueDateInput = document.getElementById('due-date');
-    const dueTimePeriodInput = document.getElementById('due-time-period');
-    const dueHourInput = document.getElementById('due-hour');
-    const taskDetailsInput = document.getElementById('task-details');
-    const duplicateTaskBtn = document.getElementById('duplicate-task-btn');
-    
-    // 繰り返しタスク設定UI要素
-    const isRecurringCheckbox = document.getElementById('is-recurring');
-    const recurrenceOptions = document.getElementById('recurrence-options');
-    const recurrencePatternSelect = document.getElementById('recurrence-pattern');
-    const recurrenceEndDateInput = document.getElementById('recurrence-end-date');
+// 曜日管理の初期化
+weekdayManager = new WeekdayManager();
 
-    const prevWeekBtn = document.getElementById('prev-week');
-    const todayBtn = document.getElementById('today');
-    const nextWeekBtn = document.getElementById('next-week');
+// タスク一括移動の初期化
+taskBulkMover = new TaskBulkMover();
 
-    // グローバル変数に代入
-    datePicker = document.getElementById('date-picker');
+// 繰り返しタスク生成エンジンの初期化
+recurrenceEngine = new RecurrenceEngine();
 
-    const weekTitle = document.getElementById('week-title');
-    const dayColumns = Array.from(document.querySelectorAll('#task-board .day-column'));
-    const unassignedColumn = document.getElementById('unassigned-tasks');
-    const idealDailyMinutesInput = document.getElementById('ideal-daily-minutes');
-    const exportDataBtn = document.getElementById('export-data-btn');
-    const importDataBtn = document.getElementById('import-data-btn');
-    const importFileInput = document.getElementById('import-file-input');
-    const themeToggleBtn = document.getElementById('theme-toggle');
-    const archiveToggleBtn = document.getElementById('archive-toggle');
-    const archiveView = document.getElementById('archive-view');
-    const closeArchiveBtn = document.getElementById('close-archive');
-    const clearArchiveBtn = document.getElementById('clear-archive');
-    const archiveList = document.getElementById('archive-list');
-    const categoryFilterSelect = document.getElementById('filter-category');
+// --- DOM Element Selections ---
+const addTaskBtn = document.getElementById('add-task-btn');
+const modal = document.getElementById('task-modal');
+const closeModalBtn = modal.querySelector('.close-btn');
+const taskForm = document.getElementById('task-form');
+const taskNameInput = document.getElementById('task-name');
+const estimatedTimeInput = document.getElementById('estimated-time');
+const taskPriorityInput = document.getElementById('task-priority');
+const taskCategoryInput = document.getElementById('task-category');
+const taskDateInput = document.getElementById('task-date');
+const dueDateInput = document.getElementById('due-date');
+const dueTimePeriodInput = document.getElementById('due-time-period');
+const dueHourInput = document.getElementById('due-hour');
+const taskDetailsInput = document.getElementById('task-details');
+const duplicateTaskBtn = document.getElementById('duplicate-task-btn');
 
-    let editingTaskId = null;
-    let isRendering = false;
-    let selectedDate = null; // 日付クリックで選択された日付
+// 繰り返しタスク設定UI要素
+const isRecurringCheckbox = document.getElementById('is-recurring');
+const recurrenceOptions = document.getElementById('recurrence-options');
+const recurrencePatternSelect = document.getElementById('recurrence-pattern');
+const recurrenceEndDateInput = document.getElementById('recurrence-end-date');
 
-    // --- Initial Load ---
-    carryOverOldTasks();
-    
-    // カテゴリデータの検証と修復
-    verifyCategoryData();
-    
-    // マイグレーションデータの検証と修復
-    verifyMigrationData();
+const prevWeekBtn = document.getElementById('prev-week');
+const todayBtn = document.getElementById('today');
+const nextWeekBtn = document.getElementById('next-week');
 
-    // 設定値をUIに反映
-    idealDailyMinutesInput.value = settings.ideal_daily_minutes;
-    
-    // ダークモードの初期化
-    initializeTheme();
+// グローバル変数に代入
+datePicker = document.getElementById('date-picker');
 
-    // カテゴリフィルターの初期化
-    initializeCategoryFilter();
-    
-    // 曜日設定UIの初期化
-    initializeWeekdaySettings();
-    
-    // 曜日設定ボタンのイベントリスナー
-    const weekdayFilterBtn = document.getElementById('weekday-filter-btn');
-    const weekdaySettings = document.getElementById('weekday-settings');
-    if (weekdayFilterBtn && weekdaySettings) {
-        weekdayFilterBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            weekdaySettings.style.display = weekdaySettings.style.display === 'none' ? 'block' : 'none';
-        });
-        
-        // 外側をクリックしたら閉じる
-        document.addEventListener('click', (e) => {
-            if (!weekdayFilterBtn.contains(e.target) && !weekdaySettings.contains(e.target)) {
-                weekdaySettings.style.display = 'none';
-            }
-        });
-    }
-    
-    // その他メニューのイベントリスナー
-    const moreMenuBtn = document.getElementById('more-menu-btn');
-    const moreMenuDropdown = document.getElementById('more-menu-dropdown');
-    if (moreMenuBtn && moreMenuDropdown) {
-        moreMenuBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            moreMenuDropdown.style.display = moreMenuDropdown.style.display === 'none' ? 'block' : 'none';
-        });
-        
-        // 外側をクリックしたら閉じる
-        document.addEventListener('click', (e) => {
-            if (!moreMenuBtn.contains(e.target) && !moreMenuDropdown.contains(e.target)) {
-                moreMenuDropdown.style.display = 'none';
-            }
-        });
-    }
-    
-    // コンテキストメニューの初期化
-    initializeContextMenu();
-    
-    // 初期グリッド列数を設定
-    updateGridColumns();
+const weekTitle = document.getElementById('week-title');
+const dayColumns = Array.from(document.querySelectorAll('#task-board .day-column'));
+const unassignedColumn = document.getElementById('unassigned-tasks');
+const idealDailyMinutesInput = document.getElementById('ideal-daily-minutes');
+const exportDataBtn = document.getElementById('export-data-btn');
+const importDataBtn = document.getElementById('import-data-btn');
+const importFileInput = document.getElementById('import-file-input');
+const themeToggleBtn = document.getElementById('theme-toggle');
+const archiveToggleBtn = document.getElementById('archive-toggle');
+const archiveView = document.getElementById('archive-view');
+const closeArchiveBtn = document.getElementById('close-archive');
+const clearArchiveBtn = document.getElementById('clear-archive');
+const archiveList = document.getElementById('archive-list');
+const categoryFilterSelect = document.getElementById('filter-category');
 
-    // 💡 修正 2: 初期ロード時にタスクボードを描画する
-    renderWeek();
-    
-    // ダッシュボード初期化
-    initializeDashboardToggle();
-    updateDashboard();
+let editingTaskId = null;
+let isRendering = false;
+let selectedDate = null;
 
-    // テンプレート機能の初期化
-    initializeTemplatePanel();
+// --- Initial Load ---
+carryOverOldTasks();
 
-    // --- Modal Logic ---
-    addTaskBtn.addEventListener('click', () => {
-        openTaskModal();
+// カテゴリデータの検証と修復
+verifyCategoryData();
+
+// マイグレーションデータの検証と修復
+verifyMigrationData();
+
+// 設定値をUIに反映
+idealDailyMinutesInput.value = settings.ideal_daily_minutes;
+
+// ダークモードの初期化
+initializeTheme();
+
+// カテゴリフィルターの初期化
+initializeCategoryFilter();
+
+// 曜日設定UIの初期化
+initializeWeekdaySettings();
+
+// 曜日設定ボタンのイベントリスナー
+const weekdayFilterBtn = document.getElementById('weekday-filter-btn');
+const weekdaySettings = document.getElementById('weekday-settings');
+if (weekdayFilterBtn && weekdaySettings) {
+    weekdayFilterBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        weekdaySettings.style.display = weekdaySettings.style.display === 'none' ? 'block' : 'none';
     });
     
-    function initializeTemplatePanel() {
-        const templateToggleBtn = document.getElementById('template-toggle');
-        const templatePanel = document.getElementById('template-panel');
-        const closeTemplatePanelBtn = document.getElementById('close-template-panel');
-        const saveAsTemplateBtn = document.getElementById('save-as-template-btn');
-        const templateSearchInput = document.getElementById('template-search');
-        const templateSortSelect = document.getElementById('template-sort');
-        
-        if (!templateToggleBtn || !templatePanel) return;
-        
-        // Template panel toggle
-        templateToggleBtn.addEventListener('click', () => {
-            if (templatePanel.style.display === 'none') {
-                templatePanel.style.display = 'block';
-                renderTemplateList();
-            } else {
-                templatePanel.style.display = 'none';
-            }
-        });
+    // 外側をクリックしたら閉じる
+    document.addEventListener('click', (e) => {
+        if (!weekdayFilterBtn.contains(e.target) && !weekdaySettings.contains(e.target)) {
+            weekdaySettings.style.display = 'none';
+        }
+    });
+}
+
+// その他メニューのイベントリスナー
+const moreMenuBtn = document.getElementById('more-menu-btn');
+const moreMenuDropdown = document.getElementById('more-menu-dropdown');
+if (moreMenuBtn && moreMenuDropdown) {
+    moreMenuBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        moreMenuDropdown.style.display = moreMenuDropdown.style.display === 'none' ? 'block' : 'none';
+    });
+    
+    // 外側をクリックしたら閉じる
+    document.addEventListener('click', (e) => {
+        if (!moreMenuBtn.contains(e.target) && !moreMenuDropdown.contains(e.target)) {
+            moreMenuDropdown.style.display = 'none';
+        }
+    });
+}
+
+// コンテキストメニューの初期化
+initializeContextMenu();
+
+// 初期グリッド列数を設定
+updateGridColumns();
+
+// 初期ロード時にタスクボードを描画する
+renderWeek();
+
+// ダッシュボード初期化
+initializeDashboardToggle();
+updateDashboard();
+
+// テンプレート機能の初期化
+initializeTemplatePanel();
+
+// --- Modal Logic ---
+addTaskBtn.addEventListener('click', () => {
+    openTaskModal();
+});
+
+function initializeTemplatePanel() {
+    const templateToggleBtn = document.getElementById('template-toggle');
+    const templatePanel = document.getElementById('template-panel');
+    const closeTemplatePanelBtn = document.getElementById('close-template-panel');
+    const saveAsTemplateBtn = document.getElementById('save-as-template-btn');
+    const templateSearchInput = document.getElementById('template-search');
+    const templateSortSelect = document.getElementById('template-sort');
+    
+    if (!templateToggleBtn || !templatePanel) return;
+    
+    // Template panel toggle
+    templateToggleBtn.addEventListener('click', () => {
+        if (templatePanel.style.display === 'none') {
+            templatePanel.style.display = 'block';
+            renderTemplateList();
+        } else {
+            templatePanel.style.display = 'none';
+        }
+    });
         
         // Close template panel
         if (closeTemplatePanelBtn) {
@@ -2778,9 +2777,9 @@ let recurrenceEngine;
         const monday = getMonday(currentDate);
         
         // 繰り返しタスクを自動生成
-        const startOfWeek = new Date(monday);
-        const endOfWeek = new Date(monday);
-        endOfWeek.setDate(monday.getDate() + 6);
+        const recurringStartDate = new Date(monday);
+        const recurringEndDate = new Date(monday);
+        recurringEndDate.setDate(monday.getDate() + 6);
         
         // 繰り返しタスクを取得
         const recurringTasks = tasks.filter(task => task.is_recurring && task.recurrence_pattern);
@@ -2788,8 +2787,8 @@ let recurrenceEngine;
         if (recurringTasks.length > 0 && recurrenceEngine) {
             const generatedTasks = recurrenceEngine.generateAllRecurringTasks(
                 recurringTasks,
-                startOfWeek,
-                endOfWeek
+                recurringStartDate,
+                recurringEndDate
             );
             
             // 生成されたタスクを追加（重複チェック）
