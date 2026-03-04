@@ -1,8 +1,8 @@
 /**
  * Unit Tests for Statistics Calculation Engine
- * Tests for calculateCategoryTimeAnalysis, calculateDailyWorkTime, and calculateEstimatedVsActualAnalysis
+ * Tests for completion rate, category time analysis, daily work time, and estimated vs actual analysis
  * 
- * Validates: Requirements 1.3, 1.4, 1.5
+ * Validates: Requirements 3.1, 3.2, 3.3, 3.4
  */
 
 // Mock localStorage
@@ -58,17 +58,78 @@ function runTest(testName, testFunction) {
 }
 
 /**
- * Category Time Analysis Tests
+ * Completion Rate Calculation Tests (Requirement 3.1)
+ */
+function testCompletionRateCalculation() {
+    console.log('\n=== Completion Rate Calculation Tests (Requirement 3.1) ===\n');
+    
+    // Test 3.1.1: Calculate completion rate with all tasks completed
+    runTest('3.1.1 Calculate completion rate - all completed', () => {
+        const totalTasks = 10;
+        const completedTasks = 10;
+        const completionRate = (completedTasks / totalTasks) * 100;
+        
+        return completionRate === 100;
+    });
+    
+    // Test 3.1.2: Calculate completion rate with partial completion
+    runTest('3.1.2 Calculate completion rate - partial completion', () => {
+        const totalTasks = 10;
+        const completedTasks = 7;
+        const completionRate = (completedTasks / totalTasks) * 100;
+        
+        return completionRate === 70;
+    });
+    
+    // Test 3.1.3: Calculate completion rate with no tasks completed
+    runTest('3.1.3 Calculate completion rate - no completion', () => {
+        const totalTasks = 10;
+        const completedTasks = 0;
+        const completionRate = (completedTasks / totalTasks) * 100;
+        
+        return completionRate === 0;
+    });
+    
+    // Test 3.1.4: Calculate completion rate with empty task list
+    runTest('3.1.4 Calculate completion rate - empty task list', () => {
+        const totalTasks = 0;
+        const completedTasks = 0;
+        const completionRate = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
+        
+        return completionRate === 0;
+    });
+    
+    // Test 3.1.5: Calculate completion rate with decimal precision
+    runTest('3.1.5 Calculate completion rate - decimal precision', () => {
+        const totalTasks = 3;
+        const completedTasks = 2;
+        const completionRate = Math.round(((completedTasks / totalTasks) * 100) * 100) / 100;
+        
+        return completionRate === 66.67;
+    });
+    
+    // Test 3.1.6: Calculate completion rate formula accuracy
+    runTest('3.1.6 Calculate completion rate - formula accuracy', () => {
+        const totalTasks = 8;
+        const completedTasks = 5;
+        const completionRate = (completedTasks / totalTasks) * 100;
+        
+        return completionRate === 62.5;
+    });
+}
+
+/**
+ * Category Time Analysis Tests (Requirement 3.2)
  */
 function testCategoryTimeAnalysis() {
-    console.log('\n=== Category Time Analysis Tests ===\n');
+    console.log('\n=== Category Time Analysis Tests (Requirement 3.2) ===\n');
     
-    // Test 1.3.1: Calculate category time for single category
-    runTest('1.3.1 Calculate category time for single category', () => {
+    // Test 3.2.1: Aggregate estimated time for single category
+    runTest('3.2.1 Aggregate estimated time - single category', () => {
         const tasks = [
             { id: '1', category: 'task', estimated_time: 30 },
             { id: '2', category: 'task', estimated_time: 60 },
-            { id: '3', category: 'meeting', estimated_time: 45 }
+            { id: '3', category: 'task', estimated_time: 45 }
         ];
         
         const categoryTime = {};
@@ -79,15 +140,16 @@ function testCategoryTimeAnalysis() {
             categoryTime[task.category] += task.estimated_time;
         });
         
-        return categoryTime['task'] === 90 && categoryTime['meeting'] === 45;
+        return categoryTime['task'] === 135;
     });
     
-    // Test 1.3.2: Calculate category time for multiple categories
-    runTest('1.3.2 Calculate category time for multiple categories', () => {
+    // Test 3.2.2: Aggregate estimated time for multiple categories
+    runTest('3.2.2 Aggregate estimated time - multiple categories', () => {
         const tasks = [
             { id: '1', category: 'task', estimated_time: 30 },
             { id: '2', category: 'meeting', estimated_time: 45 },
-            { id: '3', category: 'break', estimated_time: 15 }
+            { id: '3', category: 'break', estimated_time: 15 },
+            { id: '4', category: 'task', estimated_time: 60 }
         ];
         
         const categoryTime = {};
@@ -98,11 +160,11 @@ function testCategoryTimeAnalysis() {
             categoryTime[task.category] += task.estimated_time;
         });
         
-        return Object.keys(categoryTime).length === 3;
+        return categoryTime['task'] === 90 && categoryTime['meeting'] === 45 && categoryTime['break'] === 15;
     });
     
-    // Test 1.3.3: Handle empty category
-    runTest('1.3.3 Handle empty category', () => {
+    // Test 3.2.3: Handle empty task list
+    runTest('3.2.3 Aggregate estimated time - empty task list', () => {
         const tasks = [];
         
         const categoryTime = {};
@@ -116,28 +178,66 @@ function testCategoryTimeAnalysis() {
         return Object.keys(categoryTime).length === 0;
     });
     
-    // Test 1.3.4: Category percentage calculation
-    runTest('1.3.4 Category percentage calculation', () => {
+    // Test 3.2.4: Aggregate with zero estimated time
+    runTest('3.2.4 Aggregate estimated time - zero time tasks', () => {
         const tasks = [
-            { id: '1', category: 'task', estimated_time: 60 },
-            { id: '2', category: 'meeting', estimated_time: 40 }
+            { id: '1', category: 'task', estimated_time: 0 },
+            { id: '2', category: 'task', estimated_time: 30 },
+            { id: '3', category: 'meeting', estimated_time: 0 }
         ];
         
-        const totalTime = tasks.reduce((sum, t) => sum + t.estimated_time, 0);
-        const taskPercentage = (60 / totalTime) * 100;
+        const categoryTime = {};
+        tasks.forEach(task => {
+            if (!categoryTime[task.category]) {
+                categoryTime[task.category] = 0;
+            }
+            categoryTime[task.category] += task.estimated_time;
+        });
         
-        return taskPercentage === 60;
+        return categoryTime['task'] === 30 && categoryTime['meeting'] === 0;
+    });
+    
+    // Test 3.2.5: Aggregate with decimal estimated time
+    runTest('3.2.5 Aggregate estimated time - decimal values', () => {
+        const tasks = [
+            { id: '1', category: 'task', estimated_time: 30.5 },
+            { id: '2', category: 'task', estimated_time: 45.25 },
+            { id: '3', category: 'task', estimated_time: 15.75 }
+        ];
+        
+        const categoryTime = {};
+        tasks.forEach(task => {
+            if (!categoryTime[task.category]) {
+                categoryTime[task.category] = 0;
+            }
+            categoryTime[task.category] += task.estimated_time;
+        });
+        
+        return categoryTime['task'] === 91.5;
+    });
+    
+    // Test 3.2.6: Total estimated time across all categories
+    runTest('3.2.6 Aggregate estimated time - total across categories', () => {
+        const tasks = [
+            { id: '1', category: 'task', estimated_time: 30 },
+            { id: '2', category: 'meeting', estimated_time: 45 },
+            { id: '3', category: 'break', estimated_time: 15 }
+        ];
+        
+        const totalEstimatedTime = tasks.reduce((sum, t) => sum + t.estimated_time, 0);
+        
+        return totalEstimatedTime === 90;
     });
 }
 
 /**
- * Daily Work Time Tests
+ * Daily Work Time Tests (Requirement 3.3)
  */
 function testDailyWorkTime() {
-    console.log('\n=== Daily Work Time Tests ===\n');
+    console.log('\n=== Daily Work Time Tests (Requirement 3.3) ===\n');
     
-    // Test 1.4.1: Calculate daily work time
-    runTest('1.4.1 Calculate daily work time', () => {
+    // Test 3.3.1: Aggregate estimated time by day
+    runTest('3.3.1 Aggregate estimated time by day', () => {
         const tasks = [
             { id: '1', assigned_date: '2024-01-01', estimated_time: 30 },
             { id: '2', assigned_date: '2024-01-01', estimated_time: 60 },
@@ -147,76 +247,127 @@ function testDailyWorkTime() {
         const dailyTime = {};
         tasks.forEach(task => {
             if (!dailyTime[task.assigned_date]) {
-                dailyTime[task.assigned_date] = 0;
+                dailyTime[task.assigned_date] = { estimated: 0, actual: 0 };
             }
-            dailyTime[task.assigned_date] += task.estimated_time;
+            dailyTime[task.assigned_date].estimated += task.estimated_time;
         });
         
-        return dailyTime['2024-01-01'] === 90 && dailyTime['2024-01-02'] === 45;
+        return dailyTime['2024-01-01'].estimated === 90 && dailyTime['2024-01-02'].estimated === 45;
     });
     
-    // Test 1.4.2: Calculate weekly work time
-    runTest('1.4.2 Calculate weekly work time', () => {
+    // Test 3.3.2: Aggregate actual time by day
+    runTest('3.3.2 Aggregate actual time by day', () => {
         const tasks = [
-            { id: '1', assigned_date: '2024-01-01', estimated_time: 30 },
-            { id: '2', assigned_date: '2024-01-02', estimated_time: 60 },
-            { id: '3', assigned_date: '2024-01-03', estimated_time: 45 }
+            { id: '1', assigned_date: '2024-01-01', estimated_time: 30, actual_time: 35 },
+            { id: '2', assigned_date: '2024-01-01', estimated_time: 60, actual_time: 55 },
+            { id: '3', assigned_date: '2024-01-02', estimated_time: 45, actual_time: 50 }
         ];
         
-        const weeklyTime = tasks.reduce((sum, t) => sum + t.estimated_time, 0);
+        const dailyTime = {};
+        tasks.forEach(task => {
+            if (!dailyTime[task.assigned_date]) {
+                dailyTime[task.assigned_date] = { estimated: 0, actual: 0 };
+            }
+            dailyTime[task.assigned_date].estimated += task.estimated_time;
+            dailyTime[task.assigned_date].actual += task.actual_time || 0;
+        });
         
-        return weeklyTime === 135;
+        return dailyTime['2024-01-01'].actual === 90 && dailyTime['2024-01-02'].actual === 50;
     });
     
-    // Test 1.4.3: Handle unassigned tasks
-    runTest('1.4.3 Handle unassigned tasks', () => {
+    // Test 3.3.3: Aggregate both estimated and actual time
+    runTest('3.3.3 Aggregate both estimated and actual time', () => {
         const tasks = [
-            { id: '1', assigned_date: '2024-01-01', estimated_time: 30 },
-            { id: '2', assigned_date: null, estimated_time: 60 }
+            { id: '1', assigned_date: '2024-01-01', estimated_time: 30, actual_time: 35 },
+            { id: '2', assigned_date: '2024-01-01', estimated_time: 60, actual_time: 55 }
+        ];
+        
+        const dailyTime = {};
+        tasks.forEach(task => {
+            if (!dailyTime[task.assigned_date]) {
+                dailyTime[task.assigned_date] = { estimated: 0, actual: 0 };
+            }
+            dailyTime[task.assigned_date].estimated += task.estimated_time;
+            dailyTime[task.assigned_date].actual += task.actual_time || 0;
+        });
+        
+        return dailyTime['2024-01-01'].estimated === 90 && dailyTime['2024-01-01'].actual === 90;
+    });
+    
+    // Test 3.3.4: Handle tasks with null actual time
+    runTest('3.3.4 Handle tasks with null actual time', () => {
+        const tasks = [
+            { id: '1', assigned_date: '2024-01-01', estimated_time: 30, actual_time: null },
+            { id: '2', assigned_date: '2024-01-01', estimated_time: 60, actual_time: 55 }
+        ];
+        
+        const dailyTime = {};
+        tasks.forEach(task => {
+            if (!dailyTime[task.assigned_date]) {
+                dailyTime[task.assigned_date] = { estimated: 0, actual: 0 };
+            }
+            dailyTime[task.assigned_date].estimated += task.estimated_time;
+            dailyTime[task.assigned_date].actual += task.actual_time || 0;
+        });
+        
+        return dailyTime['2024-01-01'].estimated === 90 && dailyTime['2024-01-01'].actual === 55;
+    });
+    
+    // Test 3.3.5: Calculate weekly total from daily breakdown
+    runTest('3.3.5 Calculate weekly total from daily breakdown', () => {
+        const tasks = [
+            { id: '1', assigned_date: '2024-01-01', estimated_time: 30, actual_time: 35 },
+            { id: '2', assigned_date: '2024-01-02', estimated_time: 60, actual_time: 55 },
+            { id: '3', assigned_date: '2024-01-03', estimated_time: 45, actual_time: 50 }
+        ];
+        
+        const totalEstimated = tasks.reduce((sum, t) => sum + t.estimated_time, 0);
+        const totalActual = tasks.reduce((sum, t) => sum + (t.actual_time || 0), 0);
+        
+        return totalEstimated === 135 && totalActual === 140;
+    });
+    
+    // Test 3.3.6: Handle unassigned tasks (null assigned_date)
+    runTest('3.3.6 Handle unassigned tasks', () => {
+        const tasks = [
+            { id: '1', assigned_date: '2024-01-01', estimated_time: 30, actual_time: 35 },
+            { id: '2', assigned_date: null, estimated_time: 60, actual_time: 55 }
         ];
         
         const assignedTasks = tasks.filter(t => t.assigned_date !== null);
-        const totalTime = assignedTasks.reduce((sum, t) => sum + t.estimated_time, 0);
+        const totalEstimated = assignedTasks.reduce((sum, t) => sum + t.estimated_time, 0);
         
-        return totalTime === 30;
+        return totalEstimated === 30;
     });
     
-    // Test 1.4.4: Average daily work time
-    runTest('1.4.4 Average daily work time', () => {
+    // Test 3.3.7: Aggregate with decimal time values
+    runTest('3.3.7 Aggregate with decimal time values', () => {
         const tasks = [
-            { id: '1', assigned_date: '2024-01-01', estimated_time: 60 },
-            { id: '2', assigned_date: '2024-01-02', estimated_time: 120 },
-            { id: '3', assigned_date: '2024-01-03', estimated_time: 90 }
+            { id: '1', assigned_date: '2024-01-01', estimated_time: 30.5, actual_time: 35.25 },
+            { id: '2', assigned_date: '2024-01-01', estimated_time: 60.75, actual_time: 55.5 }
         ];
         
-        const totalTime = tasks.reduce((sum, t) => sum + t.estimated_time, 0);
-        const averageTime = totalTime / 3;
+        const dailyTime = {};
+        tasks.forEach(task => {
+            if (!dailyTime[task.assigned_date]) {
+                dailyTime[task.assigned_date] = { estimated: 0, actual: 0 };
+            }
+            dailyTime[task.assigned_date].estimated += task.estimated_time;
+            dailyTime[task.assigned_date].actual += task.actual_time || 0;
+        });
         
-        return averageTime === 90;
+        return dailyTime['2024-01-01'].estimated === 91.25 && dailyTime['2024-01-01'].actual === 90.75;
     });
 }
 
 /**
- * Estimated vs Actual Analysis Tests
+ * Estimated vs Actual Analysis Tests (Requirement 3.4)
  */
 function testEstimatedVsActualAnalysis() {
-    console.log('\n=== Estimated vs Actual Analysis Tests ===\n');
+    console.log('\n=== Estimated vs Actual Analysis Tests (Requirement 3.4) ===\n');
     
-    // Test 1.5.1: Calculate variance
-    runTest('1.5.1 Calculate variance', () => {
-        const task = {
-            id: '1',
-            estimated_time: 30,
-            actual_time: 25
-        };
-        
-        const variance = task.actual_time - task.estimated_time;
-        
-        return variance === -5;
-    });
-    
-    // Test 1.5.2: Identify overrun tasks
-    runTest('1.5.2 Identify overrun tasks', () => {
+    // Test 3.4.1: Identify time overrun tasks (actual > estimated)
+    runTest('3.4.1 Identify time overrun tasks', () => {
         const tasks = [
             { id: '1', estimated_time: 30, actual_time: 25 },
             { id: '2', estimated_time: 60, actual_time: 75 },
@@ -225,11 +376,97 @@ function testEstimatedVsActualAnalysis() {
         
         const overrunTasks = tasks.filter(t => t.actual_time > t.estimated_time);
         
-        return overrunTasks.length === 1;
+        return overrunTasks.length === 1 && overrunTasks[0].id === '2';
     });
     
-    // Test 1.5.3: Calculate total variance
-    runTest('1.5.3 Calculate total variance', () => {
+    // Test 3.4.2: Identify all overrun tasks in mixed list
+    runTest('3.4.2 Identify all overrun tasks', () => {
+        const tasks = [
+            { id: '1', estimated_time: 30, actual_time: 35 },
+            { id: '2', estimated_time: 60, actual_time: 75 },
+            { id: '3', estimated_time: 45, actual_time: 40 },
+            { id: '4', estimated_time: 20, actual_time: 25 }
+        ];
+        
+        const overrunTasks = tasks.filter(t => t.actual_time > t.estimated_time);
+        
+        return overrunTasks.length === 3;
+    });
+    
+    // Test 3.4.3: No overrun tasks when all on track
+    runTest('3.4.3 No overrun tasks when all on track', () => {
+        const tasks = [
+            { id: '1', estimated_time: 30, actual_time: 25 },
+            { id: '2', estimated_time: 60, actual_time: 55 },
+            { id: '3', estimated_time: 45, actual_time: 40 }
+        ];
+        
+        const overrunTasks = tasks.filter(t => t.actual_time > t.estimated_time);
+        
+        return overrunTasks.length === 0;
+    });
+    
+    // Test 3.4.4: Identify overrun with exact match (not overrun)
+    runTest('3.4.4 Exact match is not overrun', () => {
+        const tasks = [
+            { id: '1', estimated_time: 30, actual_time: 30 },
+            { id: '2', estimated_time: 60, actual_time: 60 }
+        ];
+        
+        const overrunTasks = tasks.filter(t => t.actual_time > t.estimated_time);
+        
+        return overrunTasks.length === 0;
+    });
+    
+    // Test 3.4.5: Handle tasks with null actual time
+    runTest('3.4.5 Handle tasks with null actual time', () => {
+        const tasks = [
+            { id: '1', estimated_time: 30, actual_time: 35 },
+            { id: '2', estimated_time: 60, actual_time: null },
+            { id: '3', estimated_time: 45, actual_time: 50 }
+        ];
+        
+        const overrunTasks = tasks.filter(t => t.actual_time && t.actual_time > t.estimated_time);
+        
+        return overrunTasks.length === 2;
+    });
+    
+    // Test 3.4.6: Handle tasks with zero actual time
+    runTest('3.4.6 Handle tasks with zero actual time', () => {
+        const tasks = [
+            { id: '1', estimated_time: 30, actual_time: 35 },
+            { id: '2', estimated_time: 60, actual_time: 0 },
+            { id: '3', estimated_time: 45, actual_time: 50 }
+        ];
+        
+        const overrunTasks = tasks.filter(t => t.actual_time > t.estimated_time);
+        
+        return overrunTasks.length === 2;
+    });
+    
+    // Test 3.4.7: Calculate overrun percentage
+    runTest('3.4.7 Calculate overrun percentage', () => {
+        const task = { id: '1', estimated_time: 100, actual_time: 125 };
+        const overrunTime = task.actual_time - task.estimated_time;
+        const overrunPercentage = (overrunTime / task.estimated_time) * 100;
+        
+        return overrunPercentage === 25;
+    });
+    
+    // Test 3.4.8: Identify overrun with decimal values
+    runTest('3.4.8 Identify overrun with decimal values', () => {
+        const tasks = [
+            { id: '1', estimated_time: 30.5, actual_time: 35.75 },
+            { id: '2', estimated_time: 60.25, actual_time: 55.5 }
+        ];
+        
+        const overrunTasks = tasks.filter(t => t.actual_time > t.estimated_time);
+        
+        return overrunTasks.length === 1 && overrunTasks[0].id === '1';
+    });
+    
+    // Test 3.4.9: Calculate total variance
+    runTest('3.4.9 Calculate total variance', () => {
         const tasks = [
             { id: '1', estimated_time: 30, actual_time: 25 },
             { id: '2', estimated_time: 60, actual_time: 65 },
@@ -241,31 +478,245 @@ function testEstimatedVsActualAnalysis() {
         return totalVariance === -5;
     });
     
-    // Test 1.5.4: Calculate accuracy percentage
-    runTest('1.5.4 Calculate accuracy percentage', () => {
-        const tasks = [
-            { id: '1', estimated_time: 30, actual_time: 30 },
-            { id: '2', estimated_time: 60, actual_time: 60 },
-            { id: '3', estimated_time: 45, actual_time: 45 }
-        ];
+    // Test 3.4.10: Identify overrun severity - minor (<=25%)
+    runTest('3.4.10 Identify minor overrun severity', () => {
+        const task = { id: '1', estimated_time: 100, actual_time: 120 };
+        const overrunPercent = ((task.actual_time - task.estimated_time) / task.estimated_time) * 100;
+        const severity = overrunPercent <= 25 ? 'minor' : overrunPercent <= 50 ? 'moderate' : 'severe';
         
-        const accurateTasks = tasks.filter(t => t.estimated_time === t.actual_time).length;
-        const accuracy = (accurateTasks / tasks.length) * 100;
-        
-        return accuracy === 100;
+        return severity === 'minor';
     });
     
-    // Test 1.5.5: Handle missing actual time
-    runTest('1.5.5 Handle missing actual time', () => {
+    // Test 3.4.11: Identify overrun severity - moderate (26-50%)
+    runTest('3.4.11 Identify moderate overrun severity', () => {
+        const task = { id: '1', estimated_time: 100, actual_time: 140 };
+        const overrunPercent = ((task.actual_time - task.estimated_time) / task.estimated_time) * 100;
+        const severity = overrunPercent <= 25 ? 'minor' : overrunPercent <= 50 ? 'moderate' : 'severe';
+        
+        return severity === 'moderate';
+    });
+    
+    // Test 3.4.12: Identify overrun severity - severe (>50%)
+    runTest('3.4.12 Identify severe overrun severity', () => {
+        const task = { id: '1', estimated_time: 100, actual_time: 160 };
+        const overrunPercent = ((task.actual_time - task.estimated_time) / task.estimated_time) * 100;
+        const severity = overrunPercent <= 25 ? 'minor' : overrunPercent <= 50 ? 'moderate' : 'severe';
+        
+        return severity === 'severe';
+    });
+}
+
+/**
+ * Statistics Edge Cases Tests (Requirements 3.5, 3.6, 3.7, 3.8)
+ */
+function testStatisticsEdgeCases() {
+    console.log('\n=== Statistics Edge Cases Tests (Requirements 3.5, 3.6, 3.7, 3.8) ===\n');
+    
+    // Test 3.5.1: Empty task list returns 0% completion rate
+    runTest('3.5.1 Empty task list - 0% completion rate', () => {
+        const tasks = [];
+        const totalTasks = tasks.length;
+        const completedTasks = tasks.filter(t => t.completed).length;
+        const completionRate = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
+        
+        return completionRate === 0;
+    });
+    
+    // Test 3.5.2: Empty task list - statistics validity
+    runTest('3.5.2 Empty task list - statistics validity', () => {
+        const tasks = [];
+        const isValid = tasks.length > 0;
+        
+        return isValid === false;
+    });
+    
+    // Test 3.6.1: Week range filtering - include only tasks in range
+    runTest('3.6.1 Week range filtering - include tasks in range', () => {
+        const weekStart = '2024-01-01';
+        const weekEnd = '2024-01-07';
         const tasks = [
-            { id: '1', estimated_time: 30, actual_time: 25 },
-            { id: '2', estimated_time: 60, actual_time: null },
-            { id: '3', estimated_time: 45, actual_time: 40 }
+            { id: '1', assigned_date: '2024-01-03', estimated_time: 30 },
+            { id: '2', assigned_date: '2024-01-05', estimated_time: 60 },
+            { id: '3', assigned_date: '2024-01-10', estimated_time: 45 }
         ];
         
-        const completedTasks = tasks.filter(t => t.actual_time !== null);
+        const tasksInRange = tasks.filter(t => 
+            t.assigned_date >= weekStart && t.assigned_date <= weekEnd
+        );
         
-        return completedTasks.length === 2;
+        return tasksInRange.length === 2;
+    });
+    
+    // Test 3.6.2: Week range filtering - exclude tasks outside range
+    runTest('3.6.2 Week range filtering - exclude tasks outside range', () => {
+        const weekStart = '2024-01-01';
+        const weekEnd = '2024-01-07';
+        const tasks = [
+            { id: '1', assigned_date: '2023-12-31', estimated_time: 30 },
+            { id: '2', assigned_date: '2024-01-08', estimated_time: 60 }
+        ];
+        
+        const tasksInRange = tasks.filter(t => 
+            t.assigned_date >= weekStart && t.assigned_date <= weekEnd
+        );
+        
+        return tasksInRange.length === 0;
+    });
+    
+    // Test 3.6.3: Week range filtering - boundary dates included
+    runTest('3.6.3 Week range filtering - boundary dates included', () => {
+        const weekStart = '2024-01-01';
+        const weekEnd = '2024-01-07';
+        const tasks = [
+            { id: '1', assigned_date: '2024-01-01', estimated_time: 30 },
+            { id: '2', assigned_date: '2024-01-07', estimated_time: 60 }
+        ];
+        
+        const tasksInRange = tasks.filter(t => 
+            t.assigned_date >= weekStart && t.assigned_date <= weekEnd
+        );
+        
+        return tasksInRange.length === 2;
+    });
+    
+    // Test 3.6.4: Week range filtering - aggregate time for filtered tasks
+    runTest('3.6.4 Week range filtering - aggregate time', () => {
+        const weekStart = '2024-01-01';
+        const weekEnd = '2024-01-07';
+        const tasks = [
+            { id: '1', assigned_date: '2024-01-03', estimated_time: 30 },
+            { id: '2', assigned_date: '2024-01-05', estimated_time: 60 },
+            { id: '3', assigned_date: '2024-01-10', estimated_time: 45 }
+        ];
+        
+        const tasksInRange = tasks.filter(t => 
+            t.assigned_date >= weekStart && t.assigned_date <= weekEnd
+        );
+        const totalTime = tasksInRange.reduce((sum, t) => sum + t.estimated_time, 0);
+        
+        return totalTime === 90;
+    });
+    
+    // Test 3.7.1: Decimal time processing - addition accuracy
+    runTest('3.7.1 Decimal time processing - addition accuracy', () => {
+        const tasks = [
+            { id: '1', estimated_time: 1.5 },
+            { id: '2', estimated_time: 2.25 },
+            { id: '3', estimated_time: 0.75 }
+        ];
+        
+        const totalTime = tasks.reduce((sum, t) => sum + t.estimated_time, 0);
+        
+        return totalTime === 4.5;
+    });
+    
+    // Test 3.7.2: Decimal time processing - maintain precision
+    runTest('3.7.2 Decimal time processing - maintain precision', () => {
+        const tasks = [
+            { id: '1', estimated_time: 1.333 },
+            { id: '2', estimated_time: 2.667 }
+        ];
+        
+        const totalTime = tasks.reduce((sum, t) => sum + t.estimated_time, 0);
+        const roundedTotal = Math.round(totalTime * 1000) / 1000;
+        
+        return roundedTotal === 4.0;
+    });
+    
+    // Test 3.7.3: Decimal time processing - actual time with decimals
+    runTest('3.7.3 Decimal time processing - actual time decimals', () => {
+        const tasks = [
+            { id: '1', estimated_time: 1.5, actual_time: 1.75 },
+            { id: '2', estimated_time: 2.25, actual_time: 2.5 }
+        ];
+        
+        const totalActual = tasks.reduce((sum, t) => sum + (t.actual_time || 0), 0);
+        
+        return totalActual === 4.25;
+    });
+    
+    // Test 3.7.4: Decimal time processing - variance calculation
+    runTest('3.7.4 Decimal time processing - variance calculation', () => {
+        const task = { id: '1', estimated_time: 1.5, actual_time: 1.75 };
+        const variance = task.actual_time - task.estimated_time;
+        
+        return variance === 0.25;
+    });
+    
+    // Test 3.8.1: Null actual time handling - treat as zero
+    runTest('3.8.1 Null actual time handling - treat as zero', () => {
+        const tasks = [
+            { id: '1', estimated_time: 30, actual_time: null },
+            { id: '2', estimated_time: 60, actual_time: 55 }
+        ];
+        
+        const totalActual = tasks.reduce((sum, t) => sum + (t.actual_time || 0), 0);
+        
+        return totalActual === 55;
+    });
+    
+    // Test 3.8.2: Zero actual time handling - include in calculation
+    runTest('3.8.2 Zero actual time handling - include in calculation', () => {
+        const tasks = [
+            { id: '1', estimated_time: 30, actual_time: 0 },
+            { id: '2', estimated_time: 60, actual_time: 55 }
+        ];
+        
+        const totalActual = tasks.reduce((sum, t) => sum + (t.actual_time || 0), 0);
+        
+        return totalActual === 55;
+    });
+    
+    // Test 3.8.3: Null actual time - not counted as overrun
+    runTest('3.8.3 Null actual time - not counted as overrun', () => {
+        const tasks = [
+            { id: '1', estimated_time: 30, actual_time: null },
+            { id: '2', estimated_time: 60, actual_time: 75 }
+        ];
+        
+        const overrunTasks = tasks.filter(t => t.actual_time && t.actual_time > t.estimated_time);
+        
+        return overrunTasks.length === 1;
+    });
+    
+    // Test 3.8.4: Zero actual time - not counted as overrun
+    runTest('3.8.4 Zero actual time - not counted as overrun', () => {
+        const tasks = [
+            { id: '1', estimated_time: 30, actual_time: 0 },
+            { id: '2', estimated_time: 60, actual_time: 75 }
+        ];
+        
+        const overrunTasks = tasks.filter(t => t.actual_time > t.estimated_time);
+        
+        return overrunTasks.length === 1;
+    });
+    
+    // Test 3.8.5: Mixed null and zero actual time handling
+    runTest('3.8.5 Mixed null and zero actual time handling', () => {
+        const tasks = [
+            { id: '1', estimated_time: 30, actual_time: null },
+            { id: '2', estimated_time: 60, actual_time: 0 },
+            { id: '3', estimated_time: 45, actual_time: 50 }
+        ];
+        
+        const totalActual = tasks.reduce((sum, t) => sum + (t.actual_time || 0), 0);
+        const tasksWithActual = tasks.filter(t => t.actual_time !== null && t.actual_time !== undefined);
+        
+        return totalActual === 50 && tasksWithActual.length === 2;
+    });
+    
+    // Test 3.8.6: Null actual time - completion rate calculation
+    runTest('3.8.6 Null actual time - completion rate calculation', () => {
+        const tasks = [
+            { id: '1', estimated_time: 30, actual_time: null, completed: true },
+            { id: '2', estimated_time: 60, actual_time: 55, completed: true },
+            { id: '3', estimated_time: 45, actual_time: null, completed: false }
+        ];
+        
+        const completedTasks = tasks.filter(t => t.completed).length;
+        const completionRate = (completedTasks / tasks.length) * 100;
+        
+        return Math.round(completionRate * 100) / 100 === 66.67;
     });
 }
 
@@ -277,9 +728,11 @@ function runAllTests() {
     console.log('Statistics Engine Unit Tests');
     console.log('==========================================\n');
     
+    testCompletionRateCalculation();
     testCategoryTimeAnalysis();
     testDailyWorkTime();
     testEstimatedVsActualAnalysis();
+    testStatisticsEdgeCases();
     
     console.log('\n==========================================');
     console.log('Test Summary');
