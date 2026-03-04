@@ -2809,40 +2809,41 @@ function initializeTemplatePanel() {
 
         const monday = getMonday(currentDate);
         
-        // 繰り返しタスクを自動生成（一旦無効化）
-        // const recurringStartDate = new Date(monday);
-        // const recurringEndDate = new Date(monday);
-        // recurringEndDate.setDate(monday.getDate() + 6);
+        // 繰り返しタスクを自動生成（修正版）
+        const recurringStartDate = new Date(monday);
+        const recurringEndDate = new Date(monday);
+        recurringEndDate.setDate(monday.getDate() + 6);
         
-        // // 繰り返しタスクを取得
-        // const recurringTasks = tasks.filter(task => task.is_recurring && task.recurrence_pattern);
+        // 繰り返しタスクを取得
+        const recurringTasks = tasks.filter(task => task.is_recurring && task.recurrence_pattern);
         
-        // if (recurringTasks.length > 0 && recurrenceEngine) {
-        //     const generatedTasks = recurrenceEngine.generateAllRecurringTasks(
-        //         recurringTasks,
-        //         recurringStartDate,
-        //         recurringEndDate
-        //     );
+        if (recurringTasks.length > 0 && recurrenceEngine) {
+            const generatedTasks = recurrenceEngine.generateAllRecurringTasks(
+                recurringTasks,
+                recurringStartDate,
+                recurringEndDate
+            );
             
-        //     // 生成されたタスクを追加（重複チェック）
-        //     let addedCount = 0;
-        //     generatedTasks.forEach(generatedTask => {
-        //         // より厳密な重複チェック：同じ名前と日付のタスクが既に存在するか
-        //         const isDuplicate = tasks.some(existingTask => 
-        //             existingTask.name === generatedTask.name &&
-        //             existingTask.assigned_date === generatedTask.assigned_date
-        //         );
+            // 生成されたタスクを追加（厳密な重複チェック）
+            let addedCount = 0;
+            generatedTasks.forEach(generatedTask => {
+                // 重複チェック：同じ名前、同じ日付、同じIDのタスクが存在しないか
+                const isDuplicate = tasks.some(existingTask => 
+                    existingTask.name === generatedTask.name &&
+                    existingTask.assigned_date === generatedTask.assigned_date
+                );
                 
-        //         if (!isDuplicate) {
-        //             tasks.push(generatedTask);
-        //             addedCount++;
-        //         }
-        //     });
+                // 生成されたタスクの日付が有効かチェック
+                if (!isDuplicate && generatedTask.assigned_date && generatedTask.assigned_date !== 'null') {
+                    tasks.push(generatedTask);
+                    addedCount++;
+                }
+            });
             
-        //     if (addedCount > 0) {
-        //         saveTasks();
-        //     }
-        // }
+            if (addedCount > 0) {
+                saveTasks();
+            }
+        }
 
         dayColumns.forEach(col => {
             col.querySelectorAll('.task').forEach(task => task.remove());
