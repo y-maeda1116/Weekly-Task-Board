@@ -2811,19 +2811,21 @@ function initializeTemplatePanel() {
             );
             
             // 生成されたタスクを追加（重複チェック）
+            let addedCount = 0;
             generatedTasks.forEach(generatedTask => {
+                // より厳密な重複チェック：同じ名前と日付のタスクが既に存在するか
                 const isDuplicate = tasks.some(existingTask => 
                     existingTask.name === generatedTask.name &&
-                    existingTask.assigned_date === generatedTask.assigned_date &&
-                    !existingTask.is_recurring
+                    existingTask.assigned_date === generatedTask.assigned_date
                 );
                 
                 if (!isDuplicate) {
                     tasks.push(generatedTask);
+                    addedCount++;
                 }
             });
             
-            if (generatedTasks.length > 0) {
+            if (addedCount > 0) {
                 saveTasks();
             }
         }
