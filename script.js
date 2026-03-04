@@ -2575,8 +2575,13 @@ function initializeTemplatePanel() {
     taskForm.addEventListener('submit', (event) => {
         event.preventDefault();
 
-        // 💡 修正 3: taskDateInput.valueが空文字列の場合はnullにする
         const assignedDateValue = taskDateInput.value || null;
+        
+        // 繰り返しタスクのバリデーション
+        if (isRecurringCheckbox.checked && !assignedDateValue) {
+            alert('繰り返しタスクには担当日の設定が必要です。');
+            return;
+        }
         
         // 実績時間フィールドの取得
         const actualTimeInput = document.getElementById('actual-time');
