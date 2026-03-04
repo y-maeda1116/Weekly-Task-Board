@@ -1863,11 +1863,14 @@ class RecurrenceEngine {
         const daysUntilTarget = (originalDayOfWeek - currentDayOfWeek + 7) % 7;
         currentDate.setDate(currentDate.getDate() + daysUntilTarget);
         
-        // 該当曜日のタスクを生成
+        // 該当曜日のタスクを生成（元のタスクの日付以降のみ）
         while (currentDate <= end) {
-            const newTask = this.generateTaskFromRecurrence(recurringTask, new Date(currentDate));
-            if (newTask) {
-                generatedTasks.push(newTask);
+            // 元のタスクの日付よりも前の日付には生成しない
+            if (currentDate >= originalDate) {
+                const newTask = this.generateTaskFromRecurrence(recurringTask, new Date(currentDate));
+                if (newTask) {
+                    generatedTasks.push(newTask);
+                }
             }
             currentDate.setDate(currentDate.getDate() + 7);
         }
