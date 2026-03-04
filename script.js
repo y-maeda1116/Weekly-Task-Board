@@ -1773,6 +1773,12 @@ class RecurrenceEngine {
             return null;
         }
         
+        // targetDate のバリデーション
+        if (!targetDate || !(targetDate instanceof Date) || isNaN(targetDate.getTime())) {
+            console.error('Invalid targetDate:', targetDate);
+            return null;
+        }
+        
         // 終了日チェック
         if (recurringTask.recurrence_end_date) {
             const endDate = new Date(recurringTask.recurrence_end_date);
