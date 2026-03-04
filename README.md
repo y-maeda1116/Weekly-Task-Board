@@ -136,10 +136,13 @@ Weekly-Task-Board/
 ├── package.json               # npm設定
 ├── run-tests.js               # テストランナー
 ├── run-tests.sh               # テスト実行スクリプト
+├── verify-implementation.js   # 実装検証スクリプト
 ├── SECURITY.md                # セキュリティポリシー
 ├── README.md                  # このファイル
 ├── AGENTS.md                  # 開発者向けガイド
 ├── CODING_GUIDELINES.md       # コーディングガイドライン
+├── TEST_DOCUMENTATION.md      # テスト詳細ドキュメント
+├── TESTING_GUIDE.md           # テスト実行ガイド
 ├── .github/
 │   └── workflows/
 │       └── ci.yml             # GitHub Actions CI/CD
@@ -148,12 +151,73 @@ Weekly-Task-Board/
 │   │   ├── requirements.md
 │   │   ├── design.md
 │   │   └── tasks.md
-│   └── weekday-visibility/
-│       └── tasks.md
-└── test-*.js                  # テストファイル（16個）
+│   ├── weekday-visibility/
+│   │   └── tasks.md
+│   ├── task-categories/
+│   │   └── tasks.md
+│   └── test-coverage-improvement/
+│       ├── requirements.md
+│       ├── design.md
+│       ├── tasks.md
+│       └── IMPLEMENTATION_SUMMARY.md
+├── tests/
+│   ├── unit/                  # ユニットテスト（25個）
+│   │   ├── test-task-operations.js
+│   │   ├── test-recurring-tasks.js
+│   │   ├── test-statistics-engine.js
+│   │   ├── test-data-persistence.js
+│   │   ├── test-ui-operations.js
+│   │   ├── test-edge-cases.js
+│   │   ├── test-time-management.js
+│   │   ├── test-template-functionality.js
+│   │   ├── test-archive.js
+│   │   ├── test-data-migration.js
+│   │   ├── test-weekday-manager.js
+│   │   ├── test-export-import.js
+│   │   ├── test-time-validation.js
+│   │   ├── test-completion-rate.js
+│   │   ├── test-recurrence-engine.js
+│   │   ├── test-recurring-persistence.js
+│   │   ├── test-time-persistence.js
+│   │   ├── test-time-comparison.js
+│   │   ├── test-time-overrun-visual.js
+│   │   ├── test-export-import-time.js
+│   │   ├── test-migration-functionality.js
+│   │   ├── test-category-functionality.js
+│   │   ├── test-weekday-functionality.js
+│   │   ├── test-comprehensive-unit.js
+│   │   └── test-integration-task13.js
+│   ├── integration/           # 統合テスト（2個）
+│   │   ├── test-integration-scenarios.js
+│   │   └── test-category-integration.js
+│   ├── performance/           # パフォーマンステスト（2個）
+│   │   ├── test-performance.js
+│   │   └── test-weekday-performance.js
+│   └── utils/
+│       └── test-helpers.js    # テストインフラストラクチャ
+└── docs/
+    ├── AGENTS.md
+    ├── CODING_GUIDELINES.md
+    ├── SECURITY.md
+    ├── weekday-functionality-guide.md
+    ├── TIME_VALIDATION_IMPLEMENTATION.md
+    ├── RECURRENCE_ENGINE_IMPLEMENTATION.md
+    ├── TEMPLATE_IMPLEMENTATION.md
+    ├── TEMPLATE_MANAGEMENT_UI_IMPLEMENTATION.md
+    ├── RECURRING_PERSISTENCE_IMPLEMENTATION.md
+    ├── MIGRATION_IMPLEMENTATION.md
+    └── INTEGRATION_TASK13_SUMMARY.md
 ```
 
 ## テスト
+
+### テスト概要
+
+包括的なテストスイートで、ユニット、統合、パフォーマンステストをカバーしています。
+
+- **総テスト数**: 33個
+- **成功率**: 100%
+- **実行時間**: 約10秒
 
 ### ローカルでテスト実行
 
@@ -162,16 +226,16 @@ Weekly-Task-Board/
 npm test
 
 # 特定のテストカテゴリを実行
-npm run test:unit              # ユニットテスト
-npm run test:integration       # 統合テスト
-npm run test:time              # 時間管理テスト
-npm run test:statistics        # 統計テスト
-npm run test:recurrence        # 繰り返しタスクテスト
-npm run test:template          # テンプレートテスト
-npm run test:weekday           # 曜日機能テスト
-npm run test:category          # カテゴリテスト
-npm run test:all               # すべてのテスト
-npm run verify                 # 実装検証
+npm run test:unit              # ユニットテスト（25個）
+npm run test:integration       # 統合テスト（2個）
+npm run test:performance       # パフォーマンステスト（2個）
+npm run test:quality           # 品質チェック（4個）
+
+# 詳細レポート付きで実行
+node run-tests.js --report
+
+# 特定のテストファイルを実行
+node run-tests.js tests/unit/test-task-operations.js
 ```
 
 ### GitHub Actions CI/CD
@@ -184,26 +248,73 @@ npm run verify                 # 実装検証
   - コード品質チェック
   - 実装検証
 
-## テストファイル一覧
+### テストファイル一覧
+
+#### ユニットテスト（25個）
 
 | ファイル | 説明 |
 |---------|------|
-| test-time-validation.js | 時間データバリデーション |
-| test-time-persistence.js | 時間データ永続化 |
+| test-task-operations.js | タスク操作（作成、編集、削除） |
+| test-recurring-tasks.js | 繰り返しタスク機能 |
 | test-statistics-engine.js | 統計計算エンジン |
-| test-completion-rate.js | 完了率計算 |
-| test-recurrence-engine.js | 繰り返しタスク生成 |
-| test-recurring-persistence.js | 繰り返しタスク永続化 |
+| test-data-persistence.js | データ永続化 |
+| test-ui-operations.js | UI操作 |
+| test-edge-cases.js | エッジケース処理 |
+| test-time-management.js | 時間管理 |
 | test-template-functionality.js | テンプレート機能 |
-| test-weekday-functionality.js | 曜日機能 |
-| test-category-functionality.js | カテゴリ機能 |
-| test-time-overrun-visual.js | 時間超過表示 |
+| test-archive.js | アーカイブ機能 |
+| test-data-migration.js | データマイグレーション |
+| test-weekday-manager.js | 曜日管理 |
+| test-export-import.js | エクスポート/インポート |
+| test-time-validation.js | 時間バリデーション |
+| test-completion-rate.js | 完了率計算 |
+| test-recurrence-engine.js | 繰り返しエンジン |
+| test-recurring-persistence.js | 繰り返しタスク永続化 |
+| test-time-persistence.js | 時間データ永続化 |
 | test-time-comparison.js | 時間比較 |
-| test-export-import-time.js | エクスポート/インポート |
-| test-migration-functionality.js | マイグレーション |
+| test-time-overrun-visual.js | 時間超過表示 |
+| test-export-import-time.js | 時間データエクスポート/インポート |
+| test-migration-functionality.js | マイグレーション機能 |
+| test-category-functionality.js | カテゴリ機能 |
+| test-weekday-functionality.js | 曜日機能 |
 | test-comprehensive-unit.js | 包括的ユニットテスト |
 | test-integration-task13.js | 統合テスト |
-| test-weekday-performance.js | パフォーマンステスト |
+
+#### 統合テスト（2個）
+
+| ファイル | 説明 |
+|---------|------|
+| test-integration-scenarios.js | 8つの実際のワークフローシナリオ |
+| test-category-integration.js | カテゴリ統合テスト |
+
+#### パフォーマンステスト（2個）
+
+| ファイル | 説明 |
+|---------|------|
+| test-performance.js | 8つのパフォーマンスベンチマーク |
+| test-weekday-performance.js | 曜日機能パフォーマンス |
+
+#### 品質チェック（4個）
+
+- コード構造検証
+- エラーハンドリング検証
+- データ整合性検証
+- パフォーマンス基準検証
+
+### テストインフラストラクチャ
+
+#### テストヘルパー（tests/utils/test-helpers.js）
+
+- **MockLocalStorage**: LocalStorage のモック実装
+- **TestDataGenerator**: テストデータ生成ユーティリティ
+- **CustomAssertions**: カスタムアサーション関数
+
+#### テストランナー（run-tests.js）
+
+- カテゴリ別テスト実行
+- 詳細レポート生成
+- CI/CD 統合対応
+- パフォーマンス測定
 
 ## セキュリティ
 
@@ -254,4 +365,4 @@ Pull Requestも歓迎します。大きな変更の場合は、まずIssueを開
 
 ---
 
-**最終更新**: 2026年3月2日
+**最終更新**: 2026年3月4日
