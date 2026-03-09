@@ -71,6 +71,7 @@
 
             <!-- グループ4: ユーティリティ -->
             <div id="header-group-utility">
+                <button id="outlook-sync-btn" title="Outlook同期">📅</button>
                 <button id="statistics-toggle" title="統計">📊</button>
                 <button id="template-toggle" title="テンプレート">📋</button>
                 <button id="theme-toggle" title="テーマ切替">🌙</button>
@@ -224,6 +225,82 @@
             </div>
             <div id="template-empty" class="template-empty">
                 テンプレートがまだ登録されていません
+            </div>
+        </div>
+    </div>
+
+    <!-- Outlook同期パネル -->
+    <div id="outlook-sync-panel" class="outlook-sync-panel" style="display: none;">
+        <div class="outlook-sync-header">
+            <h2>📅 Outlook カレンダー同期</h2>
+            <button id="close-outlook-sync" class="close-btn">&times;</button>
+        </div>
+        <div id="outlook-sync-content" class="outlook-sync-content">
+            <!-- 認証セクション -->
+            <div id="outlook-auth-section" class="outlook-section">
+                <h3>ステップ 1: Outlook に接続</h3>
+                <button id="outlook-connect-btn" class="outlook-btn-primary">🔗 Outlook に接続</button>
+                <button id="outlook-disconnect-btn" class="outlook-btn-secondary" style="display: none;">🔌 接続を解除</button>
+                <div id="outlook-auth-status" class="outlook-status"></div>
+            </div>
+
+            <!-- 日付範囲セクション -->
+            <div id="outlook-date-section" class="outlook-section" style="display: none;">
+                <h3>ステップ 2: 日付範囲を選択</h3>
+                <div class="outlook-date-inputs">
+                    <div class="outlook-date-group">
+                        <label for="outlook-start-date">開始日:</label>
+                        <input type="date" id="outlook-start-date">
+                    </div>
+                    <div class="outlook-date-group">
+                        <label for="outlook-end-date">終了日:</label>
+                        <input type="date" id="outlook-end-date">
+                    </div>
+                </div>
+                <button id="outlook-fetch-events-btn" class="outlook-btn-primary">📥 予定を取得</button>
+                <div id="outlook-fetch-status" class="outlook-status"></div>
+            </div>
+
+            <!-- イベントリストセクション -->
+            <div id="outlook-events-section" class="outlook-section" style="display: none;">
+                <h3>ステップ 3: 予定を選択</h3>
+                <div class="outlook-events-toolbar">
+                    <button id="outlook-select-all-btn" class="outlook-btn-secondary">すべて選択</button>
+                    <button id="outlook-deselect-all-btn" class="outlook-btn-secondary">すべて解除</button>
+                    <span id="outlook-selected-count" class="outlook-count">0 件選択</span>
+                </div>
+                <div id="outlook-events-list" class="outlook-events-list">
+                    <!-- イベント一覧がここに表示される -->
+                </div>
+            </div>
+
+            <!-- イベント詳細セクション -->
+            <div id="outlook-event-details-section" class="outlook-section" style="display: none;">
+                <h3>予定の詳細</h3>
+                <div id="outlook-event-details" class="outlook-event-details">
+                    <!-- イベント詳細がここに表示される -->
+                </div>
+            </div>
+
+            <!-- インポートセクション -->
+            <div id="outlook-import-section" class="outlook-section" style="display: none;">
+                <h3>ステップ 4: インポート</h3>
+                <button id="outlook-import-btn" class="outlook-btn-primary">✅ インポート</button>
+                <div id="outlook-import-status" class="outlook-status"></div>
+                <div id="outlook-import-progress" class="outlook-progress" style="display: none;">
+                    <div class="outlook-progress-bar">
+                        <div id="outlook-progress-fill" class="outlook-progress-fill"></div>
+                    </div>
+                    <span id="outlook-progress-text">0%</span>
+                </div>
+            </div>
+
+            <!-- 重複警告セクション -->
+            <div id="outlook-duplicate-section" class="outlook-section" style="display: none;">
+                <h3>⚠️ 重複検出</h3>
+                <div id="outlook-duplicate-list" class="outlook-duplicate-list">
+                    <!-- 重複イベント一覧がここに表示される -->
+                </div>
             </div>
         </div>
     </div>

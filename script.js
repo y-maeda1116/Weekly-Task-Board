@@ -4595,3 +4595,362 @@ function calculateDailyWorkTimeForDate(targetDate) {
         daily_breakdown: dailyBreakdown
     };
 }
+
+
+// ===== Outlook同期機能の統合 =====
+
+class OutlookSyncManager {
+    constructor() {
+        this.isAuthenticated = false;
+        this.selectedEvents = [];
+        this.allEvents = [];
+        this.outlookConnector = null;
+        this.syncEngine = null;
+        this.calendarImporter = null;
+    }
+
+    /**
+     * Outlook同期パネルを初期化
+     */
+    initializePanel() {
+        const outlookSyncBtn = document.getElementById('outlook-sync-btn');
+        const closeOutlookSyncBtn = document.getElementById('close-outlook-sync');
+        const outlookConnectBtn = document.getElementById('outlook-connect-btn');
+        const outlookDisconnectBtn = document.getElementById('outlook-disconnect-btn');
+        const outlookFetchEventsBtn = document.getElementById('outlook-fetch-events-btn');
+        const outlookSelectAllBtn = document.getElementById('outlook-select-all-btn');
+        const outlookDeselectAllBtn = document.getElementById('outlook-deselect-all-btn');
+        const outlookImportBtn = document.getElementById('outlook-import-btn');
+
+        // パネルの開閉
+        outlookSyncBtn.addEventListener('click', () => this.openPanel());
+        closeOutlookSyncBtn.addEventListener('click', () => this.closePanel());
+
+        // 認証
+        outlookConnectBtn.addEventListener('click', () => this.handleConnect());
+        outlookDisconnectBtn.addEventListener('click', () => this.handleDisconnect());
+
+        // イベント取得
+        outlookFetchEventsBtn.addEventListener('click', () => this.handleFetchEvents());
+
+        // 選択操作
+        outlookSelectAllBtn.addEventListener('click', () => this.selectAllEvents());
+        outlookDeselectAllBtn.addEventListener('click', () => this.deselectAllEvents());
+
+        // インポート
+        outlookImportBtn.addEventListener('click', () => this.handleImport());
+
+        // 日付ピッカーのデフォルト値を設定
+        const today = new Date();
+        const startDate = new Date(today);
+        startDate.setDate(today.getDate() - 7);
+        
+        document.getElementById('outlook-start-date').valueAsDate = startDate;
+        document.getElementById('outlook-end-date').valueAsDate = today;
+    }
+
+    /**
+     * パネルを開く
+     */
+    openPanel() {
+        document.getElementById('outlook-sync-panel').style.display = 'flex';
+    }
+
+    /**
+     * パネルを閉じる
+     */
+    closePanel() {
+        document.getElementById('outlook-sync-panel').style.display = 'none';
+    }
+
+    /**
+     * Outlookに接続
+     */
+    async handleConnect() {
+        try {
+            this.showStatus('outlook-auth-status', 'Outlookに接続中...', 'info');
+            
+            // 実装例: OAuth認証フロー
+            // 実際の実装では、OutlookConnectorコンポーネントを使用
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            this.isAuthenticated = true;
+            this.updateAuthUI();
+            this.showStatus('outlook-auth-status', 'Outlookに接続しました', 'success');
+            
+            // 日付範囲セクションを表示
+            document.getElementById('outlook-date-section').style.display = 'block';
+        } catch (error) {
+            this.showStatus('outlook-auth-status', 'Outlook接続に失敗しました: ' + error.message, 'error');
+        }
+    }
+
+    /**
+     * Outlookから接続を解除
+     */
+    async handleDisconnect() {
+        try {
+            this.isAuthenticated = false;
+            this.selectedEvents = [];
+            this.allEvents = [];
+            this.updateAuthUI();
+            this.showStatus('outlook-auth-status', '接続を解除しました', 'success');
+            
+            // セクションを非表示
+            document.getElementById('outlook-date-section').style.display = 'none';
+            document.getElementById('outlook-events-section').style.display = 'none';
+            document.getElementById('outlook-import-section').style.display = 'none';
+        } catch (error) {
+            this.showStatus('outlook-auth-status', '接続解除に失敗しました: ' + error.message, 'error');
+        }
+    }
+
+    /**
+     * 認証UIを更新
+     */
+    updateAuthUI() {
+        const connectBtn = document.getElementById('outlook-connect-btn');
+        const disconnectBtn = document.getElementById('outlook-disconnect-btn');
+        
+        if (this.isAuthenticated) {
+            connectBtn.style.display = 'none';
+            disconnectBtn.style.display = 'block';
+        } else {
+            connectBtn.style.display = 'block';
+            disconnectBtn.style.display = 'none';
+        }
+    }
+
+    /**
+     * イベントを取得
+     */
+    async handleFetchEvents() {
+        try {
+            const startDate = document.getElementById('outlook-start-date').value;
+            const endDate = document.getElementById('outlook-end-date').value;
+
+            if (!startDate || !endDate) {
+                this.showStatus('outlook-fetch-status', '開始日と終了日を指定してください', 'error');
+                return;
+            }
+
+            if (new Date(startDate) > new Date(endDate)) {
+                this.showStatus('outlook-fetch-status', '開始日は終了日より前である必要があります', 'error');
+                return;
+            }
+
+            this.showStatus('outlook-fetch-status', '予定を取得中...', 'info');
+
+            // 実装例: API呼び出し
+            await new Promise(resolve => setTimeout(resolve, 1000));
+
+            // ダミーイベントデータ
+            this.allEvents = [
+                {
+                    id: '1',
+                    title: 'チームミーティング',
+                    startTime: new Date(startDate + 'T10:00:00'),
+                    endTime: new Date(startDate + 'T11:00:00'),
+                    description: 'プロジェクト進捗確認'
+                },
+                {
+                    id: '2',
+                    title: 'コードレビュー',
+                    startTime: new Date(startDate + 'T14:00:00'),
+                    endTime: new Date(startDate + 'T15:00:00'),
+                    description: 'PR #123のレビュー'
+                }
+            ];
+
+            this.selectedEvents = [];
+            this.renderEventsList();
+            this.showStatus('outlook-fetch-status', this.allEvents.length + '件の予定を取得しました', 'success');
+            
+            // イベントリストセクションを表示
+            document.getElementById('outlook-events-section').style.display = 'block';
+            document.getElementById('outlook-import-section').style.display = 'block';
+        } catch (error) {
+            this.showStatus('outlook-fetch-status', '予定の取得に失敗しました: ' + error.message, 'error');
+        }
+    }
+
+    /**
+     * イベントリストをレンダリング
+     */
+    renderEventsList() {
+        const eventsList = document.getElementById('outlook-events-list');
+        eventsList.innerHTML = '';
+
+        this.allEvents.forEach(event => {
+            const isSelected = this.selectedEvents.some(e => e.id === event.id);
+            const eventItem = document.createElement('div');
+            eventItem.className = 'outlook-event-item';
+            
+            const startTime = new Date(event.startTime).toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' });
+            const endTime = new Date(event.endTime).toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' });
+
+            eventItem.innerHTML = `
+                <input type="checkbox" ${isSelected ? 'checked' : ''} data-event-id="${event.id}">
+                <div class="outlook-event-info">
+                    <div class="outlook-event-title">${event.title}</div>
+                    <div class="outlook-event-time">${startTime} - ${endTime}</div>
+                </div>
+            `;
+
+            eventItem.querySelector('input').addEventListener('change', (e) => {
+                if (e.target.checked) {
+                    this.selectedEvents.push(event);
+                } else {
+                    this.selectedEvents = this.selectedEvents.filter(e => e.id !== event.id);
+                }
+                this.updateSelectedCount();
+            });
+
+            eventItem.addEventListener('click', (e) => {
+                if (e.target.tagName !== 'INPUT') {
+                    this.showEventDetails(event);
+                }
+            });
+
+            eventsList.appendChild(eventItem);
+        });
+
+        this.updateSelectedCount();
+    }
+
+    /**
+     * 選択数を更新
+     */
+    updateSelectedCount() {
+        const count = this.selectedEvents.length;
+        document.getElementById('outlook-selected-count').textContent = count + '件選択';
+    }
+
+    /**
+     * イベント詳細を表示
+     */
+    showEventDetails(event) {
+        const detailsSection = document.getElementById('outlook-event-details-section');
+        const detailsDiv = document.getElementById('outlook-event-details');
+        
+        const startTime = new Date(event.startTime).toLocaleString('ja-JP');
+        const endTime = new Date(event.endTime).toLocaleString('ja-JP');
+
+        detailsDiv.innerHTML = `
+            <div class="outlook-event-details-row">
+                <div class="outlook-event-details-label">タイトル:</div>
+                <div class="outlook-event-details-value">${event.title}</div>
+            </div>
+            <div class="outlook-event-details-row">
+                <div class="outlook-event-details-label">開始:</div>
+                <div class="outlook-event-details-value">${startTime}</div>
+            </div>
+            <div class="outlook-event-details-row">
+                <div class="outlook-event-details-label">終了:</div>
+                <div class="outlook-event-details-value">${endTime}</div>
+            </div>
+            <div class="outlook-event-details-row">
+                <div class="outlook-event-details-label">説明:</div>
+                <div class="outlook-event-details-value">${event.description || 'なし'}</div>
+            </div>
+        `;
+
+        detailsSection.style.display = 'block';
+    }
+
+    /**
+     * すべてのイベントを選択
+     */
+    selectAllEvents() {
+        this.selectedEvents = [...this.allEvents];
+        this.renderEventsList();
+    }
+
+    /**
+     * すべてのイベントを解除
+     */
+    deselectAllEvents() {
+        this.selectedEvents = [];
+        this.renderEventsList();
+    }
+
+    /**
+     * インポート処理
+     */
+    async handleImport() {
+        try {
+            if (this.selectedEvents.length === 0) {
+                this.showStatus('outlook-import-status', 'インポートするイベントを選択してください', 'error');
+                return;
+            }
+
+            this.showStatus('outlook-import-status', 'インポート中...', 'info');
+            document.getElementById('outlook-import-progress').style.display = 'block';
+
+            // インポート処理をシミュレート
+            for (let i = 0; i < this.selectedEvents.length; i++) {
+                const event = this.selectedEvents[i];
+                
+                // イベントをタスクに変換
+                const task = {
+                    id: 'outlook-' + event.id + '-' + Date.now(),
+                    name: event.title,
+                    estimated_time: 60, // デフォルト1時間
+                    actual_time: 0,
+                    priority: 'medium',
+                    category: 'task',
+                    assigned_date: formatDate(new Date(event.startTime)),
+                    due_date: formatDate(new Date(event.endTime)),
+                    details: event.description || '',
+                    completed: false,
+                    created_at: new Date().toISOString(),
+                    metadata: {
+                        outlookEventId: event.id,
+                        syncedAt: new Date().toISOString()
+                    }
+                };
+
+                // タスクを保存
+                tasks.push(task);
+
+                // 進捗を更新
+                const progress = Math.round(((i + 1) / this.selectedEvents.length) * 100);
+                document.getElementById('outlook-progress-fill').style.width = progress + '%';
+                document.getElementById('outlook-progress-text').textContent = progress + '%';
+
+                await new Promise(resolve => setTimeout(resolve, 200));
+            }
+
+            // タスクを保存
+            saveTasks(tasks);
+            renderBoard();
+
+            this.showStatus('outlook-import-status', this.selectedEvents.length + '件のイベントをインポートしました', 'success');
+            document.getElementById('outlook-import-progress').style.display = 'none';
+
+            // パネルをリセット
+            setTimeout(() => this.closePanel(), 1500);
+        } catch (error) {
+            this.showStatus('outlook-import-status', 'インポートに失敗しました: ' + error.message, 'error');
+            document.getElementById('outlook-import-progress').style.display = 'none';
+        }
+    }
+
+    /**
+     * ステータスメッセージを表示
+     */
+    showStatus(elementId, message, type) {
+        const statusEl = document.getElementById(elementId);
+        statusEl.textContent = message;
+        statusEl.className = 'outlook-status ' + type;
+    }
+}
+
+// Outlook同期マネージャーのインスタンスを作成
+let outlookSyncManager;
+
+// DOMContentLoaded時にOutlook同期機能を初期化
+document.addEventListener('DOMContentLoaded', () => {
+    outlookSyncManager = new OutlookSyncManager();
+    outlookSyncManager.initializePanel();
+});

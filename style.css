@@ -3113,3 +3113,360 @@ input[type="datetime-local"][readonly]:focus {
         max-width: 100%;
     }
 }
+
+/* ===== Outlook同期パネル ===== */
+
+.outlook-sync-panel {
+    position: fixed;
+    right: 0;
+    top: 0;
+    width: 450px;
+    height: 100vh;
+    background-color: var(--card-background);
+    box-shadow: -2px 0 8px var(--shadow-color);
+    z-index: 2000;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    animation: slideInRight 0.3s ease-out;
+}
+
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+    }
+    to {
+        transform: translateX(0);
+    }
+}
+
+.outlook-sync-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    border-bottom: 1px solid var(--border-color);
+    background-color: var(--background-color);
+}
+
+.outlook-sync-header h2 {
+    margin: 0;
+    font-size: 1.3em;
+    color: var(--primary-color);
+}
+
+.outlook-sync-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+}
+
+.outlook-section {
+    margin-bottom: 25px;
+    padding: 15px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    background-color: var(--background-color);
+}
+
+.outlook-section h3 {
+    margin: 0 0 15px 0;
+    font-size: 1.1em;
+    color: var(--font-color);
+}
+
+.outlook-btn-primary,
+.outlook-btn-secondary {
+    padding: 10px 16px;
+    border: none;
+    border-radius: 4px;
+    font-size: 0.95em;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-weight: 500;
+}
+
+.outlook-btn-primary {
+    background-color: var(--primary-color);
+    color: white;
+    width: 100%;
+    margin-bottom: 10px;
+}
+
+.outlook-btn-primary:hover {
+    background-color: #3a7bc8;
+    box-shadow: 0 2px 6px rgba(74, 144, 226, 0.3);
+}
+
+.outlook-btn-primary:active {
+    transform: scale(0.98);
+}
+
+.outlook-btn-secondary {
+    background-color: var(--background-color);
+    color: var(--primary-color);
+    border: 1px solid var(--primary-color);
+    margin-right: 8px;
+    margin-bottom: 8px;
+}
+
+.outlook-btn-secondary:hover {
+    background-color: rgba(74, 144, 226, 0.1);
+}
+
+.outlook-status {
+    margin-top: 10px;
+    padding: 10px;
+    border-radius: 4px;
+    font-size: 0.9em;
+    display: none;
+}
+
+.outlook-status.success {
+    display: block;
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.outlook-status.error {
+    display: block;
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+.outlook-status.info {
+    display: block;
+    background-color: #d1ecf1;
+    color: #0c5460;
+    border: 1px solid #bee5eb;
+}
+
+[data-theme="dark"] .outlook-status.success {
+    background-color: #1e4620;
+    color: #90ee90;
+    border-color: #2d5a2d;
+}
+
+[data-theme="dark"] .outlook-status.error {
+    background-color: #4a2020;
+    color: #ff6b6b;
+    border-color: #6b3030;
+}
+
+[data-theme="dark"] .outlook-status.info {
+    background-color: #1a3a3a;
+    color: #87ceeb;
+    border-color: #2d5a5a;
+}
+
+.outlook-date-inputs {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.outlook-date-group {
+    flex: 1;
+}
+
+.outlook-date-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+    font-size: 0.9em;
+}
+
+.outlook-date-group input {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background-color: var(--background-color);
+    color: var(--font-color);
+    box-sizing: border-box;
+}
+
+.outlook-date-group input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.1);
+}
+
+.outlook-events-toolbar {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+    align-items: center;
+}
+
+.outlook-count {
+    margin-left: auto;
+    font-size: 0.9em;
+    color: #666;
+}
+
+.outlook-events-list {
+    max-height: 300px;
+    overflow-y: auto;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background-color: var(--background-color);
+}
+
+.outlook-event-item {
+    padding: 12px;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.outlook-event-item:hover {
+    background-color: rgba(74, 144, 226, 0.05);
+}
+
+.outlook-event-item input[type="checkbox"] {
+    cursor: pointer;
+    width: 18px;
+    height: 18px;
+}
+
+.outlook-event-info {
+    flex: 1;
+}
+
+.outlook-event-title {
+    font-weight: 500;
+    margin-bottom: 3px;
+}
+
+.outlook-event-time {
+    font-size: 0.85em;
+    color: #666;
+}
+
+.outlook-event-details {
+    background-color: var(--background-color);
+    padding: 15px;
+    border-radius: 4px;
+    border: 1px solid var(--border-color);
+}
+
+.outlook-event-details-row {
+    margin-bottom: 10px;
+    display: flex;
+    gap: 10px;
+}
+
+.outlook-event-details-label {
+    font-weight: 500;
+    min-width: 80px;
+    color: var(--primary-color);
+}
+
+.outlook-event-details-value {
+    flex: 1;
+    word-break: break-word;
+}
+
+.outlook-progress {
+    margin-top: 15px;
+}
+
+.outlook-progress-bar {
+    width: 100%;
+    height: 20px;
+    background-color: var(--background-color);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 8px;
+}
+
+.outlook-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--primary-color), #3a7bc8);
+    width: 0%;
+    transition: width 0.3s ease;
+}
+
+.outlook-progress-text {
+    font-size: 0.9em;
+    color: #666;
+}
+
+.outlook-duplicate-list {
+    max-height: 250px;
+    overflow-y: auto;
+}
+
+.outlook-duplicate-item {
+    padding: 12px;
+    border: 1px solid #f5a623;
+    border-radius: 4px;
+    margin-bottom: 10px;
+    background-color: rgba(245, 166, 35, 0.05);
+}
+
+.outlook-duplicate-item-title {
+    font-weight: 500;
+    margin-bottom: 8px;
+}
+
+.outlook-duplicate-options {
+    display: flex;
+    gap: 8px;
+}
+
+.outlook-duplicate-options button {
+    flex: 1;
+    padding: 6px 10px;
+    font-size: 0.85em;
+    border: 1px solid var(--border-color);
+    border-radius: 3px;
+    background-color: var(--background-color);
+    color: var(--font-color);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.outlook-duplicate-options button:hover {
+    background-color: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 768px) {
+    .outlook-sync-panel {
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .outlook-date-inputs {
+        flex-direction: column;
+    }
+
+    .outlook-events-toolbar {
+        flex-wrap: wrap;
+    }
+}
+
+[data-theme="dark"] .outlook-event-time,
+[data-theme="dark"] .outlook-progress-text,
+[data-theme="dark"] .outlook-count {
+    color: #999;
+}
+
+[data-theme="dark"] .outlook-event-item:hover {
+    background-color: rgba(74, 144, 226, 0.1);
+}
+
+[data-theme="dark"] .outlook-duplicate-item {
+    background-color: rgba(245, 166, 35, 0.1);
+    border-color: #f5a623;
+}
