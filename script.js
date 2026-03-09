@@ -4727,7 +4727,27 @@ class OutlookSyncManager {
             }
         } catch (error) {
             console.error('❌ Outlook接続エラー:', error);
-            this.showStatus('outlook-auth-status', 'Outlook接続に失敗しました: ' + error.message, 'error');
+            
+            // エラーメッセージの詳細表示
+            let errorMessage = 'Outlook接続に失敗しました';
+            
+            if (error.message.includes('AADSTS700016')) {
+                errorMessage = '❌ アプリケーション ID が見つかりません。\n\n' +
+                    '【会社アカウントの場合】\n' +
+                    '1. Azure Portal でアプリケーション登録が必要です\n' +
+                    '2. https://portal.azure.com → Azure AD → アプリの登録\n' +
+                    '3. 取得した Client ID を設定してください\n' +
+                    '4. 会社の IT 管理者に承認を依頼してください\n\n' +
+                    '【個人用アカウントの場合】\n' +
+                    '1. outlook.com アカウントで試してください\n' +
+                    '2. 同様に Azure Portal でアプリケーション登録が必要です';
+            } else if (error.message.includes('YOUR_CLIENT_ID')) {
+                errorMessage = '❌ Client ID が設定されていません。\n\n' +
+                    'script.js の OutlookSyncManager コンストラクタで\n' +
+                    'YOUR_CLIENT_ID を Azure AD から取得した ID に置き換えてください。';
+            }
+            
+            this.showStatus('outlook-auth-status', errorMessage, 'error');
         }
     }
 
