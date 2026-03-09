@@ -4613,6 +4613,8 @@ class OutlookSyncManager {
      * Outlook同期パネルを初期化
      */
     initializePanel() {
+        console.log('🔧 Outlook同期パネルを初期化中...');
+        
         const outlookSyncBtn = document.getElementById('outlook-sync-btn');
         const closeOutlookSyncBtn = document.getElementById('close-outlook-sync');
         const outlookConnectBtn = document.getElementById('outlook-connect-btn');
@@ -4622,8 +4624,18 @@ class OutlookSyncManager {
         const outlookDeselectAllBtn = document.getElementById('outlook-deselect-all-btn');
         const outlookImportBtn = document.getElementById('outlook-import-btn');
 
+        if (!outlookSyncBtn) {
+            console.error('❌ Outlook同期ボタンが見つかりません');
+            return;
+        }
+
+        console.log('✅ すべての要素が見つかりました');
+
         // パネルの開閉
-        outlookSyncBtn.addEventListener('click', () => this.openPanel());
+        outlookSyncBtn.addEventListener('click', () => {
+            console.log('📅 Outlook同期ボタンがクリックされました');
+            this.openPanel();
+        });
         closeOutlookSyncBtn.addEventListener('click', () => this.closePanel());
 
         // 認証
@@ -4647,13 +4659,21 @@ class OutlookSyncManager {
         
         document.getElementById('outlook-start-date').valueAsDate = startDate;
         document.getElementById('outlook-end-date').valueAsDate = today;
+        
+        console.log('✅ Outlook同期パネルの初期化が完了しました');
     }
 
     /**
      * パネルを開く
      */
     openPanel() {
-        document.getElementById('outlook-sync-panel').style.display = 'flex';
+        const panel = document.getElementById('outlook-sync-panel');
+        if (panel) {
+            panel.style.display = 'flex';
+            console.log('✅ Outlook同期パネルを開きました');
+        } else {
+            console.error('❌ Outlook同期パネルが見つかりません');
+        }
     }
 
     /**
@@ -4951,6 +4971,8 @@ let outlookSyncManager;
 
 // DOMContentLoaded時にOutlook同期機能を初期化
 document.addEventListener('DOMContentLoaded', () => {
+    console.log('🚀 DOMContentLoaded イベント発火');
     outlookSyncManager = new OutlookSyncManager();
     outlookSyncManager.initializePanel();
+    console.log('✅ Outlook同期マネージャーが初期化されました');
 });
