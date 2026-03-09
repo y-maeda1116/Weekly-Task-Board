@@ -71,7 +71,11 @@
 
             <!-- グループ4: ユーティリティ -->
             <div id="header-group-utility">
-                <button id="outlook-sync-btn" title="Outlook同期">📅</button>
+                <!-- TODO: Outlook同期機能は実装済みですが、Azure AD設定が必要なため一時的に非表示にしています。
+                     後で有効にする場合は、以下のボタンのコメントを外してください。
+                     必要な設定: Azure Portal でアプリケーション登録 → Client ID を script.js に設定
+                -->
+                <!-- <button id="outlook-sync-btn" title="Outlook同期">📅</button> -->
                 <button id="statistics-toggle" title="統計">📊</button>
                 <button id="template-toggle" title="テンプレート">📋</button>
                 <button id="theme-toggle" title="テーマ切替">🌙</button>
@@ -230,6 +234,11 @@
     </div>
 
     <!-- Outlook同期パネル -->
+    <!-- TODO: Outlook同期機能は実装済みですが、Azure AD設定が必要なため一時的に非表示にしています。
+         後で有効にする場合は、以下のコメントを外してください。
+         必要な設定: Azure Portal でアプリケーション登録 → Client ID を script.js に設定
+    -->
+    <!--
     <div id="outlook-sync-panel" class="outlook-sync-panel" style="display: none;">
         <div class="outlook-sync-header">
             <h2>📅 Outlook カレンダー同期</h2>
@@ -304,6 +313,7 @@
             </div>
         </div>
     </div>
+    -->
 
     <!-- タスク追加モーダル -->
     <div id="task-modal" class="modal">

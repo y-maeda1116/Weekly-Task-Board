@@ -5125,9 +5125,14 @@ class OutlookSyncManager {
 let outlookSyncManager;
 
 // DOMContentLoaded時にOutlook同期機能を初期化
+// TODO: Outlook同期機能は実装済みですが、Azure AD設定が必要なため一時的に無効にしています。
+// 後で有効にする場合は、以下のコメントを外してください。
+// 必要な設定: Azure Portal でアプリケーション登録 → Client ID を script.js に設定
+/*
 document.addEventListener('DOMContentLoaded', () => {
     console.log('🚀 DOMContentLoaded イベント発火');
     outlookSyncManager = new OutlookSyncManager();
     outlookSyncManager.initializePanel();
     console.log('✅ Outlook同期マネージャーが初期化されました');
 });
+*/
