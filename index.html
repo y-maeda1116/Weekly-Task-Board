@@ -233,19 +233,18 @@
         </div>
     </div>
 
-    <!-- Outlook同期パネル -->
-    <!-- TODO: Outlook同期機能は実装済みですが、Azure AD設定が必要なため一時的に非表示にしています。
+    <!-- Outlook同期パネル (一時的に非表示)
+         TODO: Outlook同期機能は実装済みですが、Azure AD設定が必要なため一時的に非表示にしています。
          後で有効にする場合は、以下のコメントを外してください。
          必要な設定: Azure Portal でアプリケーション登録 → Client ID を script.js に設定
-    -->
-    <!--
+    
     <div id="outlook-sync-panel" class="outlook-sync-panel" style="display: none;">
         <div class="outlook-sync-header">
             <h2>📅 Outlook カレンダー同期</h2>
             <button id="close-outlook-sync" class="close-btn">&times;</button>
         </div>
         <div id="outlook-sync-content" class="outlook-sync-content">
-            <!-- 認証セクション -->
+            認証セクション
             <div id="outlook-auth-section" class="outlook-section">
                 <h3>ステップ 1: Outlook に接続</h3>
                 <button id="outlook-connect-btn" class="outlook-btn-primary">🔗 Outlook に接続</button>
@@ -253,7 +252,7 @@
                 <div id="outlook-auth-status" class="outlook-status"></div>
             </div>
 
-            <!-- 日付範囲セクション -->
+            日付範囲セクション
             <div id="outlook-date-section" class="outlook-section" style="display: none;">
                 <h3>ステップ 2: 日付範囲を選択</h3>
                 <div class="outlook-date-inputs">
@@ -270,7 +269,7 @@
                 <div id="outlook-fetch-status" class="outlook-status"></div>
             </div>
 
-            <!-- イベントリストセクション -->
+            イベントリストセクション
             <div id="outlook-events-section" class="outlook-section" style="display: none;">
                 <h3>ステップ 3: 予定を選択</h3>
                 <div class="outlook-events-toolbar">
@@ -279,19 +278,19 @@
                     <span id="outlook-selected-count" class="outlook-count">0 件選択</span>
                 </div>
                 <div id="outlook-events-list" class="outlook-events-list">
-                    <!-- イベント一覧がここに表示される -->
+                    イベント一覧がここに表示される
                 </div>
             </div>
 
-            <!-- イベント詳細セクション -->
+            イベント詳細セクション
             <div id="outlook-event-details-section" class="outlook-section" style="display: none;">
                 <h3>予定の詳細</h3>
                 <div id="outlook-event-details" class="outlook-event-details">
-                    <!-- イベント詳細がここに表示される -->
+                    イベント詳細がここに表示される
                 </div>
             </div>
 
-            <!-- インポートセクション -->
+            インポートセクション
             <div id="outlook-import-section" class="outlook-section" style="display: none;">
                 <h3>ステップ 4: インポート</h3>
                 <button id="outlook-import-btn" class="outlook-btn-primary">✅ インポート</button>
@@ -304,11 +303,11 @@
                 </div>
             </div>
 
-            <!-- 重複警告セクション -->
+            重複警告セクション
             <div id="outlook-duplicate-section" class="outlook-section" style="display: none;">
                 <h3>⚠️ 重複検出</h3>
                 <div id="outlook-duplicate-list" class="outlook-duplicate-list">
-                    <!-- 重複イベント一覧がここに表示される -->
+                    重複イベント一覧がここに表示される
                 </div>
             </div>
         </div>

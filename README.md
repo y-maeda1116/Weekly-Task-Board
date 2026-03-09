@@ -5,6 +5,20 @@
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![Node.js](https://img.shields.io/badge/node.js-18%2B-green.svg)
 
+## 目次
+
+- [主な機能](#主な機能)
+- [クイックスタート](#クイックスタート)
+- [使い方](#使い方)
+- [Outlook カレンダー同期機能の有効化](#outlook-カレンダー同期機能の有効化)
+- [技術スタック](#技術スタック)
+- [プロジェクト構造](#プロジェクト構造)
+- [テスト](#テスト)
+- [セキュリティ](#セキュリティ)
+- [ドキュメント](#ドキュメント)
+- [貢献](#貢献)
+- [ライセンス](#ライセンス)
+
 ## 主な機能
 
 ### タスク管理
@@ -34,6 +48,14 @@
 - **終了日設定**: 繰り返しの終了日を指定可能
 - **テンプレート保存**: よく使うタスクをテンプレートとして保存
 - **テンプレート管理**: テンプレートの検索・ソート・削除
+
+### Outlook カレンダー同期機能（実装済み、現在は無効）
+- **OAuth 2.0 認証**: Microsoft アカウントでの安全な認証
+- **イベント取得**: Outlook カレンダーから予定を取得
+- **イベント選択**: 複数の予定を選択してインポート
+- **自動変換**: Outlook イベントをタスクに自動変換
+- **重複検出**: 既にインポート済みの予定を検出
+- **プロパティベーステスト**: 20個の正確性プロパティで検証
 
 ### その他の機能
 - **カテゴリフィルター**: 6種類のカテゴリで分類・フィルター
@@ -366,3 +388,146 @@ Pull Requestも歓迎します。大きな変更の場合は、まずIssueを開
 ---
 
 **最終更新**: 2026年3月4日
+
+
+## Outlook カレンダー同期機能の有効化
+
+Outlook カレンダー同期機能は実装済みですが、Azure AD アプリケーション登録が必要なため、現在は無効になっています。
+
+### 前提条件
+
+- Microsoft Azure アカウント
+- Azure Portal へのアクセス権限
+- 会社アカウントの場合は IT 管理者の承認
+
+### 有効化手順
+
+#### ステップ 1: Azure Portal でアプリケーション登録
+
+1. [Azure Portal](https://portal.azure.com) にアクセス
+2. **Azure AD** → **アプリの登録** → **新規登録** をクリック
+3. アプリケーション情報を入力：
+   - **名前**: `Weekly Task Board` (任意)
+   - **サポートされているアカウントの種類**:
+     - 個人用アカウント: `任意の組織のディレクトリ内のアカウントと個人の Microsoft アカウント`
+     - 会社アカウント: `この組織のディレクトリ内のアカウントのみ`
+   - **リダイレクト URI**: `http://localhost:3000/auth-callback`
+4. **登録** をクリック
+
+#### ステップ 2: Client ID を取得
+
+1. 登録したアプリケーションを開く
+2. **概要** ページから **アプリケーション (クライアント) ID** をコピー
+
+#### ステップ 3: API パーミッション を設定
+
+1. **API のアクセス許可** をクリック
+2. **アクセス許可の追加** → **Microsoft Graph** をクリック
+3. 以下のパーミッションを追加：
+   - `Calendars.Read` - カレンダー読み取り
+   - `offline_access` - オフライン アクセス
+4. **管理者の同意を与える** をクリック（会社アカウントの場合は IT 管理者に依頼）
+
+#### ステップ 4: script.js を更新
+
+`script.js` の `OutlookSyncManager` クラスのコンストラクタを編集：
+
+```javascript
+this.clientId = 'YOUR_CLIENT_ID'; // ← ここに取得した Client ID を設定
+```
+
+例：
+```javascript
+this.clientId = '12345678-1234-1234-1234-123456789012';
+```
+
+#### ステップ 5: UI を有効化
+
+**index.html** で以下の部分のコメントを外す：
+
+1. ヘッダーの Outlook ボタン（約 74 行目）:
+```html
+<!-- <button id="outlook-sync-btn" title="Outlook同期">📅</button> -->
+```
+↓
+```html
+<button id="outlook-sync-btn" title="Outlook同期">📅</button>
+```
+
+2. Outlook 同期パネル（約 300 行目）:
+```html
+<!-- <div id="outlook-sync-panel" class="outlook-sync-panel" style="display: none;"> -->
+```
+↓
+```html
+<div id="outlook-sync-panel" class="outlook-sync-panel" style="display: none;">
+```
+
+**script.js** で以下の部分のコメントを外す（ファイルの最後）:
+```javascript
+/*
+document.addEventListener('DOMContentLoaded', () => {
+    console.log('🚀 DOMContentLoaded イベント発火');
+    outlookSyncManager = new OutlookSyncManager();
+    outlookSyncManager.initializePanel();
+    console.log('✅ Outlook同期マネージャーが初期化されました');
+});
+*/
+```
+↓
+```javascript
+document.addEventListener('DOMContentLoaded', () => {
+    console.log('🚀 DOMContentLoaded イベント発火');
+    outlookSyncManager = new OutlookSyncManager();
+    outlookSyncManager.initializePanel();
+    console.log('✅ Outlook同期マネージャーが初期化されました');
+});
+```
+
+#### ステップ 6: ブラウザをリロード
+
+ブラウザをリロードすると、ヘッダーに 📅 ボタンが表示されます。
+
+### 使用方法
+
+1. ヘッダーの 📅 ボタンをクリック
+2. 「Outlook に接続」をクリック
+3. Microsoft ログイン画面で認証
+4. 日付範囲を選択して「予定を取得」
+5. 予定を選択して「インポート」
+
+### トラブルシューティング
+
+#### エラー: AADSTS700016
+
+**原因**: Client ID が設定されていない、または無効
+
+**解決方法**:
+1. Azure Portal で Client ID を確認
+2. `script.js` の `clientId` を正しく設定
+3. ブラウザキャッシュをクリア
+
+#### エラー: ポップアップがブロックされている
+
+**原因**: ブラウザのポップアップブロック
+
+**解決方法**:
+1. ブラウザの設定でポップアップを許可
+2. または、ブラウザの通知バーから許可
+
+#### 会社アカウントで認証できない
+
+**原因**: IT 管理者の承認が必要
+
+**解決方法**:
+1. IT 管理者に Azure AD アプリケーションの承認を依頼
+2. テナント管理者の同意を取得
+
+### 実装詳細
+
+- **認証**: OAuth 2.0 フロー
+- **API**: Outlook Graph API
+- **テスト**: 20個のプロパティベーステスト
+- **セキュリティ**: トークン暗号化、CSRF 保護
+
+詳細は `.kiro/specs/outlook-calendar-sync/` を参照してください。
