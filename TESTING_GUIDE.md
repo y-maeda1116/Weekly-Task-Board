@@ -79,8 +79,20 @@ The test runner respects standard Node.js environment variables:
 
 **GitHub Actions:**
 ```yaml
-- name: Run Tests
-  run: node run-tests.js
+- name: Use Node.js ${{ matrix.node-version }}
+  uses: actions/setup-node@v3
+  with:
+    node-version: ${{ matrix.node-version }}
+
+- name: Run Unit Tests
+  run: |
+    node tests/unit/test-time-validation.js
+    node tests/unit/test-time-persistence.js
+    # ... (all unit tests)
+
+- name: Run TypeScript Tests
+  run: |
+    npm run test:outlook
 ```
 
 **GitLab CI:**
@@ -88,11 +100,13 @@ The test runner respects standard Node.js environment variables:
 test:
   script:
     - node run-tests.js
+    - npm run test:outlook
 ```
 
 **Jenkins:**
 ```groovy
 sh 'node run-tests.js'
+sh 'npm run test:outlook'
 ```
 
 ## Test Output Examples
@@ -177,7 +191,7 @@ Detailed Test Report:
 
 ## Test Categories
 
-### Unit Tests (25 tests)
+### Unit Tests (25+ tests)
 - Task Operations
 - Time Validation
 - Time Persistence
@@ -204,9 +218,20 @@ Detailed Test Report:
 - Archive
 - Weekday Manager
 
-### Integration Tests (2 tests)
+### TypeScript Unit Tests (Outlook Calendar Sync)
+- Calendar Importer (unit + PBT)
+- Calendar Sync UI (unit + PBT)
+- Event Parser (unit + PBT)
+- Event Serializer (unit + PBT)
+- Event Printer (unit + PBT)
+- Error Handling (PBT)
+- Interfaces
+- Logger
+
+### Integration Tests (5 tests)
 - Integration Task 13
 - Integration Scenarios
+- Outlook Calendar Sync (3 advanced integration tests)
 
 ### Performance Tests (2 tests)
 - Weekday Performance
@@ -218,11 +243,39 @@ Detailed Test Report:
 - JavaScript File Existence
 - Package.json Existence
 
+## TypeScript Tests (Outlook Calendar Sync)
+
+### Outlook Sync Tests
+```bash
+# Run Outlook calendar sync tests
+npm run test:outlook
+
+# Watch mode for development
+npm run test:outlook:watch
+
+# Generate coverage report
+npm run test:outlook:coverage
+```
+
+### TypeScript Build
+```bash
+# Build TypeScript
+npm run build
+
+# Watch mode for development
+npm run build:watch
+```
+
+### Test Types Explained
+- **Unit Tests**: Component-level testing
+- **PBT (Property-Based Testing)**: Property-based testing with random inputs
+- **Integration Tests**: Multi-component workflow testing
+
 ## Command Reference
 
 ### Basic Commands
 ```bash
-# Run all tests
+# Run all JavaScript tests
 node run-tests.js
 
 # Run with shell script
@@ -288,7 +341,7 @@ node run-tests.js --verbose
 ## Troubleshooting
 
 ### All Tests Pass Locally but Fail in CI/CD
-1. Check Node.js version matches
+1. Check Node.js version (v20.x, v22.x, v24.x, v25.x supported)
 2. Verify environment variables are set
 3. Check file permissions
 4. Review CI/CD logs for specific errors
@@ -336,10 +389,19 @@ The test suite verifies these performance targets:
 
 ## Coverage Goals
 
+### JavaScript Tests
 - Unit test coverage: > 90% of core functionality
 - Integration test coverage: All major workflows
 - Performance benchmarks: All operations meet targets
 - Error handling: All error conditions covered
+
+### TypeScript Tests (Outlook Calendar Sync)
+- Lines coverage: > 80%
+- Functions coverage: > 80%
+- Branches coverage: > 80%
+- Statements coverage: > 80%
+- All components have unit + PBT tests
+- All workflows have integration tests
 
 ## Additional Resources
 
@@ -347,6 +409,9 @@ The test suite verifies these performance targets:
 - Check individual test files for implementation details
 - Review test utilities in `tests/utils/` directory
 - Consult requirements in `.kiro/specs/test-coverage-improvement/`
+- See `.kiro/specs/outlook-calendar-sync/` for Outlook sync requirements
+- See `src/` directory for TypeScript component implementations
+- See `vitest.config.ts` for TypeScript test configuration
 
 ## Support
 

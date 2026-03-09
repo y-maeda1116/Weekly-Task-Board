@@ -24,11 +24,32 @@ tests/
 │   ├── test-weekday-manager.js
 │   ├── test-export-import.js
 │   └── ... (additional unit tests)
+│
 ├── integration/                   # Integration tests for workflows
-│   └── test-integration-scenarios.js
+│   ├── test-integration-scenarios.js
+│   ├── outlook-calendar-sync.integration.test.ts
+│   ├── outlook-calendar-sync-workflows.integration.test.ts
+│   └── outlook-calendar-sync-advanced.integration.test.ts
+│
 ├── performance/                   # Performance tests
 │   ├── test-performance.js
 │   └── test-weekday-performance.js
+│
+├── unit/ (TypeScript)             # TypeScript unit tests
+│   ├── calendar-importer.unit.test.ts
+│   ├── calendar-importer.pbt.test.ts
+│   ├── calendar-sync-ui.unit.test.ts
+│   ├── calendar-sync-ui.pbt.test.ts
+│   ├── event-parser.unit.test.ts
+│   ├── event-parser.pbt.test.ts
+│   ├── event-serializer.unit.test.ts
+│   ├── event-serializer.pbt.test.ts
+│   ├── event-printer.unit.test.ts
+│   ├── event-printer.pbt.test.ts
+│   ├── error-handling.pbt.test.ts
+│   ├── interfaces.test.ts
+│   └── logger.test.ts
+│
 └── utils/                         # Test utilities and helpers
     ├── test-helpers.js
     ├── mock-data-generator.js
@@ -39,7 +60,7 @@ tests/
 
 ### Quick Start
 
-Run all tests with default settings:
+Run all JavaScript tests with default settings:
 
 ```bash
 node run-tests.js
@@ -49,6 +70,31 @@ Or using the shell script:
 
 ```bash
 ./run-tests.sh
+```
+
+### TypeScript/Outlook Tests
+
+Run Outlook Calendar Sync tests:
+
+```bash
+# Run all Outlook tests
+npm run test:outlook
+
+# Watch mode for development
+npm run test:outlook:watch
+
+# Generate coverage report
+npm run test:outlook:coverage
+```
+
+### TypeScript Build
+
+```bash
+# Build TypeScript
+npm run build
+
+# Watch mode for development
+npm run build:watch
 ```
 
 ### Command Line Options
@@ -178,6 +224,8 @@ Failed Test Details:
 
 Unit tests verify individual components and functions in isolation.
 
+#### JavaScript Unit Tests
+
 **Coverage Areas:**
 - Task operations (create, read, update, delete)
 - Recurring task generation and management
@@ -197,6 +245,27 @@ Unit tests verify individual components and functions in isolation.
 node run-tests.js --unit
 ```
 
+#### TypeScript Unit Tests (Outlook Calendar Sync)
+
+**Coverage Areas:**
+- Calendar Importer - Date range management, event fetching, import execution
+- Calendar Sync UI - Authentication UI, date range picker, event list display
+- Event Parser - Raw API response parsing, Event object creation
+- Event Serializer - Event to Task conversion, Task to Event conversion
+- Event Printer - Human-readable event formatting
+- Error Handling - PBT with random inputs for robustness
+- Interfaces - Type definitions and contracts
+- Logger - Logging functionality
+
+**Test Types:**
+- **Unit Tests**: Standard component testing
+- **PBT (Property-Based Testing)**: Property-based testing with random generated inputs
+
+**Running TypeScript Tests:**
+```bash
+npm run test:outlook
+```
+
 ### Integration Tests
 
 Integration tests verify that multiple components work together correctly.
@@ -211,9 +280,25 @@ Integration tests verify that multiple components work together correctly.
 - Theme switching workflow
 - Week navigation → statistics display workflow
 
+#### Outlook Calendar Sync Integration Tests
+
+**Coverage Areas:**
+- OAuth authentication flow
+- Event retrieval and parsing
+- Event-to-Task conversion workflow
+- Duplicate detection and handling
+- Date range synchronization
+- Error recovery and retry logic
+- UI state management during sync
+- Transaction rollback on errors
+
 **Running Integration Tests:**
 ```bash
+# JavaScript integration tests
 node run-tests.js --integration
+
+# TypeScript integration tests (included in test:outlook)
+npm run test:outlook
 ```
 
 ### Performance Tests
@@ -252,33 +337,65 @@ node run-tests.js
 
 ## CI/CD Integration
 
-### GitHub Actions Example
+### GitHub Actions Example (.github/workflows/ci.yml)
 
 ```yaml
-name: Test Suite
+name: CI - Test Suite
 
-on: [push, pull_request]
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+permissions:
+  contents: read
 
 jobs:
   test:
     runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [20.x, 22.x, 24.x, 25.x]
+
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2
-        with:
-          node-version: '14'
-      - run: npm install
-      - run: node run-tests.js
+    - uses: actions/checkout@v3
+
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+
+    - name: Run Unit Tests
+      run: |
+        node tests/unit/test-time-validation.js
+        node tests/unit/test-time-persistence.js
+        # ... (all unit tests)
+
+    - name: Run Performance Tests
+      run: |
+        node tests/performance/test-weekday-performance.js
+
+    - name: Verify Implementation
+      run: |
+        node verify-implementation.js
+
+    - name: Check Code Quality
+      run: |
+        # HTML file validation
+        grep -q "<!DOCTYPE html>" index.html
+        # CSS/JS file existence checks
 ```
 
 ### GitLab CI Example
 
 ```yaml
 test:
-  image: node:14
+  image: node:20
   script:
-    - npm install
     - node run-tests.js
+    - npm run test:outlook
 ```
 
 ### Jenkins Example
@@ -289,8 +406,8 @@ pipeline {
     stages {
         stage('Test') {
             steps {
-                sh 'npm install'
                 sh 'node run-tests.js'
+                sh 'npm run test:outlook'
             }
         }
     }
@@ -307,6 +424,24 @@ pipeline {
 6. **Exit with Status Code**: Return 0 for success, 1 for failure
 
 ## Test Helpers and Utilities
+
+### Property-Based Testing (PBT)
+
+Property-Based Testing generates random inputs to test properties that should always hold true, rather than testing specific examples.
+
+**PBT Test Files:**
+- `calendar-importer.pbt.test.ts` - Import functionality with random date ranges
+- `calendar-sync-ui.pbt.test.ts` - UI state management with random events
+- `event-parser.pbt.test.ts` - Parser robustness with random API responses
+- `event-serializer.pbt.test.ts` - Serialization round-trip properties
+- `event-printer.pbt.test.ts` - Formatting with random event data
+- `error-handling.pbt.test.ts` - Error scenarios with random inputs
+
+**Benefits of PBT:**
+- Finds edge cases that manual testing might miss
+- Tests invariants and properties rather than specific examples
+- Increases confidence in code robustness
+- Documents expected behavior through properties
 
 ### MockLocalStorage
 
@@ -353,10 +488,11 @@ assertTimeWithinRange(actualTime, expectedTime, tolerance);
 ### Tests Not Running
 
 **Problem**: Tests fail to execute
-**Solution**: 
-- Ensure Node.js is installed: `node --version`
+**Solution**:
+- Ensure Node.js is installed (v18.0.0+ required): `node --version`
 - Check file paths are correct
 - Verify test files exist in the `tests/` directory
+- For TypeScript tests, ensure dependencies are installed: `npm install`
 
 ### Timeout Errors
 
@@ -379,9 +515,10 @@ assertTimeWithinRange(actualTime, expectedTime, tolerance);
 **Problem**: Tests pass locally but fail in CI/CD
 **Solution**:
 - Check environment variables are set correctly
-- Verify Node.js version matches
+- Verify Node.js version (v20.x, v22.x, v24.x, v25.x supported)
 - Check for file system permission issues
 - Review CI/CD logs for specific errors
+- Ensure TypeScript tests are included: `npm run test:outlook`
 
 ## Best Practices
 
@@ -425,8 +562,15 @@ For issues or suggestions regarding the test suite:
 
 ## Version History
 
-- **v1.0** (Current): Initial comprehensive test suite with unit, integration, and performance tests
-  - 50+ test cases
+- **v2.0** (Current): Enhanced test suite with Outlook Calendar Sync
+  - TypeScript test infrastructure (Vitest/Jest)
+  - Property-Based Testing (PBT) for robustness
+  - Outlook Calendar Sync tests (unit, integration, PBT)
+  - Multi-version Node.js support (v20.x - v25.x)
+  - Updated CI/CD workflows
+
+- **v1.0**: Initial comprehensive test suite with unit, integration, and performance tests
+  - 50+ JavaScript test cases
   - Category-based test organization
   - Detailed reporting and CI/CD support
   - Performance benchmarking
