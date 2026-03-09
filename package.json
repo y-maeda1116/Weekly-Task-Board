@@ -14,7 +14,12 @@
     "test:weekday": "node test-weekday-functionality.js && node test-weekday-performance.js",
     "test:category": "node test-category-functionality.js",
     "test:all": "node test-time-validation.js && node test-time-persistence.js && node test-statistics-engine.js && node test-completion-rate.js && node test-recurrence-engine.js && node test-recurring-persistence.js && node test-template-functionality.js && node test-weekday-functionality.js && node test-category-functionality.js && node test-time-overrun-visual.js && node test-time-comparison.js && node test-export-import-time.js && node test-migration-functionality.js && node test-comprehensive-unit.js && node test-integration-task13.js && node test-weekday-performance.js",
-    "verify": "node verify-implementation.js"
+    "verify": "node verify-implementation.js",
+    "test:outlook": "jest --testPathPattern=outlook",
+    "test:outlook:watch": "jest --testPathPattern=outlook --watch",
+    "test:outlook:coverage": "jest --testPathPattern=outlook --coverage",
+    "build": "tsc",
+    "build:watch": "tsc --watch"
   },
   "keywords": [
     "task",
@@ -31,5 +36,13 @@
   },
   "engines": {
     "node": ">=18.0.0"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.0",
+    "@types/node": "^20.0.0",
+    "jest": "^29.5.0",
+    "ts-jest": "^29.1.0",
+    "typescript": "^5.0.0",
+    "vitest": "^0.34.0"
   }
 }
