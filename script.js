@@ -4884,7 +4884,7 @@ function updateCalendarAuthButtons() {
     const googleToken = loadTokenFromLocalStorage('google');
 
     const connectGoogleBtn = document.querySelector('.btn-connect-google');
-    const disconnectGoogleBtn = document.querySelector('#google-auth-status + ' + ' + '.btn-disconnect');
+    const disconnectGoogleBtn = document.querySelector('#google-auth-status + .btn-disconnect');
 
     if (connectGoogleBtn) {
         connectGoogleBtn.disabled = !googleClientId || googleToken !== null;
