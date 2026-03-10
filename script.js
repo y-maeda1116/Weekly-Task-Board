@@ -4726,81 +4726,17 @@ async function handleOAuthCallback() {
 }
 
 /**
- * Google コールバックを処理
+ * Google コールバックを処理 (カレンダー連携パネル削除により無効化)
  */
 async function handleGoogleCallback(code) {
-    const clientId = localStorage.getItem('calendar_client_id_google');
-    const codeVerifier = sessionStorage.getItem('google_code_verifier');
-
-    if (!clientId || !codeVerifier) {
-        throw new Error('認証情報が見つかりません');
-    }
-
-    showAuthStatus('google', 'info', '認証中...');
-
-    const tokenData = await exchangeCodeForTokenGoogle(
-        clientId,
-        'http://localhost:3000/google-callback',
-        code,
-        codeVerifier
-    );
-
-    // トークンを保存
-    const expiresAt = Date.now() + tokenData.expires_in * 1000;
-    localStorage.setItem('calendar_token_google', JSON.stringify({
-        access_token: tokenData.access_token,
-        refresh_token: tokenData.refresh_token,
-        expires_at: expiresAt,
-        provider: 'google'
-    }));
-
-    showAuthStatus('google', 'authenticated', '✅ Google Calendar に接続しました！');
-
-    // Google 同期ボタンを有効化
-    const googleSyncBtn = document.getElementById('google-sync-btn');
-    if (googleSyncBtn) googleSyncBtn.style.display = 'inline-block';
-
-    // モタン状態を更新
-    updateCalendarAuthButtons();
+    // カレンダー連携パネルは削除されたため、何もしない
 }
 
 /**
- * Outlook コールバックを処理
+ * Outlook コールバックを処理 (カレンダー連携パネル削除により無効化)
  */
 async function handleOutlookCallback(code) {
-    const clientId = localStorage.getItem('calendar_client_id_outlook');
-    const codeVerifier = sessionStorage.getItem('outlook_code_verifier');
-
-    if (!clientId || !codeVerifier) {
-        throw new Error('認証情報が見つかりません');
-    }
-
-    showAuthStatus('outlook', 'info', '認証中...');
-
-    const tokenData = await exchangeCodeForTokenOutlook(
-        clientId,
-        'http://localhost:3000/outlook-callback',
-        code,
-        codeVerifier
-    );
-
-    // トークンを保存
-    const expiresAt = Date.now() + tokenData.expires_in * 1000;
-    localStorage.setItem('calendar_token_outlook', JSON.stringify({
-        access_token: tokenData.access_token,
-        refresh_token: tokenData.refresh_token,
-        expires_at: expiresAt,
-        provider: 'outlook'
-    }));
-
-    showAuthStatus('outlook', 'authenticated', '✅ Outlook Calendar に接続しました！');
-
-    // Outlook 同期ボタンを有効化
-    const outlookSyncBtn = document.getElementById('outlook-sync-btn');
-    if (outlookSyncBtn) outlookSyncBtn.style.display = 'inline-block';
-
-    // ボタン状態を更新
-    updateCalendarAuthButtons();
+    // カレンダー連携パネルは削除されたため、何もしない
 }
 
 /**
@@ -4838,83 +4774,17 @@ function disconnectOutlookCalendar() {
 }
 
 /**
- * 認証状態を UI に表示
+ * 認証状態を UI に表示 (カレンダー連携パネル削除により無効化)
  */
 function showAuthStatus(provider, type, message) {
-    if (provider === 'all') {
-        // 両方のステータスを更新
-        showAuthStatus('google', type, message);
-        showAuthStatus('outlook', type, message);
-        return;
-    }
-
-    const statusEl = document.getElementById(`${provider}-auth-status`);
-    if (!statusEl) return;
-
-    // クラスをクリア
-    statusEl.className = 'auth-status';
-
-    // ステータスに応じてメッセージを更新
-    if (type === 'not-configured') {
-        statusEl.classList.add('not-configured');
-        statusEl.innerHTML = '⚪ 未設定';
-    } else if (type === 'configured') {
-        statusEl.classList.add('configured');
-        statusEl.innerHTML = '✅ 設定済み';
-    } else if (type === 'authenticated') {
-        statusEl.classList.add('authenticated');
-        statusEl.innerHTML = message;
-    } else if (type === 'info') {
-        statusEl.style.backgroundColor = '#d1ecf1';
-        statusEl.style.color = '#0c5460';
-        statusEl.textContent = message;
-    } else if (type === 'error') {
-        statusEl.style.backgroundColor = '#f8d7da';
-        statusEl.style.color = '#721c24';
-        statusEl.textContent = message;
-    }
+    // カレンダー連携パネルは削除されたため、何もしない
 }
 
 /**
- * カレンダー認証ボタンの状態を更新
+ * カレンダー認証ボタンの状態を更新 (カレンダー連携パネル削除により無効化)
  */
 function updateCalendarAuthButtons() {
-    // Google
-    const googleClientId = localStorage.getItem('calendar_client_id_google');
-    const googleToken = loadTokenFromLocalStorage('google');
-
-    const connectGoogleBtn = document.querySelector('.btn-connect-google');
-    const disconnectGoogleBtn = document.querySelector('#google-auth-status + .btn-disconnect');
-
-    if (connectGoogleBtn) {
-        connectGoogleBtn.disabled = !googleClientId || googleToken !== null;
-    }
-
-    if (googleToken) {
-        showAuthStatus('google', 'authenticated', '✅ 接続済み');
-    } else if (googleClientId) {
-        showAuthStatus('google', 'configured', '✅ 設定済み');
-    } else {
-        showAuthStatus('google', 'not-configured', '⚪ 未設定');
-    }
-
-    // Outlook
-    const outlookClientId = localStorage.getItem('calendar_client_id_outlook');
-    const outlookToken = loadTokenFromLocalStorage('outlook');
-
-    const connectOutlookBtn = document.querySelector('.btn-connect-outlook');
-
-    if (connectOutlookBtn) {
-        connectOutlookBtn.disabled = !outlookClientId || outlookToken !== null;
-    }
-
-    if (outlookToken) {
-        showAuthStatus('outlook', 'authenticated', '✅ 接続済み');
-    } else if (outlookClientId) {
-        showAuthStatus('outlook', 'configured', '✅ 設定済み');
-    } else {
-        showAuthStatus('outlook', 'not-configured', '⚪ 未設定');
-    }
+    // カレンダー連携パネルは削除されたため、何もしない
 }
 
 /**
