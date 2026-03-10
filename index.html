@@ -71,11 +71,11 @@
 
             <!-- グループ4: ユーティリティ -->
             <div id="header-group-utility">
-                <!-- TODO: Outlook同期機能は実装済みですが、Azure AD設定が必要なため一時的に非表示にしています。
-                     後で有効にする場合は、以下のボタンのコメントを外してください。
-                     必要な設定: Azure Portal でアプリケーション登録 → Client ID を script.js に設定
-                -->
-                <!-- <button id="outlook-sync-btn" title="Outlook同期">📅</button> -->
+                <button id="calendar-settings-btn" title="カレンダー設定">⚙️ カレンダー設定</button>
+                <!-- Google Calendar 同期ボタン（認証後有効化） -->
+                <button id="google-sync-btn" title="Google同期" style="display: none;">📆</button>
+                <!-- Outlook Calendar 同期ボタン（認証後有効化） -->
+                <button id="outlook-sync-btn" title="Outlook同期" style="display: none;">📅</button>
                 <button id="statistics-toggle" title="統計">📊</button>
                 <button id="template-toggle" title="テンプレート">📋</button>
                 <button id="theme-toggle" title="テーマ切替">🌙</button>
@@ -313,6 +313,99 @@
         </div>
     </div>
     -->
+    -->
+
+    <!-- Google Calendar同期パネル (一時的に非表示)
+         TODO: Google Calendar同期機能は実装済みですが、Google Cloud Console設定が必要なため一時的に非表示にしています。
+         後で有効にする場合は、以下のコメントを外してください。
+         必要な設定: Google Cloud Console でプロジェクト作成 → OAuth 2.0 クライアントID を .env に設定
+
+    <div id="google-sync-panel" class="google-sync-panel" style="display: none;">
+        <div class="google-sync-header">
+            <h2>📆 Google カレンダー同期</h2>
+            <button id="close-google-sync" class="close-btn">&times;</button>
+        </div>
+        <div id="google-sync-content" class="google-sync-content">
+            <!-- 認証セクション -->
+            <div id="google-auth-section" class="google-section">
+                <h3>ステップ 1: Google Calendar に接続</h3>
+                <button id="google-connect-btn" class="google-btn-primary">🔗 Google Calendar に接続</button>
+                <button id="google-disconnect-btn" class="google-btn-secondary" style="display: none;">🔌 接続を解除</button>
+                <div id="google-auth-status" class="google-status"></div>
+            </div>
+
+            <!-- カレンダー選択セクション -->
+            <div id="google-calendar-section" class="google-section" style="display: none;">
+                <h3>ステップ 2: カレンダーを選択</h3>
+                <div class="google-calendar-select">
+                    <label for="google-calendar-select">カレンダー:</label>
+                    <select id="google-calendar-select">
+                        <option value="primary">プライマリカレンダー</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- 日付範囲セクション -->
+            <div id="google-date-section" class="google-section" style="display: none;">
+                <h3>ステップ 3: 日付範囲を選択</h3>
+                <div class="google-date-inputs">
+                    <div class="google-date-group">
+                        <label for="google-start-date">開始日:</label>
+                        <input type="date" id="google-start-date">
+                    </div>
+                    <div class="google-date-group">
+                        <label for="google-end-date">終了日:</label>
+                        <input type="date" id="google-end-date">
+                    </div>
+                </div>
+                <button id="google-fetch-events-btn" class="google-btn-primary">📥 予定を取得</button>
+                <div id="google-fetch-status" class="google-status"></div>
+            </div>
+
+            <!-- イベントリストセクション -->
+            <div id="google-events-section" class="google-section" style="display: none;">
+                <h3>ステップ 4: 予定を選択</h3>
+                <div class="google-events-toolbar">
+                    <button id="google-select-all-btn" class="google-btn-secondary">すべて選択</button>
+                    <button id="google-deselect-all-btn" class="google-btn-secondary">すべて解除</button>
+                    <span id="google-selected-count" class="google-count">0 件選択</span>
+                </div>
+                <div id="google-events-list" class="google-events-list">
+                    <!-- イベント一覧がここに表示される -->
+                </div>
+            </div>
+
+            <!-- イベント詳細セクション -->
+            <div id="google-event-details-section" class="google-section" style="display: none;">
+                <h3>予定の詳細</h3>
+                <div id="google-event-details" class="google-event-details">
+                    <!-- イベント詳細がここに表示される -->
+                </div>
+            </div>
+
+            <!-- インポートセクション -->
+            <div id="google-import-section" class="google-section" style="display: none;">
+                <h3>ステップ 5: インポート</h3>
+                <button id="google-import-btn" class="google-btn-primary">✅ インポート</button>
+                <div id="google-import-status" class="google-status"></div>
+                <div id="google-import-progress" class="google-progress" style="display: none;">
+                    <div class="google-progress-bar">
+                        <div id="google-progress-fill" class="google-progress-fill"></div>
+                    </div>
+                    <span id="google-progress-text">0%</span>
+                </div>
+            </div>
+
+            <!-- 重複警告セクション -->
+            <div id="google-duplicate-section" class="google-section" style="display: none;">
+                <h3>⚠️ 重複検出</h3>
+                <div id="google-duplicate-list" class="google-duplicate-list">
+                    <!-- 重複イベント一覧がここに表示される -->
+                </div>
+            </div>
+        </div>
+    </div>
+    -->
 
     <!-- タスク追加モーダル -->
     <div id="task-modal" class="modal">
@@ -416,6 +509,188 @@
         </div>
     </div>
 
+    <!-- カレンダー同期設定パネル -->
+    <div id="calendar-settings-panel" class="modal" style="display: none;">
+        <div class="modal-content" style="max-width: 500px;">
+            <span class="close-btn" onclick="closeCalendarSettings()">&times;</span>
+            <h2>📆 カレンダー同期設定</h2>
+            <p style="color: #666; font-size: 0.9em; margin-bottom: 20px;">
+                各カレンダーサービスの Client ID を設定してください。
+                <a href="#" onclick="showSettingsHelp()" style="color: #4a90e2;">設定方法を表示</a>
+            </p>
+
+            <!-- Google Calendar 設定 -->
+            <div class="calendar-provider-settings">
+                <h3>🔵 Google Calendar</h3>
+                <div class="form-group">
+                    <label for="google-client-id">Client ID:</label>
+                    <input type="text" id="google-client-id" placeholder="your-client-id.apps.googleusercontent.com">
+                    <small style="color: #888;">
+                        Google Cloud Console で取得した Client ID を入力してください
+                    </small>
+                </div>
+
+                <div id="google-auth-status" class="auth-status">
+                    <span class="not-configured">⚪ 未設定</span>
+                </div>
+
+                <div class="calendar-auth-buttons">
+                    <button type="button" class="btn-connect-google" onclick="connectGoogleCalendar()" disabled>
+                        🔗 Google Calendar に接続
+                    </button>
+                    <button type="button" class="btn-disconnect" onclick="disconnectGoogleCalendar()" style="display: none;">
+                        🔌 切断
+                    </button>
+                </div>
+            </div>
+
+            <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 20px 0;">
+
+            <!-- Outlook Calendar 設定 -->
+            <div class="calendar-provider-settings">
+                <h3>📅 Outlook Calendar</h3>
+                <div class="form-group">
+                    <label for="outlook-client-id">Client ID:</label>
+                    <input type="text" id="outlook-client-id" placeholder="your-client-id (例: 12345678-1234-1234-1234-123456789012)">
+                    <small style="color: #888;">
+                        Azure Portal で取得した Application (Client) ID を入力してください
+                    </small>
+                </div>
+
+                <div id="outlook-auth-status" class="auth-status">
+                    <span class="not-configured">⚪ 未設定</span>
+                </div>
+
+                <div class="calendar-auth-buttons">
+                    <button type="button" class="btn-connect-outlook" onclick="connectOutlookCalendar()" disabled>
+                        🔗 Outlook Calendar に接続
+                    </button>
+                    <button type="button" class="btn-disconnect" onclick="disconnectOutlookCalendar()" style="display: none;">
+                        🔌 切断
+                    </button>
+                </div>
+            </div>
+
+            <style>
+                .calendar-provider-settings {
+                    margin-bottom: 20px;
+                }
+
+                .form-group {
+                    margin-bottom: 15px;
+                }
+
+                .form-group label {
+                    display: block;
+                    margin-bottom: 5px;
+                    font-weight: 500;
+                }
+
+                .form-group input[type="text"] {
+                    width: 100%;
+                    padding: 10px;
+                    border: 1px solid var(--border-color);
+                    border-radius: 4px;
+                    font-size: 1em;
+                    box-sizing: border-box;
+                }
+
+                .form-group small {
+                    display: block;
+                    margin-top: 5px;
+                }
+
+                .auth-status {
+                    padding: 10px;
+                    border-radius: 4px;
+                    margin-bottom: 10px;
+                }
+
+                .auth-status.not-configured {
+                    background-color: #f0f0f0;
+                    color: #666;
+                }
+
+                .auth-status.configured {
+                    background-color: #d4edda;
+                    color: #155724;
+                }
+
+                .auth-status.authenticated {
+                    background-color: #d1ecf1;
+                    color: #0c5460;
+                }
+
+                [data-theme="dark"] .auth-status.not-configured {
+                    background-color: #2a2a2a;
+                    color: #999;
+                }
+
+                [data-theme="dark"] .auth-status.configured {
+                    background-color: #1e4620;
+                    color: #90ee90;
+                }
+
+                [data-theme="dark"] .auth-status.authenticated {
+                    background-color: #1a3a3a;
+                    color: #87ceeb;
+                }
+
+                .calendar-auth-buttons button {
+                    padding: 10px 16px;
+                    border: none;
+                    border-radius: 4px;
+                    cursor: pointer;
+                    font-size: 0.95em;
+                    transition: all 0.2s ease;
+                }
+
+                .btn-connect-google {
+                    background-color: #4285f4;
+                    color: white;
+                }
+
+                .btn-connect-google:hover:not(:disabled) {
+                    background-color: #3367d6;
+                }
+
+                .btn-connect-google:disabled {
+                    opacity: 0.5;
+                    cursor: not-allowed;
+                }
+
+                .btn-connect-outlook {
+                    background-color: #0078d4;
+                    color: white;
+                }
+
+                .btn-connect-outlook:hover:not(:disabled) {
+                    background-color: #005a9e;
+                }
+
+                .btn-connect-outlook:disabled {
+                    opacity: 0.5;
+                    cursor: not-allowed;
+                }
+
+                .calendar-auth-buttons .btn-disconnect {
+                    background-color: #6c757d;
+                    color: white;
+                    margin-left: 10px;
+                }
+
+                .calendar-auth-buttons .btn-disconnect:hover {
+                    background-color: #5a6268;
+                }
+            </style>
+        </div>
+    </div>
+
+    <!-- カレンダー連携設定（認証情報） -->
+    <!-- このファイルは .gitignore に含まれているため、Git にはコミットされません -->
+    <script src="config.js"></script>
+
+    <!-- メインスクリプト -->
     <script src="script.js"></script>
 </body>
 </html>

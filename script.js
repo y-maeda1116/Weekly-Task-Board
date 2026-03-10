@@ -4597,542 +4597,637 @@ function calculateDailyWorkTimeForDate(targetDate) {
 }
 
 
-// ===== Outlook同期機能の統合 =====
+// ===== カレンダー同期機能（PKCE OAuth 方式）=====
 
-class OutlookSyncManager {
-    constructor() {
-        this.isAuthenticated = false;
-        this.selectedEvents = [];
-        this.allEvents = [];
-        this.userEmail = null;
-        this.userDisplayName = null;
-        
-        // Outlook API 設定
-        // 注: 実際の使用には Azure AD アプリケーション登録が必要
-        this.clientId = 'YOUR_CLIENT_ID'; // Azure AD から取得
-        this.redirectUri = window.location.origin + '/auth-callback';
-        this.scopes = ['Calendars.Read', 'offline_access'];
+/**
+ * PKCE OAuth で Google Calendar に接続
+ */
+async function connectGoogleCalendar() {
+    const clientIdInput = document.getElementById('google-client-id');
+    const clientId = clientIdInput?.value?.trim();
+
+    if (!clientId || clientId === 'your-client-id.apps.googleusercontent.com') {
+        showAuthStatus('google', 'error', 'Client ID を入力してください');
+        return;
     }
 
-    /**
-     * Outlook同期パネルを初期化
-     */
-    initializePanel() {
-        console.log('🔧 Outlook同期パネルを初期化中...');
-        
-        const outlookSyncBtn = document.getElementById('outlook-sync-btn');
-        const closeOutlookSyncBtn = document.getElementById('close-outlook-sync');
-        const outlookConnectBtn = document.getElementById('outlook-connect-btn');
-        const outlookDisconnectBtn = document.getElementById('outlook-disconnect-btn');
-        const outlookFetchEventsBtn = document.getElementById('outlook-fetch-events-btn');
-        const outlookSelectAllBtn = document.getElementById('outlook-select-all-btn');
-        const outlookDeselectAllBtn = document.getElementById('outlook-deselect-all-btn');
-        const outlookImportBtn = document.getElementById('outlook-import-btn');
+    // Client ID を保存
+    localStorage.setItem('calendar_client_id_google', clientId);
 
-        if (!outlookSyncBtn) {
-            console.error('❌ Outlook同期ボタンが見つかりません');
-            return;
+    // PKCE のコード verifier と challenge を生成
+    const codeVerifier = generateCodeVerifier();
+    sessionStorage.setItem('google_code_verifier', codeVerifier);
+
+    const codeChallenge = await generateCodeChallenge(codeVerifier);
+    const state = generateState();
+
+    // state を保存
+    sessionStorage.setItem('oauth_state', state);
+    sessionStorage.setItem('oauth_provider', 'google');
+
+    // OAuth URL を生成して遷移
+    const authUrl = generateGoogleOAuthUrl(
+        clientId,
+        'http://localhost:3000/google-callback',
+        codeChallenge,
+        state
+    );
+
+    window.location.href = authUrl;
+}
+
+/**
+ * PKCE OAuth で Outlook Calendar に接続
+ */
+async function connectOutlookCalendar() {
+    const clientIdInput = document.getElementById('outlook-client-id');
+    const clientId = clientIdInput?.value?.trim();
+
+    if (!clientId || clientId === 'your-client-id' || clientId === 'YOUR_CLIENT_ID') {
+        showAuthStatus('outlook', 'error', 'Client ID を入力してください');
+        return;
+    }
+
+    // Client ID を保存
+    localStorage.setItem('calendar_client_id_outlook', clientId);
+
+    // PKCE のコード verifier と challenge を生成
+    const codeVerifier = generateCodeVerifier();
+    sessionStorage.setItem('outlook_code_verifier', codeVerifier);
+
+    const codeChallenge = await generateCodeChallenge(codeVerifier);
+    const state = generateState();
+
+    // state を保存
+    sessionStorage.setItem('oauth_state', state);
+    sessionStorage.setItem('oauth_provider', 'outlook');
+
+    // OAuth URL を生成して遷移
+    const authUrl = generateOutlookOAuthUrl(
+        clientId,
+        'http://localhost:3000/outlook-callback',
+        codeChallenge,
+        state
+    );
+
+    window.location.href = authUrl;
+}
+
+/**
+ * OAuth コールバックを処理
+ */
+async function handleOAuthCallback() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const code = urlParams.get('code');
+    const state = urlParams.get('state');
+    const error = urlParams.get('error');
+
+    // エラーチェック
+    if (error) {
+        console.error('OAuth エラー:', error);
+        const provider = sessionStorage.getItem('oauth_provider');
+        showAuthStatus(provider, 'error', `認証エラー: ${error}`);
+        clearOAuthSessionStorage();
+        return;
+    }
+
+    // State 検証
+    const savedState = sessionStorage.getItem('oauth_state');
+    if (state !== savedState) {
+        console.error('State 検証失敗');
+        showAuthStatus('all', 'error', 'セッションが無効です。もう一度やり直してください。');
+        clearOAuthSessionStorage();
+        return;
+    }
+
+    const provider = sessionStorage.getItem('oauth_provider');
+
+    try {
+        if (provider === 'google') {
+            await handleGoogleCallback(code);
+        } else if (provider === 'outlook') {
+            await handleOutlookCallback(code);
         }
-
-        console.log('✅ すべての要素が見つかりました');
-
-        // パネルの開閉
-        outlookSyncBtn.addEventListener('click', () => {
-            console.log('📅 Outlook同期ボタンがクリックされました');
-            this.openPanel();
-        });
-        closeOutlookSyncBtn.addEventListener('click', () => this.closePanel());
-
-        // 認証
-        outlookConnectBtn.addEventListener('click', () => this.handleConnect());
-        outlookDisconnectBtn.addEventListener('click', () => this.handleDisconnect());
-
-        // イベント取得
-        outlookFetchEventsBtn.addEventListener('click', () => this.handleFetchEvents());
-
-        // 選択操作
-        outlookSelectAllBtn.addEventListener('click', () => this.selectAllEvents());
-        outlookDeselectAllBtn.addEventListener('click', () => this.deselectAllEvents());
-
-        // インポート
-        outlookImportBtn.addEventListener('click', () => this.handleImport());
-
-        // 日付ピッカーのデフォルト値を設定
-        const today = new Date();
-        const startDate = new Date(today);
-        startDate.setDate(today.getDate() - 7);
-        
-        document.getElementById('outlook-start-date').valueAsDate = startDate;
-        document.getElementById('outlook-end-date').valueAsDate = today;
-        
-        console.log('✅ Outlook同期パネルの初期化が完了しました');
-    }
-
-    /**
-     * パネルを開く
-     */
-    openPanel() {
-        const panel = document.getElementById('outlook-sync-panel');
-        if (panel) {
-            panel.style.display = 'flex';
-            console.log('✅ Outlook同期パネルを開きました');
-        } else {
-            console.error('❌ Outlook同期パネルが見つかりません');
-        }
-    }
-
-    /**
-     * パネルを閉じる
-     */
-    closePanel() {
-        document.getElementById('outlook-sync-panel').style.display = 'none';
-    }
-
-    /**
-     * Outlookに接続
-     */
-    async handleConnect() {
-        try {
-            this.showStatus('outlook-auth-status', 'Outlookに接続中...', 'info');
-            console.log('🔐 OAuth認証フローを開始します');
-            
-            // OAuth 認証 URL を構築
-            const authUrl = this.buildAuthUrl();
-            console.log('🔗 認証URL:', authUrl);
-            
-            // 認証ウィンドウを開く
-            const authWindow = window.open(authUrl, 'outlook-auth', 'width=500,height=600');
-            
-            if (!authWindow) {
-                this.showStatus('outlook-auth-status', 'ポップアップがブロックされています。ブラウザの設定を確認してください。', 'error');
-                return;
-            }
-
-            // 認証完了を待機
-            const result = await this.waitForAuthCompletion(authWindow);
-            
-            if (result.success) {
-                this.isAuthenticated = true;
-                this.userEmail = result.email;
-                this.userDisplayName = result.displayName;
-                this.updateAuthUI();
-                this.showStatus('outlook-auth-status', 
-                    `✅ ${result.displayName} (${result.email}) として接続しました`, 'success');
-                
-                // 日付範囲セクションを表示
-                document.getElementById('outlook-date-section').style.display = 'block';
-                console.log('✅ Outlook認証成功:', result);
-            } else {
-                this.showStatus('outlook-auth-status', '認証がキャンセルされました', 'error');
-            }
-        } catch (error) {
-            console.error('❌ Outlook接続エラー:', error);
-            
-            // エラーメッセージの詳細表示
-            let errorMessage = 'Outlook接続に失敗しました';
-            
-            if (error.message.includes('AADSTS700016')) {
-                errorMessage = '❌ アプリケーション ID が見つかりません。\n\n' +
-                    '【会社アカウントの場合】\n' +
-                    '1. Azure Portal でアプリケーション登録が必要です\n' +
-                    '2. https://portal.azure.com → Azure AD → アプリの登録\n' +
-                    '3. 取得した Client ID を設定してください\n' +
-                    '4. 会社の IT 管理者に承認を依頼してください\n\n' +
-                    '【個人用アカウントの場合】\n' +
-                    '1. outlook.com アカウントで試してください\n' +
-                    '2. 同様に Azure Portal でアプリケーション登録が必要です';
-            } else if (error.message.includes('YOUR_CLIENT_ID')) {
-                errorMessage = '❌ Client ID が設定されていません。\n\n' +
-                    'script.js の OutlookSyncManager コンストラクタで\n' +
-                    'YOUR_CLIENT_ID を Azure AD から取得した ID に置き換えてください。';
-            }
-            
-            this.showStatus('outlook-auth-status', errorMessage, 'error');
-        }
-    }
-
-    /**
-     * OAuth 認証 URL を構築
-     */
-    buildAuthUrl() {
-        const params = new URLSearchParams({
-            client_id: this.clientId,
-            redirect_uri: this.redirectUri,
-            response_type: 'code',
-            scope: this.scopes.join(' '),
-            response_mode: 'query',
-            prompt: 'login'
-        });
-        
-        return `https://login.microsoftonline.com/common/oauth2/v2.0/authorize?${params.toString()}`;
-    }
-
-    /**
-     * 認証完了を待機
-     */
-    waitForAuthCompletion(authWindow) {
-        return new Promise((resolve) => {
-            const checkInterval = setInterval(() => {
-                try {
-                    if (authWindow.closed) {
-                        clearInterval(checkInterval);
-                        // ローカルストレージから認証結果を取得
-                        const authResult = localStorage.getItem('outlook-auth-result');
-                        if (authResult) {
-                            const result = JSON.parse(authResult);
-                            localStorage.removeItem('outlook-auth-result');
-                            resolve(result);
-                        } else {
-                            resolve({ success: false });
-                        }
-                    }
-                } catch (e) {
-                    // クロスオリジンエラーは無視
-                }
-            }, 500);
-
-            // タイムアウト (5分)
-            setTimeout(() => {
-                clearInterval(checkInterval);
-                if (!authWindow.closed) {
-                    authWindow.close();
-                }
-                resolve({ success: false });
-            }, 5 * 60 * 1000);
-        });
-    }
-
-    /**
-     * Outlookから接続を解除
-     */
-    async handleDisconnect() {
-        try {
-            this.isAuthenticated = false;
-            this.selectedEvents = [];
-            this.allEvents = [];
-            this.updateAuthUI();
-            this.showStatus('outlook-auth-status', '接続を解除しました', 'success');
-            
-            // セクションを非表示
-            document.getElementById('outlook-date-section').style.display = 'none';
-            document.getElementById('outlook-events-section').style.display = 'none';
-            document.getElementById('outlook-import-section').style.display = 'none';
-        } catch (error) {
-            this.showStatus('outlook-auth-status', '接続解除に失敗しました: ' + error.message, 'error');
-        }
-    }
-
-    /**
-     * 認証UIを更新
-     */
-    updateAuthUI() {
-        const connectBtn = document.getElementById('outlook-connect-btn');
-        const disconnectBtn = document.getElementById('outlook-disconnect-btn');
-        
-        if (this.isAuthenticated) {
-            connectBtn.style.display = 'none';
-            disconnectBtn.style.display = 'block';
-            disconnectBtn.textContent = `🔌 ${this.userDisplayName} から接続を解除`;
-        } else {
-            connectBtn.style.display = 'block';
-            disconnectBtn.style.display = 'none';
-        }
-    }
-
-    /**
-     * イベントを取得
-     */
-    async handleFetchEvents() {
-        try {
-            const startDate = document.getElementById('outlook-start-date').value;
-            const endDate = document.getElementById('outlook-end-date').value;
-
-            if (!startDate || !endDate) {
-                this.showStatus('outlook-fetch-status', '開始日と終了日を指定してください', 'error');
-                return;
-            }
-
-            if (new Date(startDate) > new Date(endDate)) {
-                this.showStatus('outlook-fetch-status', '開始日は終了日より前である必要があります', 'error');
-                return;
-            }
-
-            this.showStatus('outlook-fetch-status', '予定を取得中...', 'info');
-            console.log(`📅 ${startDate} から ${endDate} の予定を取得中...`);
-
-            // 実装例: Outlook Graph API を使用した予定取得
-            // 実際の実装では、アクセストークンを使用して API を呼び出す
-            const accessToken = localStorage.getItem('outlook-access-token');
-            
-            if (!accessToken) {
-                this.showStatus('outlook-fetch-status', 'アクセストークンが見つかりません。再度接続してください。', 'error');
-                return;
-            }
-
-            // Outlook Graph API エンドポイント
-            const apiUrl = `https://graph.microsoft.com/v1.0/me/calendarview?startDateTime=${startDate}T00:00:00Z&endDateTime=${endDate}T23:59:59Z`;
-            
-            console.log('🔗 API URL:', apiUrl);
-
-            const response = await fetch(apiUrl, {
-                headers: {
-                    'Authorization': `Bearer ${accessToken}`,
-                    'Content-Type': 'application/json'
-                }
-            });
-
-            if (!response.ok) {
-                if (response.status === 401) {
-                    this.showStatus('outlook-fetch-status', 'セッションが期限切れです。再度接続してください。', 'error');
-                    this.isAuthenticated = false;
-                    this.updateAuthUI();
-                    return;
-                }
-                throw new Error(`API エラー: ${response.status}`);
-            }
-
-            const data = await response.json();
-            this.allEvents = data.value || [];
-
-            console.log(`✅ ${this.allEvents.length} 件の予定を取得しました`, this.allEvents);
-
-            this.selectedEvents = [];
-            this.renderEventsList();
-            this.showStatus('outlook-fetch-status', this.allEvents.length + '件の予定を取得しました', 'success');
-            
-            // イベントリストセクションを表示
-            document.getElementById('outlook-events-section').style.display = 'block';
-            document.getElementById('outlook-import-section').style.display = 'block';
-        } catch (error) {
-            console.error('❌ 予定取得エラー:', error);
-            this.showStatus('outlook-fetch-status', '予定の取得に失敗しました: ' + error.message, 'error');
-        }
-    }
-
-    /**
-     * イベントリストをレンダリング
-     */
-    renderEventsList() {
-        const eventsList = document.getElementById('outlook-events-list');
-        eventsList.innerHTML = '';
-
-        if (this.allEvents.length === 0) {
-            eventsList.innerHTML = '<div style="padding: 20px; text-align: center; color: #999;">予定がありません</div>';
-            return;
-        }
-
-        this.allEvents.forEach(event => {
-            const isSelected = this.selectedEvents.some(e => e.id === event.id);
-            const eventItem = document.createElement('div');
-            eventItem.className = 'outlook-event-item';
-            
-            // Outlook API レスポンスの形式に対応
-            const subject = event.subject || event.title || '(タイトルなし)';
-            const startDateTime = event.start ? new Date(event.start.dateTime) : new Date();
-            const endDateTime = event.end ? new Date(event.end.dateTime) : new Date();
-            const startTime = startDateTime.toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' });
-            const endTime = endDateTime.toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' });
-
-            eventItem.innerHTML = `
-                <input type="checkbox" ${isSelected ? 'checked' : ''} data-event-id="${event.id}">
-                <div class="outlook-event-info">
-                    <div class="outlook-event-title">${subject}</div>
-                    <div class="outlook-event-time">${startTime} - ${endTime}</div>
-                </div>
-            `;
-
-            eventItem.querySelector('input').addEventListener('change', (e) => {
-                if (e.target.checked) {
-                    this.selectedEvents.push(event);
-                } else {
-                    this.selectedEvents = this.selectedEvents.filter(e => e.id !== event.id);
-                }
-                this.updateSelectedCount();
-            });
-
-            eventItem.addEventListener('click', (e) => {
-                if (e.target.tagName !== 'INPUT') {
-                    this.showEventDetails(event);
-                }
-            });
-
-            eventsList.appendChild(eventItem);
-        });
-
-        this.updateSelectedCount();
-    }
-
-    /**
-     * 選択数を更新
-     */
-    updateSelectedCount() {
-        const count = this.selectedEvents.length;
-        document.getElementById('outlook-selected-count').textContent = count + '件選択';
-    }
-
-    /**
-     * イベント詳細を表示
-     */
-    showEventDetails(event) {
-        const detailsSection = document.getElementById('outlook-event-details-section');
-        const detailsDiv = document.getElementById('outlook-event-details');
-        
-        // Outlook API レスポンスの形式に対応
-        const startTime = event.start ? new Date(event.start.dateTime).toLocaleString('ja-JP') : 'N/A';
-        const endTime = event.end ? new Date(event.end.dateTime).toLocaleString('ja-JP') : 'N/A';
-        const subject = event.subject || event.title || 'N/A';
-        const bodyPreview = event.bodyPreview || event.description || 'なし';
-        const organizer = event.organizer ? event.organizer.emailAddress.name : 'N/A';
-        const location = event.location ? event.location.displayName : 'なし';
-
-        detailsDiv.innerHTML = `
-            <div class="outlook-event-details-row">
-                <div class="outlook-event-details-label">タイトル:</div>
-                <div class="outlook-event-details-value">${subject}</div>
-            </div>
-            <div class="outlook-event-details-row">
-                <div class="outlook-event-details-label">開始:</div>
-                <div class="outlook-event-details-value">${startTime}</div>
-            </div>
-            <div class="outlook-event-details-row">
-                <div class="outlook-event-details-label">終了:</div>
-                <div class="outlook-event-details-value">${endTime}</div>
-            </div>
-            <div class="outlook-event-details-row">
-                <div class="outlook-event-details-label">場所:</div>
-                <div class="outlook-event-details-value">${location}</div>
-            </div>
-            <div class="outlook-event-details-row">
-                <div class="outlook-event-details-label">主催者:</div>
-                <div class="outlook-event-details-value">${organizer}</div>
-            </div>
-            <div class="outlook-event-details-row">
-                <div class="outlook-event-details-label">説明:</div>
-                <div class="outlook-event-details-value">${bodyPreview}</div>
-            </div>
-        `;
-
-        detailsSection.style.display = 'block';
-    }
-
-    /**
-     * すべてのイベントを選択
-     */
-    selectAllEvents() {
-        this.selectedEvents = [...this.allEvents];
-        this.renderEventsList();
-    }
-
-    /**
-     * すべてのイベントを解除
-     */
-    deselectAllEvents() {
-        this.selectedEvents = [];
-        this.renderEventsList();
-    }
-
-    /**
-     * インポート処理
-     */
-    async handleImport() {
-        try {
-            if (this.selectedEvents.length === 0) {
-                this.showStatus('outlook-import-status', 'インポートするイベントを選択してください', 'error');
-                return;
-            }
-
-            this.showStatus('outlook-import-status', 'インポート中...', 'info');
-            document.getElementById('outlook-import-progress').style.display = 'block';
-            console.log(`📥 ${this.selectedEvents.length} 件のイベントをインポート中...`);
-
-            // インポート処理をシミュレート
-            for (let i = 0; i < this.selectedEvents.length; i++) {
-                const event = this.selectedEvents[i];
-                
-                // Outlook API レスポンスの形式に対応
-                const subject = event.subject || event.title || 'Outlook イベント';
-                const startDateTime = event.start ? new Date(event.start.dateTime) : new Date();
-                const endDateTime = event.end ? new Date(event.end.dateTime) : new Date();
-                const bodyPreview = event.bodyPreview || event.description || '';
-                
-                // 見積時間を計算 (イベント時間から)
-                const durationMinutes = (endDateTime - startDateTime) / (1000 * 60);
-                const estimatedHours = Math.max(0.5, Math.round(durationMinutes / 60 * 2) / 2); // 最小0.5時間
-
-                // イベントをタスクに変換
-                const task = {
-                    id: 'outlook-' + event.id + '-' + Date.now(),
-                    name: subject,
-                    estimated_time: estimatedHours * 60, // 分単位
-                    actual_time: 0,
-                    priority: 'medium',
-                    category: 'meeting', // Outlook イベントはミーティングカテゴリ
-                    assigned_date: formatDate(startDateTime),
-                    due_date: formatDate(endDateTime),
-                    details: bodyPreview,
-                    completed: false,
-                    created_at: new Date().toISOString(),
-                    metadata: {
-                        outlookEventId: event.id,
-                        syncedAt: new Date().toISOString(),
-                        source: 'outlook',
-                        organizer: event.organizer ? event.organizer.emailAddress.name : 'N/A'
-                    }
-                };
-
-                // タスクを保存
-                tasks.push(task);
-                console.log(`✅ タスク作成: ${subject}`);
-
-                // 進捗を更新
-                const progress = Math.round(((i + 1) / this.selectedEvents.length) * 100);
-                document.getElementById('outlook-progress-fill').style.width = progress + '%';
-                document.getElementById('outlook-progress-text').textContent = progress + '%';
-
-                await new Promise(resolve => setTimeout(resolve, 200));
-            }
-
-            // タスクを保存
-            saveTasks(tasks);
-            renderBoard();
-
-            this.showStatus('outlook-import-status', 
-                `✅ ${this.selectedEvents.length} 件のイベントをインポートしました`, 'success');
-            console.log(`✅ インポート完了: ${this.selectedEvents.length} 件`);
-            
-            document.getElementById('outlook-import-progress').style.display = 'none';
-
-            // パネルをリセット
-            setTimeout(() => this.closePanel(), 1500);
-        } catch (error) {
-            console.error('❌ インポートエラー:', error);
-            this.showStatus('outlook-import-status', 'インポートに失敗しました: ' + error.message, 'error');
-            document.getElementById('outlook-import-progress').style.display = 'none';
-        }
-    }
-
-    /**
-     * ステータスメッセージを表示
-     */
-    showStatus(elementId, message, type) {
-        const statusEl = document.getElementById(elementId);
-        statusEl.textContent = message;
-        statusEl.className = 'outlook-status ' + type;
+    } catch (err) {
+        console.error('コールバック処理エラー:', err);
+        showAuthStatus(provider, 'error', `エラー: ${err.message}`);
+    } finally {
+        // URL パラメータをクリア
+        window.history.replaceState({}, document.title, window.location.pathname);
+        clearOAuthSessionStorage();
     }
 }
 
-// Outlook同期マネージャーのインスタンスを作成
-let outlookSyncManager;
+/**
+ * Google コールバックを処理
+ */
+async function handleGoogleCallback(code: string) {
+    const clientId = localStorage.getItem('calendar_client_id_google');
+    const codeVerifier = sessionStorage.getItem('google_code_verifier');
 
-// DOMContentLoaded時にOutlook同期機能を初期化
-// TODO: Outlook同期機能は実装済みですが、Azure AD設定が必要なため一時的に無効にしています。
-// 後で有効にする場合は、以下のコメントを外してください。
-// 必要な設定: Azure Portal でアプリケーション登録 → Client ID を script.js に設定
-/*
+    if (!clientId || !codeVerifier) {
+        throw new Error('認証情報が見つかりません');
+    }
+
+    showAuthStatus('google', 'info', '認証中...');
+
+    const tokenData = await exchangeCodeForTokenGoogle(
+        clientId,
+        'http://localhost:3000/google-callback',
+        code,
+        codeVerifier
+    );
+
+    // トークンを保存
+    const expiresAt = Date.now() + tokenData.expires_in * 1000;
+    localStorage.setItem('calendar_token_google', JSON.stringify({
+        access_token: tokenData.access_token,
+        refresh_token: tokenData.refresh_token,
+        expires_at: expiresAt,
+        provider: 'google'
+    }));
+
+    showAuthStatus('google', 'authenticated', '✅ Google Calendar に接続しました！');
+
+    // Google 同期ボタンを有効化
+    const googleSyncBtn = document.getElementById('google-sync-btn');
+    if (googleSyncBtn) googleSyncBtn.style.display = 'inline-block';
+
+    // モタン状態を更新
+    updateCalendarAuthButtons();
+}
+
+/**
+ * Outlook コールバックを処理
+ */
+async function handleOutlookCallback(code: string) {
+    const clientId = localStorage.getItem('calendar_client_id_outlook');
+    const codeVerifier = sessionStorage.getItem('outlook_code_verifier');
+
+    if (!clientId || !codeVerifier) {
+        throw new Error('認証情報が見つかりません');
+    }
+
+    showAuthStatus('outlook', 'info', '認証中...');
+
+    const tokenData = await exchangeCodeForTokenOutlook(
+        clientId,
+        'http://localhost:3000/outlook-callback',
+        code,
+        codeVerifier
+    );
+
+    // トークンを保存
+    const expiresAt = Date.now() + tokenData.expires_in * 1000;
+    localStorage.setItem('calendar_token_outlook', JSON.stringify({
+        access_token: tokenData.access_token,
+        refresh_token: tokenData.refresh_token,
+        expires_at: expiresAt,
+        provider: 'outlook'
+    }));
+
+    showAuthStatus('outlook', 'authenticated', '✅ Outlook Calendar に接続しました！');
+
+    // Outlook 同期ボタンを有効化
+    const outlookSyncBtn = document.getElementById('outlook-sync-btn');
+    if (outlookSyncBtn) outlookSyncBtn.style.display = 'inline-block';
+
+    // ボタン状態を更新
+    updateCalendarAuthButtons();
+}
+
+/**
+ * Google Calendar を切断
+ */
+function disconnectGoogleCalendar() {
+    localStorage.removeItem('calendar_token_google');
+    localStorage.removeItem('calendar_client_id_google');
+
+    showAuthStatus('google', 'not-configured', '⚪ 未設定');
+
+    // ボタンを無効化
+    updateCalendarAuthButtons();
+
+    // 同期ボタンを非表示
+    const googleSyncBtn = document.getElementById('google-sync-btn');
+    if (googleSyncBtn) googleSyncBtn.style.display = 'none';
+}
+
+/**
+ * Outlook Calendar を切断
+ */
+function disconnectOutlookCalendar() {
+    localStorage.removeItem('calendar_token_outlook');
+    localStorage.removeItem('calendar_client_id_outlook');
+
+    showAuthStatus('outlook', 'not-configured', '⚪ 未設定');
+
+    // ボタンを無効化
+    updateCalendarAuthButtons();
+
+    // 同期ボタンを非表示
+    const outlookSyncBtn = document.getElementById('outlook-sync-btn');
+    if (outlookSyncBtn) outlookSyncBtn.style.display = 'none';
+}
+
+/**
+ * 認証状態を UI に表示
+ */
+function showAuthStatus(provider: 'google' | 'outlook' | 'all', type: 'not-configured' | 'configured' | 'authenticated' | 'info' | 'error', message: string) {
+    if (provider === 'all') {
+        // 両方のステータスを更新
+        showAuthStatus('google', type, message);
+        showAuthStatus('outlook', type, message);
+        return;
+    }
+
+    const statusEl = document.getElementById(`${provider}-auth-status`);
+    if (!statusEl) return;
+
+    // クラスをクリア
+    statusEl.className = 'auth-status';
+
+    // ステータスに応じてメッセージを更新
+    if (type === 'not-configured') {
+        statusEl.classList.add('not-configured');
+        statusEl.innerHTML = '⚪ 未設定';
+    } else if (type === 'configured') {
+        statusEl.classList.add('configured');
+        statusEl.innerHTML = '✅ 設定済み';
+    } else if (type === 'authenticated') {
+        statusEl.classList.add('authenticated');
+        statusEl.innerHTML = message;
+    } else if (type === 'info') {
+        statusEl.style.backgroundColor = '#d1ecf1';
+        statusEl.style.color = '#0c5460';
+        statusEl.textContent = message;
+    } else if (type === 'error') {
+        statusEl.style.backgroundColor = '#f8d7da';
+        statusEl.style.color = '#721c24';
+        statusEl.textContent = message;
+    }
+}
+
+/**
+ * カレンダー認証ボタンの状態を更新
+ */
+function updateCalendarAuthButtons() {
+    // Google
+    const googleClientId = localStorage.getItem('calendar_client_id_google');
+    const googleToken = loadTokenFromLocalStorage('google');
+
+    const connectGoogleBtn = document.querySelector('.btn-connect-google');
+    const disconnectGoogleBtn = document.querySelector('#google-auth-status + ' + ' + '.btn-disconnect');
+
+    if (connectGoogleBtn) {
+        connectGoogleBtn.disabled = !googleClientId || googleToken !== null;
+    }
+
+    if (googleToken) {
+        showAuthStatus('google', 'authenticated', '✅ 接続済み');
+    } else if (googleClientId) {
+        showAuthStatus('google', 'configured', '✅ 設定済み');
+    } else {
+        showAuthStatus('google', 'not-configured', '⚪ 未設定');
+    }
+
+    // Outlook
+    const outlookClientId = localStorage.getItem('calendar_client_id_outlook');
+    const outlookToken = loadTokenFromLocalStorage('outlook');
+
+    const connectOutlookBtn = document.querySelector('.btn-connect-outlook');
+
+    if (connectOutlookBtn) {
+        connectOutlookBtn.disabled = !outlookClientId || outlookToken !== null;
+    }
+
+    if (outlookToken) {
+        showAuthStatus('outlook', 'authenticated', '✅ 接続済み');
+    } else if (outlookClientId) {
+        showAuthStatus('outlook', 'configured', '✅ 設定済み');
+    } else {
+        showAuthStatus('outlook', 'not-configured', '⚪ 未設定');
+    }
+}
+
+/**
+ * LocalStorage からトークンを読み込む
+ */
+function loadTokenFromLocalStorage(provider: 'google' | 'outlook') {
+    const key = `calendar_token_${provider}`;
+    const data = localStorage.getItem(key);
+    if (!data) return null;
+
+    try {
+        const tokenData = JSON.parse(data);
+
+        // トークンの有効期限をチェック
+        if (Date.now() >= tokenData.expires_at) {
+            localStorage.removeItem(key);
+            return null;
+        }
+
+        return tokenData;
+    } catch (error) {
+        console.error('トークン読み込みエラー:', error);
+        localStorage.removeItem(key);
+        return null;
+    }
+}
+
+/**
+ * OAuth セッションストレージをクリア
+ */
+function clearOAuthSessionStorage() {
+    sessionStorage.removeItem('oauth_state');
+    sessionStorage.removeItem('oauth_provider');
+    sessionStorage.removeItem('google_code_verifier');
+    sessionStorage.removeItem('outlook_code_verifier');
+}
+
+/**
+ * カレンダー設定パネルを開く
+ */
+function openCalendarSettings() {
+    document.getElementById('calendar-settings-panel').style.display = 'flex';
+    updateCalendarAuthButtons();
+}
+
+/**
+ * カレンダー設定パネルを閉じる
+ */
+function closeCalendarSettings() {
+    document.getElementById('calendar-settings-panel').style.display = 'none';
+}
+
+// ===== PKCE ユーティリティ関数 =====
+
+/**
+ * SHA-256 ハッシュを生成
+ */
+async function sha256(plain) {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(plain);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+/**
+ * Base64 URL エンコード
+ */
+function base64UrlEncode(str) {
+    return str
+        .replace(/\+/g, '-')
+        .replace(/\//g, '_')
+        .replace(/=+$/, '');
+}
+
+/**
+ * PKCE 用の code verifier を生成
+ */
+function generateCodeVerifier() {
+    const array = new Uint8Array(32);
+    crypto.getRandomValues(array);
+    return base64UrlEncode(
+        Array.from(array, byte => String.fromCharCode(byte)).join('')
+    );
+}
+
+/**
+ * code verifier から code challenge を生成
+ */
+async function generateCodeChallenge(verifier) {
+    const hash = await sha256(verifier);
+    return base64UrlEncode(hash);
+}
+
+/**
+ * PKCE 認証 URL を生成（Google Calendar 用）
+ */
+function generateGoogleOAuthUrl(clientId, redirectUri, codeChallenge, state) {
+  const scopes = [
+    'https://www.googleapis.com/auth/calendar.readonly',
+    'https://www.googleapis.com/auth/calendar.events.readonly'
+  ];
+
+  const authUrl = new URL('https://accounts.google.com/o/oauth2/v2/auth');
+  authUrl.searchParams.append('client_id', clientId);
+  authUrl.searchParams.append('redirect_uri', redirectUri);
+  authUrl.searchParams.append('response_type', 'code');
+  authUrl.searchParams.append('scope', scopes.join(' '));
+  authUrl.searchParams.append('code_challenge', codeChallenge);
+  authUrl.searchParams.append('code_challenge_method', 'S256');
+  authUrl.searchParams.append('state', state);
+  authUrl.searchParams.append('access_type', 'offline');
+  authUrl.searchParams.append('prompt', 'consent');
+
+  return authUrl.toString();
+}
+
+/**
+ * PKCE 認証 URL を生成（Outlook Calendar 用）
+ */
+function generateOutlookOAuthUrl(clientId, redirectUri, codeChallenge, state) {
+  const scopes = [
+    'Calendars.Read',
+    'offline_access'
+  ];
+
+  const authUrl = new URL('https://login.microsoftonline.com/common/oauth2/v2.0/authorize');
+  authUrl.searchParams.append('client_id', clientId);
+  authUrl.searchParams.append('redirect_uri', redirectUri);
+  authUrl.searchParams.append('response_type', 'code');
+  authUrl.searchParams.append('scope', scopes.join(' '));
+  authUrl.searchParams.append('code_challenge', codeChallenge);
+  authUrl.searchParams.append('code_challenge_method', 'S256');
+  authUrl.searchParams.append('state', state);
+  authUrl.searchParams.append('response_mode', 'query');
+
+  return authUrl.toString();
+}
+
+/**
+ * ランダムな state パラメータを生成
+ */
+function generateState() {
+    return base64UrlEncode(
+        Math.random().toString(36).substring(2, 15) +
+        Math.random().toString(36).substring(2, 15)
+    );
+}
+
+/**
+ * PKCE でトークンを取得（Google Calendar 用）
+ */
+async function exchangeCodeForTokenGoogle(clientId, redirectUri, code, codeVerifier) {
+    const response = await fetch('https://oauth2.googleapis.com/token', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: new URLSearchParams({
+            client_id: clientId,
+            code: code,
+            code_verifier: codeVerifier,
+            grant_type: 'authorization_code',
+            redirect_uri: redirectUri,
+        }),
+    });
+
+    if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`トークン取得失敗: ${response.statusText} - ${errorText}`);
+    }
+
+    return await response.json();
+}
+
+/**
+ * PKCE でトークンを取得（Outlook Calendar 用）
+ */
+async function exchangeCodeForTokenOutlook(clientId, redirectUri, code, codeVerifier) {
+    const response = await fetch('https://login.microsoftonline.com/common/oauth2/v2.0/token', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: new URLSearchParams({
+            client_id: clientId,
+            code: code,
+            code_verifier: codeVerifier,
+            grant_type: 'authorization_code',
+            redirect_uri: redirectUri,
+        }),
+    });
+
+    if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`トークン取得失敗: ${response.statusText} - ${errorText}`);
+    }
+
+    return await response.json();
+}
+
+
+// ===== カレンダー設定パネル初期化 =====
+
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('🚀 DOMContentLoaded イベント発火');
-    outlookSyncManager = new OutlookSyncManager();
-    outlookSyncManager.initializePanel();
-    console.log('✅ Outlook同期マネージャーが初期化されました');
+    // カレンダー設定ボタン
+    const calendarSettingsBtn = document.getElementById('calendar-settings-btn');
+    if (calendarSettingsBtn) {
+        calendarSettingsBtn.addEventListener('click', openCalendarSettings);
+    }
+
+    // Client ID 入力フィールド
+    const googleClientIdInput = document.getElementById('google-client-id');
+    const outlookClientIdInput = document.getElementById('outlook-client-id');
+
+    // 保存された Client ID を読み込んで表示
+    const savedGoogleClientId = localStorage.getItem('calendar_client_id_google');
+    const savedOutlookClientId = localStorage.getItem('calendar_client_id_outlook');
+
+    if (googleClientIdInput && savedGoogleClientId) {
+        googleClientIdInput.value = savedGoogleClientId;
+    }
+
+    if (outlookClientIdInput && savedOutlookClientId) {
+        outlookClientIdInput.value = savedOutlookClientId;
+    }
+
+    // Google Client ID 入力イベント
+    if (googleClientIdInput) {
+        googleClientIdInput.addEventListener('input', () => {
+            const clientId = googleClientIdInput.value.trim();
+            const connectBtn = document.querySelector('.btn-connect-google');
+
+            if (connectBtn) {
+                connectBtn.disabled = !clientId || clientId === 'your-client-id.apps.googleusercontent.com';
+            }
+        });
+    }
+
+    // Outlook Client ID 入力イベント
+    if (outlookClientIdInput) {
+        outlookClientIdInput.addEventListener('input', () => {
+            const clientId = outlookClientIdInput.value.trim();
+            const connectBtn = document.querySelector('.btn-connect-outlook');
+
+            if (connectBtn) {
+                connectBtn.disabled = !clientId || clientId === 'YOUR_CLIENT_ID';
+            }
+        });
+    }
+
+    // URL パラメータをチェック（OAuth コールバック）
+    checkOAuthCallback();
+
+    // 保存された認証状態を復元
+    updateCalendarAuthButtons();
+
+    // 同期ボタンの表示状態を更新
+    const googleToken = loadTokenFromLocalStorage('google');
+    const outlookToken = loadTokenFromLocalStorage('outlook');
+
+    const googleSyncBtn = document.getElementById('google-sync-btn');
+    if (googleSyncBtn && googleToken) {
+        googleSyncBtn.style.display = 'inline-block';
+    }
+
+    const outlookSyncBtn = document.getElementById('outlook-sync-btn');
+    if (outlookSyncBtn && outlookToken) {
+        outlookSyncBtn.style.display = 'inline-block';
+    }
 });
-*/
+
+/**
+ * ページ読み込み時に OAuth コールバックをチェック
+ */
+function checkOAuthCallback() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const code = urlParams.get('code');
+    const state = urlParams.get('state');
+
+    if (code && state) {
+        // OAuth コールバック処理
+        handleOAuthCallback();
+    }
+}
+
+
+// ===== カレンダー設定ヘルプ =====
+
+/**
+ * 設定方法のヘルプを表示
+ */
+function showSettingsHelp() {
+    const helpContent = `
+📋 カレンダー同期設定方法
+
+🔵 Google Calendar の設定:
+1. Google Cloud Console (https://console.cloud.google.com) にアクセス
+2. 新しいプロジェクトを作成
+3. 「APIとサービス」→「ライブラリ」で「Google Calendar API」を有効化
+4. 「APIとサービス」→「認証情報」で「OAuth 2.0 クライアントID」を作成
+   - アプリケーションの種類: Webアプリケーション
+   - 承認済みのリダイレクト URI: http://localhost:3000/google-callback
+5. 作成された Client ID をコピーして入力欄に貼り付け
+
+📅 Outlook Calendar の設定:
+1. Azure Portal (https://portal.azure.com) にアクセス
+2.「Azure Active Directory」→「アプリの登録」で「新規登録」
+3. 名前を入力し、リダイレクト URI を追加:
+   - http://localhost:3000/outlook-callback
+4. 作成された「アプリケーション (クライアント) ID」をコピー
+5. 「認証」で「ID トークン」のチェックを外し、「アクセストークン」を使用するよう設定
+6. Client ID を入力欄に貼り付け
+
+⚠️ 注意:
+- Client Secret は不要です（PKCE方式を使用）
+- リダイレクト URI は正確に入力してください
+    `;
+
+    alert(helpContent);
+}
+
+// ===== 古いクラスベース実装は削除済み =====

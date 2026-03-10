@@ -17,6 +17,7 @@ yarn.lock
 .env
 .env.local
 .env.*.local
+config.js
 
 # OS
 Thumbs.db

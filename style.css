@@ -3470,3 +3470,453 @@ input[type="datetime-local"][readonly]:focus {
     background-color: rgba(245, 166, 35, 0.1);
     border-color: #f5a623;
 }
+
+/* ===== Google Calendar同期パネル ===== */
+
+.google-sync-panel {
+    position: fixed;
+    right: 0;
+    top: 0;
+    width: 450px;
+    height: 100vh;
+    background-color: var(--card-background);
+    box-shadow: -2px 0 8px var(--shadow-color);
+    z-index: 2000;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    animation: slideInRight 0.3s ease-out;
+}
+
+.google-sync-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    border-bottom: 1px solid var(--border-color);
+    background-color: var(--background-color);
+}
+
+.google-sync-header h2 {
+    margin: 0;
+    font-size: 1.3em;
+    color: #4285f4; /* Google Blue */
+}
+
+.google-sync-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+}
+
+.google-section {
+    margin-bottom: 25px;
+    padding: 15px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    background-color: var(--background-color);
+}
+
+.google-section h3 {
+    margin: 0 0 15px 0;
+    font-size: 1.1em;
+    color: var(--font-color);
+}
+
+.google-btn-primary,
+.google-btn-secondary {
+    padding: 10px 16px;
+    border: none;
+    border-radius: 4px;
+    font-size: 0.95em;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-weight: 500;
+}
+
+.google-btn-primary {
+    background-color: #4285f4; /* Google Blue */
+    color: white;
+    width: 100%;
+    margin-bottom: 10px;
+}
+
+.google-btn-primary:hover {
+    background-color: #3367d6;
+    box-shadow: 0 2px 6px rgba(66, 133, 244, 0.3);
+}
+
+.google-btn-primary:active {
+    transform: scale(0.98);
+}
+
+.google-btn-secondary {
+    background-color: var(--background-color);
+    color: #4285f4;
+    border: 1px solid #4285f4;
+    margin-right: 8px;
+    margin-bottom: 8px;
+}
+
+.google-btn-secondary:hover {
+    background-color: rgba(66, 133, 244, 0.1);
+}
+
+.google-status {
+    margin-top: 10px;
+    padding: 10px;
+    border-radius: 4px;
+    font-size: 0.9em;
+    display: none;
+}
+
+.google-status.success {
+    display: block;
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.google-status.error {
+    display: block;
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+.google-status.info {
+    display: block;
+    background-color: #d1ecf1;
+    color: #0c5460;
+    border: 1px solid #bee5eb;
+}
+
+[data-theme="dark"] .google-status.success {
+    background-color: #1e4620;
+    color: #90ee90;
+    border-color: #2d5a2d;
+}
+
+[data-theme="dark"] .google-status.error {
+    background-color: #4a2020;
+    color: #ff6b6b;
+    border-color: #6b3030;
+}
+
+[data-theme="dark"] .google-status.info {
+    background-color: #1a3a3a;
+    color: #87ceeb;
+    border-color: #2d5a5a;
+}
+
+.google-calendar-select {
+    margin-bottom: 15px;
+}
+
+.google-calendar-select label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+    font-size: 0.9em;
+}
+
+.google-calendar-select select {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background-color: var(--background-color);
+    color: var(--font-color);
+    box-sizing: border-box;
+}
+
+.google-calendar-select select:focus {
+    outline: none;
+    border-color: #4285f4;
+    box-shadow: 0 0 0 2px rgba(66, 133, 244, 0.1);
+}
+
+.google-date-inputs {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.google-date-group {
+    flex: 1;
+}
+
+.google-date-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+    font-size: 0.9em;
+}
+
+.google-date-group input {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background-color: var(--background-color);
+    color: var(--font-color);
+    box-sizing: border-box;
+}
+
+.google-date-group input:focus {
+    outline: none;
+    border-color: #4285f4;
+    box-shadow: 0 0 0 2px rgba(66, 133, 244, 0.1);
+}
+
+.google-events-toolbar {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+    align-items: center;
+}
+
+.google-count {
+    margin-left: auto;
+    font-size: 0.9em;
+    color: #666;
+}
+
+.google-events-list {
+    max-height: 300px;
+    overflow-y: auto;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background-color: var(--background-color);
+}
+
+.google-event-item {
+    padding: 12px;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.google-event-item:hover {
+    background-color: rgba(66, 133, 244, 0.05);
+}
+
+.google-event-item input[type="checkbox"] {
+    cursor: pointer;
+    width: 18px;
+    height: 18px;
+}
+
+.google-event-info {
+    flex: 1;
+}
+
+.google-event-title {
+    font-weight: 500;
+    margin-bottom: 3px;
+}
+
+.google-event-time {
+    font-size: 0.85em;
+    color: #666;
+}
+
+.google-event-details {
+    background-color: var(--background-color);
+    padding: 15px;
+    border-radius: 4px;
+    border: 1px solid var(--border-color);
+}
+
+.google-event-details-row {
+    margin-bottom: 10px;
+    display: flex;
+    gap: 10px;
+}
+
+.google-event-details-label {
+    font-weight: 500;
+    min-width: 80px;
+    color: #4285f4;
+}
+
+.google-event-details-value {
+    flex: 1;
+    word-break: break-word;
+}
+
+.google-progress {
+    margin-top: 15px;
+}
+
+.google-progress-bar {
+    width: 100%;
+    height: 20px;
+    background-color: var(--background-color);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 8px;
+}
+
+.google-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #4285f4, #34a853);
+    width: 0%;
+    transition: width 0.3s ease;
+}
+
+.google-progress-text {
+    font-size: 0.9em;
+    color: #666;
+}
+
+.google-duplicate-list {
+    max-height: 250px;
+    overflow-y: auto;
+}
+
+.google-duplicate-item {
+    padding: 12px;
+    border: 1px solid #f5a623;
+    border-radius: 4px;
+    margin-bottom: 10px;
+    background-color: rgba(245, 166, 35, 0.05);
+}
+
+.google-duplicate-item-title {
+    font-weight: 500;
+    margin-bottom: 8px;
+}
+
+.google-duplicate-options {
+    display: flex;
+    gap: 8px;
+}
+
+.google-duplicate-options button {
+    flex: 1;
+    padding: 6px 10px;
+    font-size: 0.85em;
+    border: 1px solid var(--border-color);
+    border-radius: 3px;
+    background-color: var(--background-color);
+    color: var(--font-color);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.google-duplicate-options button:hover {
+    background-color: #4285f4;
+    color: white;
+    border-color: #4285f4;
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 768px) {
+    .google-sync-panel {
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .google-date-inputs {
+        flex-direction: column;
+    }
+
+    .google-events-toolbar {
+        flex-wrap: wrap;
+    }
+}
+
+[data-theme="dark"] .google-event-time,
+[data-theme="dark"] .google-progress-text,
+[data-theme="dark"] .google-count {
+    color: #999;
+}
+
+[data-theme="dark"] .google-event-item:hover {
+    background-color: rgba(66, 133, 244, 0.1);
+}
+
+[data-theme="dark"] .google-duplicate-item {
+    background-color: rgba(245, 166, 35, 0.1);
+    border-color: #f5a623;
+}
+
+/* ===== カレンダー設定パネル ===== */
+.calendar-provider-settings {
+    margin-bottom: 20px;
+}
+
+.calendar-provider-settings h3 {
+    margin-bottom: 10px;
+    font-size: 1.1em;
+    color: var(--text-color);
+}
+
+.auth-status {
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 6px;
+    font-size: 0.9em;
+    background-color: var(--bg-secondary);
+}
+
+.auth-status.not-configured {
+    color: #888;
+}
+
+.auth-status.configured {
+    color: #4a90e2;
+}
+
+.auth-status.authenticated {
+    color: #28a745;
+    background-color: rgba(40, 167, 69, 0.1);
+}
+
+.calendar-auth-buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.btn-connect-google,
+.btn-connect-outlook,
+.btn-disconnect {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9em;
+    transition: all 0.2s ease;
+}
+
+.btn-connect-google,
+.btn-connect-outlook {
+    background-color: #4a90e2;
+    color: white;
+}
+
+.btn-connect-google:hover:not(:disabled),
+.btn-connect-outlook:hover:not(:disabled) {
+    background-color: #357abd;
+}
+
+.btn-connect-google:disabled,
+.btn-connect-outlook:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
+.btn-disconnect {
+    background-color: #6c757d;
+    color: white;
+}
+
+.btn-disconnect:hover {
+    background-color: #5a6268;
+}

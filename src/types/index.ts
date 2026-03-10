@@ -83,6 +83,8 @@ export interface Task {
   tags?: string[];              // Task tags
   metadata?: {
     outlookEventId?: string;    // Link to original Outlook event
+    googleEventId?: string;     // Link to original Google event
+    calendarProvider?: 'outlook' | 'google';  // Calendar provider source
     syncedAt?: Date;            // Synchronization timestamp
     syncStatus?: SyncStatus;    // Synchronization status
   };

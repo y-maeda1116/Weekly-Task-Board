@@ -1,5 +1,5 @@
 /**
- * Outlook Calendar Sync - Component Interfaces
+ * Calendar Sync - Component Interfaces
  * Defines all component interfaces for the calendar synchronization feature
  */
 
@@ -13,6 +13,7 @@ import {
   ImportResult,
   UIState
 } from "../types/index";
+import type { GoogleRawEventData, GoogleCalendar } from "../types/google";
 
 /**
  * Outlook Connector Interface
@@ -135,4 +136,28 @@ export interface CalendarSyncUI {
   // Status display
   renderSyncStatus(status: SyncStatus): HTMLElement;
   renderErrorMessage(error: Error): HTMLElement;
+}
+
+/**
+ * Google Connector Interface
+ * Manages OAuth authentication and Google Calendar API communication
+ */
+export interface GoogleConnector {
+  // Authentication
+  initiateOAuthFlow(): Promise<void>;
+  handleOAuthCallback(code: string): Promise<void>;
+  disconnectAccount(): Promise<void>;
+  isAuthenticated(): boolean;
+
+  // Token management
+  getAccessToken(): string | null;
+  refreshAccessToken(): Promise<string>;
+  revokeAccessToken(): Promise<void>;
+
+  // Calendar management
+  getCalendarList(): Promise<GoogleCalendar[]>;
+
+  // Event retrieval
+  getEvents(startDate: Date, endDate: Date, calendarId?: string): Promise<GoogleRawEventData[]>;
+  getEventDetails(eventId: string, calendarId?: string): Promise<GoogleRawEventData>;
 }

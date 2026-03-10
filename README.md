@@ -10,7 +10,9 @@
 - [主な機能](#主な機能)
 - [クイックスタート](#クイックスタート)
 - [使い方](#使い方)
-- [Outlook カレンダー同期機能の有効化](#outlook-カレンダー同期機能の有効化)
+- [カレンダー同期設定](#カレンダー同期設定)
+  - [Outlook カレンダー同期](#outlook-カレンダー同期)
+  - [Google Calendar 同期](#google-calendar-同期)
 - [技術スタック](#技術スタック)
 - [プロジェクト構造](#プロジェクト構造)
 - [テスト](#テスト)
@@ -49,13 +51,16 @@
 - **テンプレート保存**: よく使うタスクをテンプレートとして保存
 - **テンプレート管理**: テンプレートの検索・ソート・削除
 
-### Outlook カレンダー同期機能（実装済み、現在は無効）
-- **OAuth 2.0 認証**: Microsoft アカウントでの安全な認証
-- **イベント取得**: Outlook カレンダーから予定を取得
+### カレンダー同期機能
+**Outlook カレンダー** / **Google Calendar** から予定をインポート
+- **OAuth 2.0 認証**: 各カレンダーサービスでの安全な認証
+- **イベント取得**: カレンダーから予定を取得
 - **イベント選択**: 複数の予定を選択してインポート
-- **自動変換**: Outlook イベントをタスクに自動変換
+- **自動変換**: カレンダーイベントをタスクに自動変換
 - **重複検出**: 既にインポート済みの予定を検出
 - **プロパティベーステスト**: 20個の正確性プロパティで検証
+
+> **注**: カレンダー同期機能を使用するには、各サービスの認証情報設定が必要です。[カレンダー同期設定](#カレンダー同期設定)を参照してください。
 
 ### その他の機能
 - **カテゴリフィルター**: 6種類のカテゴリで分類・フィルター
@@ -390,9 +395,152 @@ Pull Requestも歓迎します。大きな変更の場合は、まずIssueを開
 **最終更新**: 2026年3月4日
 
 
-## Outlook カレンダー同期機能の有効化
+## カレンダー同期設定
 
-Outlook カレンダー同期機能は実装済みですが、Azure AD アプリケーション登録が必要なため、現在は無効になっています。
+カレンダー同期機能を使用するには、各サービスの認証情報を設定する必要があります。認証情報は `config.js` ファイルで管理します。
+
+### 設定ファイルの作成
+
+1. プロジェクトルートに `.env.example` をコピーして `config.js` を作成:
+
+```bash
+# .env.example を参考に config.js を作成
+cp .env.example config.js
+```
+
+2. `config.js` を編集して、各サービスの認証情報を入力します。
+
+### Outlook カレンダー同期
+
+Outlook カレンダー同期機能を使用するには、Azure AD アプリケーション登録が必要です。
+
+#### 前提条件
+
+- Microsoft Azure アカウント
+- Azure Portal へのアクセス権限
+- 会社アカウントの場合は IT 管理者の承認
+
+#### 有効化手順
+
+##### ステップ 1: Azure Portal でアプリケーション登録
+
+1. [Azure Portal](https://portal.azure.com) にアクセス
+2. **Azure AD** → **アプリの登録** → **新規登録** をクリック
+3. アプリケーション情報を入力:
+   - **名前**: `Weekly Task Board` (任意)
+   - **サポートされているアカウントの種類**:
+     - 個人用アカウント: `任意の組織のディレクトリ内のアカウントと個人の Microsoft アカウント`
+     - 会社アカウント: `この組織のディレクトリ内のアカウントのみ`
+   - **リダイレクト URI**: `http://localhost:3000/outlook-callback`
+4. **登録** をクリック
+
+##### ステップ 2: Client ID を設定
+
+1. 登録したアプリケーションを開く
+2. **概要** ページから **アプリケーション (クライアント) ID** をコピー
+3. `config.js` の `OUTLOOK_CONFIG.CLIENT_ID` に貼り付け
+
+##### ステップ 3: 機能を有効化
+
+`index.html` で Outlook 同期パネルのコメントを外します:
+
+```html
+<!-- コメントを外す -->
+<button id="outlook-sync-btn" title="Outlook同期">📅</button>
+```
+
+`script.js` の末尾にある Outlook 同期マネージャーの初期化コードのコメントを外します:
+
+```javascript
+document.addEventListener('DOMContentLoaded', () => {
+    console.log('🚀 DOMContentLoaded イベント発火');
+    outlookSyncManager = new OutlookSyncManager();
+    outlookSyncManager.initializePanel();
+    console.log('✅ Outlook同期マネージャーが初期化されました');
+});
+```
+
+---
+
+### Google Calendar 同期
+
+Google Calendar 同期機能を使用するには、Google Cloud Console で OAuth 2.0 クライアントを作成する必要があります。
+
+#### 前提条件
+
+- Google アカウント
+- [Google Cloud Console](https://console.cloud.google.com/) へのアクセス
+
+#### 有効化手順
+
+詳細な手順は [`docs/GOOGLE_CALENDAR_SETUP.md`](docs/GOOGLE_CALENDAR_SETUP.md) を参照してください。
+
+##### ステップ 1: Google Cloud Console でプロジェクトを作成
+
+1. [Google Cloud Console](https://console.cloud.google.com/) にアクセス
+2. 新しいプロジェクトを作成（例: "Weekly Task Board"）
+3. **APIs & Services** > **Library** から **Google Calendar API** を有効化
+
+##### ステップ 2: OAuth 2.0 クライアントを作成
+
+1. **APIs & Services** > **Credentials** に移動
+2. **Create Credentials** > **OAuth client ID** をクリック
+3. **Web application** を選択
+4. 以下の情報を入力:
+   - **Name**: Weekly Task Board Client
+   - **Authorized JavaScript origins**: `http://localhost:3000`
+   - **Authorized redirect URIs**: `http://localhost:3000/google-callback`
+5. **Create** をクリック
+6. **Client ID** と **Client Secret** をコピー
+
+##### ステップ 3: 認証情報を設定
+
+`config.js` の `GOOGLE_CONFIG` にコピーした認証情報を貼り付けます:
+
+```javascript
+const GOOGLE_CONFIG = {
+  CLIENT_ID: 'your-client-id.apps.googleusercontent.com', // ← 貼り付け
+  CLIENT_SECRET: 'your-client-secret', // ← 貼り付け
+  // ...
+};
+```
+
+##### ステップ 4: 機能を有効化
+
+`index.html` で Google 同期パネルのコメントを外します:
+
+```html
+<!-- コメントを外す -->
+<button id="google-sync-btn" title="Google同期">📆</button>
+
+<!-- Google同期パネルのコメントを外す -->
+<div id="google-sync-panel" class="google-sync-panel">
+    <!-- パネル内容 -->
+</div>
+```
+
+`script.js` の末尾にある Google 同期マネージャーの初期化コードのコメントを外します:
+
+```javascript
+document.addEventListener('DOMContentLoaded', () => {
+    console.log('🚀 Google同期マネージャーを初期化中...');
+    googleSyncManager = new GoogleSyncManager();
+    googleSyncManager.initializePanel();
+    console.log('✅ Google同期マネージャーが初期化されました');
+});
+```
+
+---
+
+### セキュリティ上の注意
+
+- **絶対に `config.js` を Git にコミットしないでください**
+- `.gitignore` に `config.js` が含まれていることを確認してください
+- 本番環境では環境固有のリダイレクト URI を設定してください
+
+---
+
+### トラブルシューティング
 
 ### 前提条件
 

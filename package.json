@@ -18,6 +18,10 @@
     "test:outlook": "jest --testPathPattern=outlook",
     "test:outlook:watch": "jest --testPathPattern=outlook --watch",
     "test:outlook:coverage": "jest --testPathPattern=outlook --coverage",
+    "test:google": "jest --testPathPattern=google",
+    "test:google:watch": "jest --testPathPattern=google --watch",
+    "test:google:coverage": "jest --testPathPattern=google --coverage",
+    "test:calendar": "jest --testPathPattern='(outlook|google)'",
     "build": "tsc",
     "build:watch": "tsc --watch"
   },
