@@ -2081,6 +2081,13 @@ let editingTaskId = null;
 let isRendering = false;
 let selectedDate = null;
 
+// アプリケーションバージョン（キャッシュ対策）
+const APP_VERSION = '1.2.0';
+const BUILD_DATE = '2025-03-10';
+
+// バージョン情報をログ出力（キャッシュ確認用）
+console.log(`%c🚀 アプリケーション読み込み (v${APP_VERSION}, ${BUILD_DATE})`, 'font-size: 12px; color: #666;');
+
 // --- Initial Load ---
 carryOverOldTasks();
 
@@ -5113,6 +5120,7 @@ async function exchangeCodeForTokenOutlook(clientId, redirectUri, code, codeVeri
 // ===== カレンダー設定パネル初期化 =====
 
 document.addEventListener('DOMContentLoaded', () => {
+    console.log(`%c✅ DOM準備完了 (v${APP_VERSION}, ${BUILD_DATE})`, 'font-size: 12px; color: #28a745;');
     // カレンダー設定ボタン
     const calendarSettingsBtn = document.getElementById('calendar-settings-btn');
     if (calendarSettingsBtn) {
@@ -5181,6 +5189,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // PWA を初期化
     initPWA();
+
+    console.log(`%c✨ 初期化完了 (v${APP_VERSION}, ${BUILD_DATE})`, 'font-size: 12px; color: #4a90e2; font-weight: bold;');
 });
 
 /**
