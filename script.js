@@ -5178,6 +5178,9 @@ document.addEventListener('DOMContentLoaded', () => {
     if (outlookSyncBtn && outlookToken) {
         outlookSyncBtn.style.display = 'inline-block';
     }
+
+    // PWA を初期化
+    initPWA();
 });
 
 /**
@@ -5403,10 +5406,7 @@ function showNotification(message, type = 'info') {
     }, 3000);
 }
 
-// DOMContentLoaded で PWA を初期化
-document.addEventListener('DOMContentLoaded', () => {
-    initPWA();
-});
+// PWA は上記 DOMContentLoaded リスナー内で初期化済み
 
 
 // ===== 古いクラスベース実装は削除済み =====
