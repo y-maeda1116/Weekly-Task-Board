@@ -4920,7 +4920,7 @@ function updateCalendarAuthButtons() {
 /**
  * LocalStorage からトークンを読み込む
  */
-function loadTokenFromLocalStorage(provider: 'google' | 'outlook') {
+function loadTokenFromLocalStorage(provider) {
     const key = `calendar_token_${provider}`;
     const data = localStorage.getItem(key);
     if (!data) return null;

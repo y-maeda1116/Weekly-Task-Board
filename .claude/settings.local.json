@@ -3,7 +3,8 @@
     "allow": [
       "Bash(git push:*)",
       "Bash(ls:*)",
-      "Bash(\"C:\\\\work\\\\git\\\\Weekly-Task-Board\\\\manifest.json\":*)"
+      "Bash(\"C:\\\\work\\\\git\\\\Weekly-Task-Board\\\\manifest.json\":*)",
+      "Bash(node:*)"
     ]
   }
 }
