@@ -248,29 +248,14 @@ function executeMigrations(tasksData) {
 }
 
 /**
- * Load tasks from localStorage, adding sample data if it's empty.
+ * Load tasks from localStorage.
  * @returns {object[]}
  */
 function loadTasks() {
     const tasksJson = localStorage.getItem(TASKS_STORAGE_KEY);
     let tasksData = [];
-    
-    if (!tasksJson || JSON.parse(tasksJson).length === 0) {
-        // LocalStorageが空の場合、現在の週に表示されるサンプルタスクを生成
-        const today = new Date();
-        const monday = getMonday(today);
 
-        // 今週の月曜日から水曜日の日付を取得
-        const mondayStr = formatDate(monday);
-        const tuesday = new Date(monday);
-        tuesday.setDate(monday.getDate() + 1);
-        const tuesdayStr = formatDate(tuesday);
-        const wednesday = new Date(monday);
-        wednesday.setDate(monday.getDate() + 2);
-        const wednesdayStr = formatDate(wednesday);
-
-        tasksData = [];
-    } else {
+    if (tasksJson) {
         tasksData = JSON.parse(tasksJson);
         
         // マイグレーション実行

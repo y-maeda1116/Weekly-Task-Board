@@ -71,11 +71,6 @@
 
             <!-- グループ4: ユーティリティ -->
             <div id="header-group-utility">
-                <button id="calendar-settings-btn" title="カレンダー設定">⚙️ カレンダー設定</button>
-                <!-- Google Calendar 同期ボタン（認証後有効化） -->
-                <button id="google-sync-btn" title="Google同期" style="display: none;">📆</button>
-                <!-- Outlook Calendar 同期ボタン（認証後有効化） -->
-                <button id="outlook-sync-btn" title="Outlook同期" style="display: none;">📅</button>
                 <button id="statistics-toggle" title="統計">📊</button>
                 <button id="template-toggle" title="テンプレート">📋</button>
                 <button id="theme-toggle" title="テーマ切替">🌙</button>
@@ -332,70 +327,6 @@
                     <button type="button" id="save-as-template-btn" style="display: none;">💾 テンプレートとして保存</button>
                 </div>
             </form>
-        </div>
-    </div>
-
-    <!-- カレンダー同期設定パネル -->
-    <div id="calendar-settings-panel" class="modal" style="display: none;">
-        <div class="modal-content" style="max-width: 500px;">
-            <span class="close-btn" onclick="closeCalendarSettings()">&times;</span>
-            <h2>📆 カレンダー同期設定</h2>
-            <p style="color: #666; font-size: 0.9em; margin-bottom: 20px;">
-                各カレンダーサービスの Client ID を設定してください。
-                <a href="#" onclick="showSettingsHelp()" style="color: #4a90e2;">設定方法を表示</a>
-            </p>
-
-            <!-- Google Calendar 設定 -->
-            <div class="calendar-provider-settings">
-                <h3>🔵 Google Calendar</h3>
-                <div class="form-group">
-                    <label for="google-client-id">Client ID:</label>
-                    <input type="text" id="google-client-id" placeholder="your-client-id.apps.googleusercontent.com">
-                    <small style="color: #888;">
-                        Google Cloud Console で取得した Client ID を入力してください
-                    </small>
-                </div>
-
-                <div id="google-auth-status" class="auth-status">
-                    <span class="not-configured">⚪ 未設定</span>
-                </div>
-
-                <div class="calendar-auth-buttons">
-                    <button type="button" class="btn-connect-google" onclick="connectGoogleCalendar()" disabled>
-                        🔗 Google Calendar に接続
-                    </button>
-                    <button type="button" class="btn-disconnect" onclick="disconnectGoogleCalendar()" style="display: none;">
-                        🔌 切断
-                    </button>
-                </div>
-            </div>
-
-            <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 20px 0;">
-
-            <!-- Outlook Calendar 設定 -->
-            <div class="calendar-provider-settings">
-                <h3>📅 Outlook Calendar</h3>
-                <div class="form-group">
-                    <label for="outlook-client-id">Client ID:</label>
-                    <input type="text" id="outlook-client-id" placeholder="your-client-id (例: 12345678-1234-1234-1234-123456789012)">
-                    <small style="color: #888;">
-                        Azure Portal で取得した Application (Client) ID を入力してください
-                    </small>
-                </div>
-
-                <div id="outlook-auth-status" class="auth-status">
-                    <span class="not-configured">⚪ 未設定</span>
-                </div>
-
-                <div class="calendar-auth-buttons">
-                    <button type="button" class="btn-connect-outlook" onclick="connectOutlookCalendar()" disabled>
-                        🔗 Outlook Calendar に接続
-                    </button>
-                    <button type="button" class="btn-disconnect" onclick="disconnectOutlookCalendar()" style="display: none;">
-                        🔌 切断
-                    </button>
-                </div>
-            </div>
         </div>
     </div>
 
