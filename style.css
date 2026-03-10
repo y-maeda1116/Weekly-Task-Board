@@ -3920,3 +3920,183 @@ input[type="datetime-local"][readonly]:focus {
 .btn-disconnect:hover {
     background-color: #5a6268;
 }
+
+/* ===== PWA (Progressive Web App) スタイル ===== */
+
+/* インストールボタン */
+.install-btn {
+    padding: 8px 16px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.9em;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
+.install-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.install-btn:active {
+    transform: translateY(0);
+}
+
+/* 更新通知 */
+.update-notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: white;
+    border-radius: 12px;
+    padding: 16px 20px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    z-index: 10000;
+    animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+.update-notification span {
+    color: var(--text-color);
+    font-size: 0.95em;
+}
+
+.update-notification button {
+    padding: 6px 14px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9em;
+    transition: all 0.2s ease;
+}
+
+#update-btn {
+    background-color: #4a90e2;
+    color: white;
+}
+
+#update-btn:hover {
+    background-color: #357abd;
+}
+
+#dismiss-btn {
+    background-color: transparent;
+    color: #888;
+}
+
+#dismiss-btn:hover {
+    background-color: #f0f0f0;
+    color: #666;
+}
+
+/* 一般的な通知 */
+.notification {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: white;
+    border-radius: 10px;
+    padding: 12px 24px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+    z-index: 10000;
+    transition: all 0.3s ease;
+    opacity: 0;
+}
+
+.notification.show {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+}
+
+.notification-success {
+    border-left: 4px solid #28a745;
+}
+
+.notification-warning {
+    border-left: 4px solid #ffc107;
+}
+
+.notification-error {
+    border-left: 4px solid #dc3545;
+}
+
+.notification-info {
+    border-left: 4px solid #4a90e2;
+}
+
+/* ダークモード対応 */
+[data-theme="dark"] .update-notification,
+[data-theme="dark"] .notification {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+}
+
+[data-theme="dark"] .update-notification span,
+[data-theme="dark"] .notification {
+    color: var(--text-color);
+}
+
+[data-theme="dark"] #dismiss-btn {
+    color: #aaa;
+}
+
+[data-theme="dark"] #dismiss-btn:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* オフラインインジケーター */
+.offline-indicator {
+    position: fixed;
+    bottom: 10px;
+    left: 10px;
+    background: rgba(220, 53, 69, 0.9);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 0.85em;
+    z-index: 9999;
+    display: none;
+}
+
+.offline-indicator.show {
+    display: block;
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 768px) {
+    .update-notification {
+        top: 10px;
+        right: 10px;
+        left: 10px;
+        padding: 12px 16px;
+    }
+
+    .notification {
+        bottom: 10px;
+        left: 10px;
+        right: 10px;
+        transform: translateY(100px);
+    }
+
+    .notification.show {
+        transform: translateY(0);
+    }
+}
+

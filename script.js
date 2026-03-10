@@ -5230,4 +5230,183 @@ function showSettingsHelp() {
     alert(helpContent);
 }
 
+
+// ===== PWA (Progressive Web App) 機能 =====
+
+/**
+ * Service Worker の登録
+ */
+async function registerServiceWorker() {
+    if ('serviceWorker' in navigator) {
+        try {
+            const registration = await navigator.serviceWorker.register('./sw.js', {
+                scope: './'
+            });
+            console.log('✅ Service Worker 登録成功:', registration.scope);
+
+            // Service Worker の更新をチェック
+            registration.addEventListener('updatefound', () => {
+                const newWorker = registration.installing;
+                if (newWorker) {
+                    newWorker.addEventListener('statechange', () => {
+                        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                            // 新しい Service Worker が利用可能
+                            showUpdateNotification();
+                        }
+                    });
+                }
+            });
+
+        } catch (error) {
+            console.error('❌ Service Worker 登録失敗:', error);
+        }
+    }
+}
+
+/**
+ * 更新通知を表示
+ */
+function showUpdateNotification() {
+    const notification = document.createElement('div');
+    notification.className = 'update-notification';
+    notification.innerHTML = `
+        <span>🔄 新しいバージョンが利用可能です</span>
+        <button id="update-btn">更新</button>
+        <button id="dismiss-btn">後で</button>
+    `;
+
+    document.body.appendChild(notification);
+
+    document.getElementById('update-btn').addEventListener('click', () => {
+        // Service Worker にスキップを指示
+        navigator.serviceWorker.getRegistration().then((registration) => {
+            if (registration) {
+                registration.waiting?.postMessage({ type: 'SKIP_WAITING' });
+            }
+        });
+        window.location.reload();
+    });
+
+    document.getElementById('dismiss-btn').addEventListener('click', () => {
+        notification.remove();
+    });
+}
+
+/**
+ * PWA インストールプロンプトを表示
+ */
+let deferredPrompt = null;
+
+function setupInstallPrompt() {
+    window.addEventListener('beforeinstallprompt', (e) => {
+        // デフォルトのプロンプトを防止
+        e.preventDefault();
+        deferredPrompt = e;
+
+        // インストールボタンを表示
+        showInstallButton();
+    });
+
+    // インストール完了を検知
+    window.addEventListener('appinstalled', () => {
+        deferredPrompt = null;
+        hideInstallButton();
+        showNotification('🎉 アプリをインストールしました！', 'success');
+    });
+}
+
+/**
+ * インストールボタンを表示
+ */
+function showInstallButton() {
+    // 既存のボタンがあれば削除
+    const existingBtn = document.getElementById('install-app-btn');
+    if (existingBtn) existingBtn.remove();
+
+    const installBtn = document.createElement('button');
+    installBtn.id = 'install-app-btn';
+    installBtn.className = 'install-btn';
+    installBtn.innerHTML = '📱 アプリをインストール';
+    installBtn.title = 'ホーム画面に追加';
+
+    installBtn.addEventListener('click', async () => {
+        if (deferredPrompt) {
+            // インストールプロンプトを表示
+            deferredPrompt.prompt();
+
+            // ユーザーの選択を待機
+            const { outcome } = await deferredPrompt.userChoice;
+
+            console.log(`インストール結果: ${outcome}`);
+            deferredPrompt = null;
+
+            if (outcome === 'accepted') {
+                hideInstallButton();
+            }
+        }
+    });
+
+    // ヘッダーコントロールに追加
+    const headerControls = document.getElementById('header-controls');
+    if (headerControls) {
+        headerControls.appendChild(installBtn);
+    }
+}
+
+/**
+ * インストールボタンを非表示
+ */
+function hideInstallButton() {
+    const installBtn = document.getElementById('install-app-btn');
+    if (installBtn) {
+        installBtn.remove();
+    }
+}
+
+/**
+ * PWA 機能を初期化
+ */
+function initPWA() {
+    // Service Worker 登録
+    registerServiceWorker();
+
+    // インストールプロンプト設定
+    setupInstallPrompt();
+
+    // オンライン/オフライン状態の監視
+    window.addEventListener('online', () => {
+        showNotification('🌐 オンラインに接続しました', 'success');
+    });
+
+    window.addEventListener('offline', () => {
+        showNotification('📡 オフラインです。キャッシュされたデータを表示します', 'warning');
+    });
+}
+
+/**
+ * 通知を表示
+ */
+function showNotification(message, type = 'info') {
+    const notification = document.createElement('div');
+    notification.className = `notification notification-${type}`;
+    notification.textContent = message;
+
+    document.body.appendChild(notification);
+
+    setTimeout(() => {
+        notification.classList.add('show');
+    }, 10);
+
+    setTimeout(() => {
+        notification.classList.remove('show');
+        setTimeout(() => notification.remove(), 300);
+    }, 3000);
+}
+
+// DOMContentLoaded で PWA を初期化
+document.addEventListener('DOMContentLoaded', () => {
+    initPWA();
+});
+
+
 // ===== 古いクラスベース実装は削除済み =====

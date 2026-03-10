@@ -44,3 +44,10 @@ coverage/
 
 # Local development
 .local/
+
+# PWA Service Worker cache
+sw.js.cache
+*.swcache
+
+# PWA Icons (users can add their own)
+# icons/*.png

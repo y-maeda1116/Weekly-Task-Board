@@ -1,31 +1,34 @@
 {
-  "name": "ウィークリータスクボード",
-  "short_name": "タスクボード",
-  "description": "効率的なタスク管理のためのウィークリータスクボード",
+  "name": "Weekly Task Board",
+  "short_name": "TaskBoard",
+  "description": "週間タスクボード - カレンダー同期対応タスク管理アプリ",
   "start_url": "./",
   "display": "standalone",
-  "background_color": "#f7f8fc",
+  "background_color": "#ffffff",
   "theme_color": "#4a90e2",
-  "orientation": "portrait-primary",
+  "orientation": "any",
+  "scope": "./",
   "icons": [
     {
       "src": "favicon.svg",
       "sizes": "any",
       "type": "image/svg+xml",
-      "purpose": "any maskable"
+      "purpose": "any"
     },
     {
-      "src": "favicon.svg",
+      "src": "icons/icon-192x192.svg",
       "sizes": "192x192",
-      "type": "image/svg+xml"
+      "type": "image/svg+xml",
+      "purpose": "any"
     },
     {
-      "src": "favicon.svg",
+      "src": "icons/icon-512x512.svg",
       "sizes": "512x512",
-      "type": "image/svg+xml"
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
     }
   ],
-  "categories": ["productivity", "utilities"],
+  "categories": ["productivity", "tasks"],
   "lang": "ja",
-  "scope": "./"
+  "dir": "ltr"
 }
