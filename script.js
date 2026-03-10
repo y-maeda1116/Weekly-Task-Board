@@ -4728,7 +4728,7 @@ async function handleOAuthCallback() {
 /**
  * Google コールバックを処理
  */
-async function handleGoogleCallback(code: string) {
+async function handleGoogleCallback(code) {
     const clientId = localStorage.getItem('calendar_client_id_google');
     const codeVerifier = sessionStorage.getItem('google_code_verifier');
 
@@ -4767,7 +4767,7 @@ async function handleGoogleCallback(code: string) {
 /**
  * Outlook コールバックを処理
  */
-async function handleOutlookCallback(code: string) {
+async function handleOutlookCallback(code) {
     const clientId = localStorage.getItem('calendar_client_id_outlook');
     const codeVerifier = sessionStorage.getItem('outlook_code_verifier');
 
@@ -4840,7 +4840,7 @@ function disconnectOutlookCalendar() {
 /**
  * 認証状態を UI に表示
  */
-function showAuthStatus(provider: 'google' | 'outlook' | 'all', type: 'not-configured' | 'configured' | 'authenticated' | 'info' | 'error', message: string) {
+function showAuthStatus(provider, type, message) {
     if (provider === 'all') {
         // 両方のステータスを更新
         showAuthStatus('google', type, message);
