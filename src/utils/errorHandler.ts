@@ -141,8 +141,8 @@ export class ErrorHandler {
   }
 
   static handleError(error: unknown, component: string, context?: Record<string, any>): AppError {
-    if (error instanceof AppError) {
-      return error;
+    if (error && typeof error === 'object' && 'code' in error && 'message' in error) {
+      return error as AppError;
     }
 
     const originalError = error instanceof Error ? error : new Error(String(error));

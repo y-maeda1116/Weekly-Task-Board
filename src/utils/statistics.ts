@@ -12,7 +12,7 @@ import type {
 } from '../types';
 import { getCategoryInfo } from './validation';
 import { getMonday, formatDate } from './date';
-import type { TaskCategory } from '../types';
+import { TaskCategory } from '../types';
 
 /**
  * Calculate completion rate for a specific date's week

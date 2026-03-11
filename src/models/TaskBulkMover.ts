@@ -60,7 +60,7 @@ export class TaskBulkMover {
 
       return movedCount;
     } catch (error) {
-      logger.error('Task move error:', error);
+      logger.error('TaskBulkMover', 'Task move error', error as any);
       this.notify('タスクの移動に失敗しました', 'error');
       return 0;
     }
@@ -163,11 +163,11 @@ export class TaskBulkMover {
       this.notifyCallback(message, type);
     } else {
       if (type === 'error') {
-        logger.error(message);
+        logger.error('TaskBulkMover', message);
       } else if (type === 'info') {
-        logger.info(message);
+        logger.info('TaskBulkMover', message);
       } else {
-        logger.success(message);
+        logger.info('TaskBulkMover', message);
       }
     }
   }

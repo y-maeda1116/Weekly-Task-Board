@@ -3,7 +3,7 @@
  * Manages which weekdays are visible/hidden in the task board
  */
 
-import type { Weekday } from '../types';
+import { Weekday } from '../types';
 import type { Settings, WeekdayVisibility } from '../types';
 import { SettingsStorage } from '../utils/storage';
 import { getMonday, formatDate } from '../utils/date';
@@ -23,12 +23,28 @@ export type WeekdayChangeCallback = (dayName: Weekday, visible: boolean) => void
 export class WeekdayManager {
   private dayNames: readonly Weekday[];
   private dayLabels: readonly string[];
-  private weekdaySettings: WeekdayVisibility;
+  private weekdaySettings: WeekdayVisibility = {
+    monday: true,
+    tuesday: true,
+    wednesday: true,
+    thursday: true,
+    friday: true,
+    saturday: true,
+    sunday: true
+  };
   private settings: Settings;
   private changeCallback?: WeekdayChangeCallback;
 
   constructor(settings?: Settings, changeCallback?: WeekdayChangeCallback) {
-    this.dayNames = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+    this.dayNames = [
+      Weekday.MONDAY,
+      Weekday.TUESDAY,
+      Weekday.WEDNESDAY,
+      Weekday.THURSDAY,
+      Weekday.FRIDAY,
+      Weekday.SATURDAY,
+      Weekday.SUNDAY
+    ];
     this.dayLabels = ['月', '火', '水', '木', '金', '土', '日'];
     this.changeCallback = changeCallback;
     this.settings = settings || SettingsStorage.loadSettings();
@@ -71,11 +87,11 @@ export class WeekdayManager {
       this.settings.weekday_visibility = { ...this.weekdaySettings };
       const success = SettingsStorage.saveSettings(this.settings);
       if (!success) {
-        logger.error('Failed to save weekday settings');
+        logger.error('WeekdayManager', 'Failed to save weekday settings');
       }
       return success;
     } catch (error) {
-      logger.error('Failed to save weekday settings:', error);
+      logger.error('WeekdayManager', 'Failed to save weekday settings', error as any);
       return false;
     }
   }
@@ -89,7 +105,7 @@ export class WeekdayManager {
    */
   toggleWeekday(dayName: Weekday, visible: boolean, tasks?: Task[]): number {
     if (!this.dayNames.includes(dayName)) {
-      logger.warn(`Invalid weekday name: ${dayName}`);
+      logger.warn('WeekdayManager', `Invalid weekday name: ${dayName}`);
       return 0;
     }
 
@@ -169,9 +185,9 @@ export class WeekdayManager {
     if (movedCount > 0) {
       const saveSuccess = TaskStorage.saveTasks(tasks);
       if (saveSuccess) {
-        logger.info(`${movedCount} tasks moved to unassigned`);
+        logger.info('WeekdayManager', `${movedCount} tasks moved to unassigned`);
       } else {
-        logger.error('Failed to save tasks after moving to unassigned');
+        logger.error('WeekdayManager', 'Failed to save tasks after moving to unassigned');
       }
     }
 

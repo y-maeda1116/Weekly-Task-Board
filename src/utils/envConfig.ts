@@ -11,27 +11,44 @@
  * 方法3: HTML からグローバル変数として注入する
  */
 
+// ImportMeta型拡張
+interface ImportMetaEnv {
+  VITE_GOOGLE_CLIENT_ID?: string;
+  VITE_GOOGLE_CLIENT_SECRET?: string;
+  VITE_GOOGLE_REDIRECT_URI?: string;
+  VITE_AZURE_CLIENT_ID?: string;
+  VITE_AZURE_REDIRECT_URI?: string;
+  VITE_AZURE_AUTHORITY?: string;
+  VITE_DEV_SERVER_PORT?: string;
+  VITE_API_BASE_URL?: string;
+  [key: string]: string | undefined;
+}
+
+interface ImportMetaWithEnv extends ImportMeta {
+  env?: ImportMetaEnv;
+}
+
 // デフォルト設定（開発用）
 // 本番環境ではビルドプロセスで上書きされます
 const defaultConfig = {
   // Google Calendar API
   google: {
-    clientId: import.meta.env.VITE_GOOGLE_CLIENT_ID || '',
-    clientSecret: import.meta.env.VITE_GOOGLE_CLIENT_SECRET || '',
-    redirectUri: import.meta.env.VITE_GOOGLE_REDIRECT_URI || 'http://localhost:3000/google-callback',
+    clientId: (import.meta as ImportMetaWithEnv).env?.VITE_GOOGLE_CLIENT_ID || '',
+    clientSecret: (import.meta as ImportMetaWithEnv).env?.VITE_GOOGLE_CLIENT_SECRET || '',
+    redirectUri: (import.meta as ImportMetaWithEnv).env?.VITE_GOOGLE_REDIRECT_URI || 'http://localhost:3000/google-callback',
   },
 
   // Outlook Calendar API (Azure AD)
   outlook: {
-    clientId: import.meta.env.VITE_AZURE_CLIENT_ID || 'YOUR_CLIENT_ID',
-    redirectUri: import.meta.env.VITE_AZURE_REDIRECT_URI || 'http://localhost:3000/outlook-callback',
-    authority: import.meta.env.VITE_AZURE_AUTHORITY || 'https://login.microsoftonline.com/common/oauth2/v2.0',
+    clientId: (import.meta as ImportMetaWithEnv).env?.VITE_AZURE_CLIENT_ID || 'YOUR_CLIENT_ID',
+    redirectUri: (import.meta as ImportMetaWithEnv).env?.VITE_AZURE_REDIRECT_URI || 'http://localhost:3000/outlook-callback',
+    authority: (import.meta as ImportMetaWithEnv).env?.VITE_AZURE_AUTHORITY || 'https://login.microsoftonline.com/common/oauth2/v2.0',
   },
 
   // 開発サーバー
   server: {
-    port: parseInt(import.meta.env.VITE_DEV_SERVER_PORT || '3000', 10),
-    apiBaseUrl: import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000',
+    port: parseInt((import.meta as ImportMetaWithEnv).env?.VITE_DEV_SERVER_PORT || '3000', 10),
+    apiBaseUrl: (import.meta as ImportMetaWithEnv).env?.VITE_API_BASE_URL || 'http://localhost:3000',
   },
 };
 
@@ -41,8 +58,9 @@ const defaultConfig = {
 export function getEnv(key: string): string | undefined {
   // Vite 環境変数（VITE_プレフィックス付き）
   const viteKey = `VITE_${key}`;
-  if (import.meta.env && viteKey in import.meta.env) {
-    return import.meta.env[viteKey];
+  const meta = import.meta as ImportMetaWithEnv;
+  if (meta.env && viteKey in meta.env) {
+    return meta.env[viteKey];
   }
 
   // グローバル変数（HTMLから注入された場合）

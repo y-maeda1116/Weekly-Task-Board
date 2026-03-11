@@ -11,7 +11,9 @@
       "Bash(./node_modules/.bin/tsc:*)",
       "Bash(mv:*)",
       "Bash(chmod +x:*)",
-      "Bash(./compile-hybrid-DOMInitialization.sh:*)"
+      "Bash(./compile-hybrid-DOMInitialization.sh:*)",
+      "Bash(git:*)",
+      "Bash(npm run:*)"
     ]
   }
 }

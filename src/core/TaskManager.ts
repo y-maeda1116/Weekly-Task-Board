@@ -3,7 +3,8 @@
  * Centralizes all task manipulation operations
  */
 
-import type { Task, TaskCategory, TaskPriority, RecurrencePattern } from '../types';
+import type { Task, RecurrencePattern } from '../types';
+import { TaskCategory, TaskPriority } from '../types';
 import { formatDate, parseDate } from '../utils/date';
 import { validateCategory, validateTaskTimeData } from '../utils/validation';
 import { TASK_CATEGORIES } from '../constants/taskCategories';
@@ -80,11 +81,11 @@ export class TaskManager {
     // Validate time data
     const validationResult = validateTaskTimeData(task);
     if (!validationResult.isValid) {
-      logger.warn('Task validation failed:', validationResult.errors);
+      logger.warn('TaskManager', 'Task validation failed', { errors: validationResult.errors });
     }
 
     if (validationResult.warnings.length > 0) {
-      logger.info('Task validation warnings:', validationResult.warnings);
+      logger.info('TaskManager', 'Task validation warnings', { warnings: validationResult.warnings });
     }
 
     return validationResult.task;
@@ -434,7 +435,12 @@ export class TaskManager {
    */
   sortByPriority(
     tasks: Task[],
-    priorityOrder: TaskPriority[] = ['urgent', 'high', 'medium', 'low']
+    priorityOrder: TaskPriority[] = [
+      TaskPriority.URGENT,
+      TaskPriority.HIGH,
+      TaskPriority.MEDIUM,
+      TaskPriority.LOW
+    ]
   ): Task[] {
     const priorityMap = new Map(priorityOrder.map((p, i) => [p, i]));
 

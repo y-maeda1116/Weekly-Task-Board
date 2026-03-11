@@ -39,13 +39,13 @@ export class RecurrenceEngine {
   generateTaskFromRecurrence(recurringTask: Task, targetDate: Date): Task | null {
     // Validate recurring task
     if (!recurringTask.is_recurring || !recurringTask.recurrence_pattern) {
-      logger.warn(`Task is not a recurring task: ${recurringTask.name}`);
+      logger.warn('RecurrenceEngine', `Task is not a recurring task: ${recurringTask.name}`);
       return null;
     }
 
     // Validate targetDate
     if (!targetDate || !(targetDate instanceof Date) || isNaN(targetDate.getTime())) {
-      logger.error('Invalid targetDate:', targetDate);
+      logger.error('RecurrenceEngine', 'Invalid targetDate', { targetDate: String(targetDate) });
       return null;
     }
 
@@ -205,7 +205,7 @@ export class RecurrenceEngine {
    */
   updateRecurrenceEndDate(recurringTask: Task, newEndDate: string | null): boolean {
     if (!recurringTask.is_recurring) {
-      logger.warn('This task is not a recurring task');
+      logger.warn('RecurrenceEngine', 'This task is not a recurring task');
       return false;
     }
 
@@ -216,12 +216,12 @@ export class RecurrenceEngine {
       today.setHours(0, 0, 0, 0);
 
       if (isNaN(endDate.getTime())) {
-        logger.warn('Invalid end date format:', newEndDate);
+        logger.warn('RecurrenceEngine', 'Invalid end date format', { newEndDate });
         return false;
       }
 
       if (endDate < today) {
-        logger.warn('End date cannot be in the past');
+        logger.warn('RecurrenceEngine', 'End date cannot be in the past');
         return false;
       }
     }
@@ -279,7 +279,7 @@ export class RecurrenceEngine {
           generatedTasks = this.generateMonthlyTasks(recurringTask, startDate, endDate);
           break;
         default:
-          logger.warn(`Unknown recurrence pattern: ${recurringTask.recurrence_pattern}`);
+          logger.warn('RecurrenceEngine', `Unknown recurrence pattern: ${recurringTask.recurrence_pattern}`);
       }
 
       allGeneratedTasks.push(...generatedTasks);
@@ -302,7 +302,10 @@ export class RecurrenceEngine {
    * @returns Pattern info or null if not found
    */
   getPatternInfo(pattern: RecurrencePattern | string): RecurrencePatternInfo | null {
-    return this.RECURRENCE_PATTERNS[pattern] || null;
+    if (!pattern) return null;
+    const patternKey = pattern as RecurrencePattern;
+    if (!patternKey) return null;
+    return this.RECURRENCE_PATTERNS[patternKey] || null;
   }
 
   /**
@@ -310,7 +313,8 @@ export class RecurrenceEngine {
    * @param pattern - The pattern to validate
    * @returns True if pattern is valid
    */
-  isValidPattern(pattern: string): pattern is RecurrencePattern {
+  isValidPattern(pattern: string | null): pattern is RecurrencePattern {
+    if (!pattern) return false;
     const validPatterns: RecurrencePattern[] = ['daily', 'weekly', 'monthly'];
     return validPatterns.includes(pattern as RecurrencePattern);
   }

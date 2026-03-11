@@ -2,7 +2,8 @@
  * Validation utility functions
  */
 
-import type { Task, TaskCategory, TaskValidationResult, BatchValidationResult, TimeOverrunSeverity } from '../types';
+import type { Task, TaskValidationResult, BatchValidationResult, TimeOverrunSeverity } from '../types';
+import { TaskCategory, TaskPriority } from '../types';
 import { TASK_CATEGORIES } from '../constants/taskCategories';
 
 /**

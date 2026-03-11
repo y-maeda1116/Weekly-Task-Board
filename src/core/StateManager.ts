@@ -70,7 +70,7 @@ export class StateManager {
     // Load theme from localStorage
     this.loadTheme();
 
-    logger.info('StateManager initialized with', {
+    logger.info('StateManager', 'Initialized with', {
       tasksCount: this.state.tasks.length,
       theme: this.currentTheme
     });
@@ -121,8 +121,8 @@ export class StateManager {
 
     Object.keys(updates).forEach(key => {
       const k = key as keyof AppState;
-      if (this.state[k] !== updates[k]) {
-        this.state[k] = updates[k]!;
+      if (this.state[k] !== (updates as AppState)[k]) {
+        (this.state[k] as any) = updates[k];
         changed = true;
       }
     });
@@ -197,7 +197,7 @@ export class StateManager {
     const taskIndex = this.state.tasks.findIndex(task => task.id === taskId);
 
     if (taskIndex === -1) {
-      logger.warn(`Task not found: ${taskId}`);
+      logger.warn('StateManager', `Task not found: ${taskId}`);
       return false;
     }
 
@@ -226,7 +226,7 @@ export class StateManager {
     const taskIndex = this.state.tasks.findIndex(task => task.id === taskId);
 
     if (taskIndex === -1) {
-      logger.warn(`Task not found: ${taskId}`);
+      logger.warn('StateManager', `Task not found: ${taskId}`);
       return false;
     }
 
@@ -476,7 +476,10 @@ export class StateManager {
    * @returns Unsubscribe function
    */
   onTasksChange(listener: TasksChangeListener): () => void {
-    return this.on('tasks', listener);
+    const wrappedListener: StateChangeListener = (newState: AppState) => {
+      listener(newState.tasks as Task[], this.state.tasks as Task[]);
+    };
+    return this.on('tasks', wrappedListener);
   }
 
   /**
@@ -485,7 +488,10 @@ export class StateManager {
    * @returns Unsubscribe function
    */
   onSettingsChange(listener: SettingsChangeListener): () => void {
-    return this.on('settings', listener);
+    const wrappedListener: StateChangeListener = (newState: AppState) => {
+      listener(newState.settings as Settings, this.state.settings as Settings);
+    };
+    return this.on('settings', wrappedListener);
   }
 
   /**
@@ -494,7 +500,10 @@ export class StateManager {
    * @returns Unsubscribe function
    */
   onCurrentDateChange(listener: CurrentDateChangeListener): () => void {
-    return this.on('currentDate', listener);
+    const wrappedListener: StateChangeListener = (newState: AppState) => {
+      listener(newState.currentDate as Date, this.state.currentDate as Date);
+    };
+    return this.on('currentDate', wrappedListener);
   }
 
   /**
@@ -503,7 +512,10 @@ export class StateManager {
    * @returns Unsubscribe function
    */
   onCategoryFilterChange(listener: CategoryFilterChangeListener): () => void {
-    return this.on('categoryFilter', listener);
+    const wrappedListener: StateChangeListener = (newState: AppState) => {
+      listener(newState.categoryFilter as TaskCategory | '', this.state.categoryFilter as TaskCategory | '');
+    };
+    return this.on('categoryFilter', wrappedListener);
   }
 
   /**
@@ -512,7 +524,10 @@ export class StateManager {
    * @returns Unsubscribe function
    */
   onThemeChange(listener: ThemeChangeListener): () => void {
-    return this.on('theme', listener);
+    const wrappedListener: StateChangeListener = (newState: AppState) => {
+      listener(this.currentTheme as Theme, this.currentTheme as Theme);
+    };
+    return this.on('theme', wrappedListener);
   }
 
   /**
@@ -521,7 +536,10 @@ export class StateManager {
    * @returns Unsubscribe function
    */
   onSelectedTaskChange(listener: SelectedTaskChangeListener): () => void {
-    return this.on('selectedTaskId', listener);
+    const wrappedListener: StateChangeListener = (newState: AppState) => {
+      listener(newState.selectedTaskId as string | null, this.state.selectedTaskId as string | null);
+    };
+    return this.on('selectedTaskId', wrappedListener);
   }
 
   /**
@@ -534,7 +552,7 @@ export class StateManager {
         try {
           listener(this.state, this.state);
         } catch (error) {
-          logger.error('State listener error:', error);
+          logger.error('StateManager', 'State listener error', error as any);
         }
       });
     }
@@ -555,9 +573,9 @@ export class StateManager {
     if (keyListeners) {
       keyListeners.forEach(listener => {
         try {
-          listener(newValue, oldValue);
+          listener(newValue as AppState, oldValue as AppState);
         } catch (error) {
-          logger.error('State listener error:', error);
+          logger.error('StateManager', 'State listener error', error as any);
         }
       });
     }

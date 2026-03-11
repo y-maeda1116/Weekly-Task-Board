@@ -422,9 +422,9 @@ function initializeDragAndDrop(): void {
   const dayColumns = document.querySelectorAll('.day-column');
 
   dayColumns.forEach(column => {
-    column.addEventListener('dragover', handleDragOver);
-    column.addEventListener('drop', handleDrop);
-    column.addEventListener('dragleave', handleDragLeave);
+    column.addEventListener('dragover', handleDragOver as EventListener);
+    column.addEventListener('drop', handleDrop as EventListener);
+    column.addEventListener('dragleave', handleDragLeave as EventListener);
   });
 
   logger.info('Drag and drop initialized');

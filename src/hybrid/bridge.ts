@@ -4,8 +4,9 @@
  */
 
 // Direct imports to avoid module resolution issues
-import { stateManager } from '../../core/StateManager';
-import { taskManager } from '../../core/TaskManager';
+import { stateManager } from '../core/StateManager';
+import { taskManager } from '../core/TaskManager';
+import { TaskPriority, TaskCategory } from '../types';
 
 // Expose functions to window for use by script.js
 (window as any).HybridBridge = {
@@ -23,8 +24,8 @@ import { taskManager } from '../../core/TaskManager';
     const task = taskManager.createTask({
       name: options.name,
       estimated_time: options.estimated_time,
-      priority: options.priority,
-      category: options.category,
+      priority: options.priority as TaskPriority,
+      category: options.category as TaskCategory,
       date: options.date,
       details: options.details || ''
     });

@@ -198,7 +198,7 @@ export class TemplatePanel {
 
     // Add to tasks
     // Note: This would need to be integrated with the state manager
-    logger.info(`Using template: ${template.name}`);
+    logger.info('TemplatePanel', `Using template: ${template.name}`);
 
     // Increment usage count
     template.usage_count++;
@@ -217,7 +217,7 @@ export class TemplatePanel {
       this.saveTemplates();
       this.filterTemplates();
       this.renderTemplates();
-      logger.info(`Deleted template: ${templateId}`);
+      logger.info('TemplatePanel', `Deleted template: ${templateId}`);
     }
   }
 
@@ -242,7 +242,7 @@ export class TemplatePanel {
     this.filterTemplates();
     this.renderTemplates();
 
-    logger.info(`Created template from task: ${task.name}`);
+    logger.info('TemplatePanel', `Created template from task: ${task.name}`);
   }
 
   /**

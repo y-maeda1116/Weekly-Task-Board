@@ -98,7 +98,7 @@ export function executeMigrations(tasksData: Task[]): Task[] {
 
   // Version 0.0 -> 1.0: Add actual_time field
   if (history.version < '1.0') {
-    logger.info('Running migration: v0.0 -> v1.0 (actual_time field addition)');
+    logger.info('Migration', 'Running migration: v0.0 -> v1.0 (actual_time field addition)');
     migratedData = migrateTasksAddActualTime(migratedData);
 
     // Update migration history
@@ -114,7 +114,7 @@ export function executeMigrations(tasksData: Task[]): Task[] {
 
   // Version 1.0 -> 1.1: Add recurring task fields
   if (history.version < '1.1') {
-    logger.info('Running migration: v1.0 -> v1.1 (recurring task fields addition)');
+    logger.info('Migration', 'Running migration: v1.0 -> v1.1 (recurring task fields addition)');
     migratedData = migrateTasksAddRecurringFields(migratedData);
 
     // Update migration history
@@ -141,13 +141,13 @@ export function loadTasksWithMigrations(): Task[] {
   if (tasksData.length > 0) {
     // Create backup before migration
     const backupKey = MigrationStorage.backupTasksBeforeMigration(tasksData);
-    logger.info(`Created backup before migration: ${backupKey}`);
+    logger.info('Migration', `Created backup before migration: ${backupKey}`);
 
     // Execute migrations
     try {
       tasksData = executeMigrations(tasksData);
     } catch (error) {
-      logger.error('Error during migration execution:', error);
+      logger.error('Migration', 'Error during migration execution', error as any);
       // Fallback to basic migration handling
       tasksData = tasksData.map(task => ({
         ...task,

@@ -2,7 +2,8 @@
  * DOM utility functions for type-safe element access and manipulation
  */
 
-import type { DOMElements, DayColumn, Weekday } from '../types';
+import type { DOMElements, DayColumn } from '../types';
+import { Weekday } from '../types';
 
 /**
  * DOM element cache
@@ -159,7 +160,15 @@ export function clearDOMCache(): void {
  * Get day column elements
  */
 export function getDayColumns(): DayColumn[] {
-  const weekdays: Weekday[] = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+  const weekdays: Weekday[] = [
+    Weekday.MONDAY,
+    Weekday.TUESDAY,
+    Weekday.WEDNESDAY,
+    Weekday.THURSDAY,
+    Weekday.FRIDAY,
+    Weekday.SATURDAY,
+    Weekday.SUNDAY
+  ];
   const dayColumns: DayColumn[] = [];
 
   weekdays.forEach((day, index) => {
@@ -306,5 +315,5 @@ export function querySelectorAll<E extends Element = Element>(
 export function getElementById<E extends Element = Element>(
   id: string
 ): E | null {
-  return document.getElementById<E>(id);
+  return document.getElementById(id) as E | null;
 }

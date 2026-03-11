@@ -5,7 +5,7 @@
 
 import type { DOMElements, DayColumn } from '../types';
 import { getDOMElements } from '../utils/dom';
-import type { Weekday } from '../types';
+import { Weekday } from '../types';
 import { logger } from '../utils/logger';
 
 /**
@@ -131,7 +131,7 @@ export class DOMManager {
       return this.cache.get(id) as T | null;
     }
 
-    const element = document.getElementById<T>(id);
+    const element = document.getElementById(id) as T | null;
     if (element) {
       this.cache.set(id, element);
     }
@@ -179,7 +179,15 @@ export class DOMManager {
    * @returns Array of day column info
    */
   getDayColumns(): DayColumn[] {
-    const weekdays: Weekday[] = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+    const weekdays: Weekday[] = [
+      Weekday.MONDAY,
+      Weekday.TUESDAY,
+      Weekday.WEDNESDAY,
+      Weekday.THURSDAY,
+      Weekday.FRIDAY,
+      Weekday.SATURDAY,
+      Weekday.SUNDAY
+    ];
     const dayColumns: DayColumn[] = [];
 
     weekdays.forEach((day, index) => {

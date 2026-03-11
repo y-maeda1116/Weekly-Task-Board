@@ -174,7 +174,7 @@ export class DashboardComponent {
       this.updateDailyBreakdown(dailyWorkTime);
 
     } catch (error) {
-      logger.error('Dashboard update error:', error);
+      logger.error('DashboardComponent', 'Dashboard update error', error as any);
     }
   }
 

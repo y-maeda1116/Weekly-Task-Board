@@ -2,8 +2,8 @@
  * Type-safe localStorage utility functions
  */
 
+import { StorageKeys } from '../types';
 import type {
-  StorageKeys,
   Settings,
   MigrationHistory,
   Task,

@@ -151,7 +151,7 @@ export class ArchiveComponent {
     // Update UI
     this.renderArchivedTasks();
 
-    logger.info(`Archived task: ${task.name}`);
+    logger.info('ArchiveComponent', `Archived task: ${task.name}`);
   }
 
   /**
@@ -172,7 +172,7 @@ export class ArchiveComponent {
     // Note: This would need to be integrated with state manager
     const regularTask = this.archivedTaskToTask(task);
 
-    logger.info(`Restored task: ${task.name}`);
+    logger.info('ArchiveComponent', `Restored task: ${task.name}`);
 
     // Update UI
     this.renderArchivedTasks();
@@ -191,7 +191,7 @@ export class ArchiveComponent {
    */
   clearArchive(): void {
     if (this.archivedTasks.length === 0) {
-      logger.info('Archive is already empty');
+      logger.info('ArchiveComponent', 'Archive is already empty');
       return;
     }
 
@@ -203,7 +203,7 @@ export class ArchiveComponent {
     TaskStorage.saveArchivedTasks(this.archivedTasks);
     this.renderArchivedTasks();
 
-    logger.info('Cleared archive');
+    logger.info('ArchiveComponent', 'Cleared archive');
   }
 
   /**
@@ -217,7 +217,7 @@ export class ArchiveComponent {
     TaskStorage.saveArchivedTasks(this.archivedTasks);
     this.renderArchivedTasks();
 
-    logger.info(`Deleted archived task: ${taskId}`);
+    logger.info('ArchiveComponent', `Deleted archived task: ${taskId}`);
   }
 
   /**
