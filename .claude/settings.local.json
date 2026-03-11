@@ -4,7 +4,14 @@
       "Bash(git push:*)",
       "Bash(ls:*)",
       "Bash(\"C:\\\\work\\\\git\\\\Weekly-Task-Board\\\\manifest.json\":*)",
-      "Bash(node:*)"
+      "Bash(node:*)",
+      "Bash(wc:*)",
+      "Bash(npx tsc:*)",
+      "Bash(npm install:*)",
+      "Bash(./node_modules/.bin/tsc:*)",
+      "Bash(mv:*)",
+      "Bash(chmod +x:*)",
+      "Bash(./compile-hybrid-DOMInitialization.sh:*)"
     ]
   }
 }
