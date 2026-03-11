@@ -1,5 +1,5 @@
 /**
- * Outlook Calendar Sync - Core Type Definitions
+ * Calendar Sync Type Definitions
  * Defines all data models and enums for the calendar synchronization feature
  */
 
@@ -49,10 +49,10 @@ export interface RecurrenceRule {
 
 /**
  * Event Object
- * Represents an Outlook calendar event
+ * Represents a calendar event (Outlook or Google)
  */
 export interface Event {
-  id: string;                    // Outlook event ID
+  id: string;                    // Event ID
   title: string;                 // Event title
   description: string;           // Event description
   startTime: Date;              // Event start time (UTC)
@@ -68,35 +68,12 @@ export interface Event {
 }
 
 /**
- * Task Object
- * Represents a task in the task board
- */
-export interface Task {
-  id: string;                    // Unique task ID
-  title: string;                 // Task title
-  description: string;           // Task description
-  dueDate: Date;                // Task due date
-  startDate?: Date;             // Task start date
-  endDate?: Date;               // Task end date
-  status: TaskStatus;           // Task status
-  priority?: Priority;          // Task priority
-  tags?: string[];              // Task tags
-  metadata?: {
-    outlookEventId?: string;    // Link to original Outlook event
-    googleEventId?: string;     // Link to original Google event
-    calendarProvider?: 'outlook' | 'google';  // Calendar provider source
-    syncedAt?: Date;            // Synchronization timestamp
-    syncStatus?: SyncStatus;    // Synchronization status
-  };
-}
-
-/**
  * Sync Mapping Object
- * Represents the mapping between Outlook events and tasks
+ * Represents the mapping between calendar events and tasks
  */
 export interface SyncMapping {
   id: string;                    // Mapping ID
-  outlookEventId: string;       // Outlook event ID
+  eventId: string;               // Calendar event ID
   taskId: string;               // Task board task ID
   syncedAt: Date;               // Synchronization timestamp
   syncStatus: SyncStatus;       // Current synchronization status
@@ -105,7 +82,7 @@ export interface SyncMapping {
 
 /**
  * Raw Event Data
- * Represents the raw JSON response from Outlook API
+ * Represents the raw JSON response from calendar API
  */
 export interface RawEventData {
   id?: string;
@@ -144,10 +121,10 @@ export interface RawEventData {
  * Information about a detected duplicate event
  */
 export interface DuplicateInfo {
-  outlookEventId: string;
+  eventId: string;
   taskId: string;
   event: Event;
-  task: Task;
+  task: any;
   syncMapping: SyncMapping;
 }
 
@@ -183,3 +160,9 @@ export interface UIState {
   error?: string;
   successMessage?: string;
 }
+
+// Re-export all types from sub-modules
+export * from './task';
+export * from './storage';
+export * from './dom';
+export * from './app';
