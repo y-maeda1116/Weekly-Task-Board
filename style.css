@@ -4105,3 +4105,203 @@ input[type="datetime-local"][readonly]:focus {
     }
 }
 
+/* ===== Journal Start Button ===== */
+.journal-start-btn {
+  display: block;
+  width: 100%;
+  margin-top: 6px;
+  padding: 4px 8px;
+  border: 1px solid var(--primary-color);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--primary-color);
+  font-size: 0.8em;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+
+.journal-start-btn:hover {
+  background: var(--primary-color);
+  color: #fff;
+}
+
+.journal-start-btn.active {
+  background: #27ae60;
+  border-color: #27ae60;
+  color: #fff;
+  animation: journal-pulse 2s infinite;
+  cursor: default;
+}
+
+@keyframes journal-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+/* ===== Journal Modal ===== */
+.journal-modal-overlay {
+  display: flex;
+  position: fixed;
+  z-index: 10000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  align-items: center;
+  justify-content: center;
+}
+
+.journal-modal {
+  background-color: var(--modal-background);
+  padding: 20px;
+  border: 1px solid var(--border-color);
+  width: 90%;
+  max-width: 420px;
+  border-radius: 8px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.journal-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  font-weight: bold;
+  color: var(--font-color);
+}
+
+.journal-modal-time {
+  font-size: 0.85em;
+  color: #666;
+}
+
+[data-theme="dark"] .journal-modal-time {
+  color: #aaa;
+}
+
+.journal-modal-textarea {
+  width: 100%;
+  height: 80px;
+  padding: 8px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  background-color: var(--card-background);
+  color: var(--font-color);
+  font-family: inherit;
+  font-size: 0.95em;
+  resize: vertical;
+  box-sizing: border-box;
+}
+
+.journal-modal-textarea:focus {
+  outline: 2px solid var(--primary-color);
+  border-color: transparent;
+}
+
+.journal-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.journal-modal-save {
+  padding: 6px 16px;
+  border: none;
+  border-radius: 4px;
+  background: var(--primary-color);
+  color: #fff;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.journal-modal-save:hover {
+  opacity: 0.9;
+}
+
+.journal-modal-skip {
+  padding: 6px 16px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--font-color);
+  cursor: pointer;
+  font-family: inherit;
+}
+
+/* ===== Timeline ===== */
+.journal-timeline-entry {
+  display: flex;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.journal-timeline-time {
+  min-width: 90px;
+  font-size: 0.85em;
+  color: #666;
+  padding-top: 2px;
+}
+
+[data-theme="dark"] .journal-timeline-time {
+  color: #aaa;
+}
+
+.journal-timeline-body {
+  flex: 1;
+}
+
+.journal-timeline-title {
+  font-weight: bold;
+  margin-bottom: 4px;
+  color: var(--font-color);
+}
+
+.journal-timeline-icon {
+  margin-right: 4px;
+}
+
+.journal-timeline-journal {
+  font-size: 0.9em;
+  color: var(--font-color);
+  opacity: 0.8;
+  margin-bottom: 4px;
+  white-space: pre-wrap;
+}
+
+.journal-timeline-nextstep {
+  font-size: 0.9em;
+  color: var(--primary-color);
+  margin-top: 4px;
+}
+
+.journal-timeline-gap {
+  text-align: center;
+  padding: 8px;
+  margin: 4px 0;
+  background: var(--card-background);
+  border-radius: 12px;
+  font-size: 0.85em;
+  font-style: italic;
+  color: #888;
+  border: 1px dashed var(--border-color);
+}
+
+[data-theme="dark"] .journal-timeline-gap {
+  color: #aaa;
+}
+
+.journal-gap-icon {
+  margin-right: 4px;
+}
+
+.journal-timeline-empty {
+  text-align: center;
+  padding: 40px;
+  color: #888;
+  font-style: italic;
+}
+

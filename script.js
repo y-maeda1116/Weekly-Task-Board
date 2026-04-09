@@ -4,6 +4,7 @@ const TASKS_STORAGE_KEY = 'weekly-task-board.tasks';
 const SETTINGS_STORAGE_KEY = 'weekly-task-board.settings';
 const ARCHIVE_STORAGE_KEY = 'weekly-task-board.archive';
 const TEMPLATES_STORAGE_KEY = 'weekly-task-board.templates';
+const JOURNALS_STORAGE_KEY = 'weekly-task-board.journals';
 
 // --- Task Categories Definition ---
 const TASK_CATEGORIES = {
@@ -2144,6 +2145,12 @@ updateDashboard();
 // テンプレート機能の初期化
 initializeTemplatePanel();
 
+// ジャーナル機能の初期化
+if (window.HybridJournalManager) {
+    window.HybridJournalManager.initialize();
+}
+initializeJournalToggle();
+
 // --- Modal Logic ---
 addTaskBtn.addEventListener('click', () => {
     openTaskModal();
@@ -2736,20 +2743,38 @@ function initializeTemplatePanel() {
         // タスク修正/完了チェックボックスのイベントリスナー
         checkbox.addEventListener('click', (e) => {
             e.stopPropagation();
-            task.completed = e.target.checked;
-            
-            if (task.completed) {
-                // 派手な完了アニメーションを実行
+            const newCompleted = e.target.checked;
+
+            if (newCompleted) {
+                // ジャーナル: 未完了エントリがあれば Next Step モーダルを先に表示
+                if (window.HybridJournalManager && window.HybridJournalUI) {
+                    const activeEntry = window.HybridJournalManager.getEntryByTaskId(task.id);
+                    if (activeEntry) {
+                        e.preventDefault();
+                        checkbox.checked = false;
+                        window.HybridJournalUI.showNextStepModal(activeEntry, () => {
+                            task.completed = true;
+                            checkbox.checked = true;
+                            playTaskCompletionAnimation(taskElement, checkbox);
+                            setTimeout(() => {
+                                archiveCompletedTasks();
+                                renderWeek();
+                                updateDashboard();
+                            }, 1800);
+                        });
+                        return;
+                    }
+                }
+
+                task.completed = true;
                 playTaskCompletionAnimation(taskElement, checkbox);
-                
-                // アニメーション完了後にアーカイブ
                 setTimeout(() => {
                     archiveCompletedTasks();
                     renderWeek();
                     updateDashboard();
                 }, 1800);
             } else {
-                // チェック解除時は即座に更新
+                task.completed = false;
                 saveTasks();
                 renderWeek();
                 updateDashboard();
@@ -3008,7 +3033,12 @@ function initializeTemplatePanel() {
         
         // ダッシュボードを更新
         updateDashboard();
-        
+
+        // ジャーナル: タスクカード再描画後に開始ボタンを注入
+        if (window.HybridJournalUI) {
+            window.HybridJournalUI.injectStartButtons();
+        }
+
         isRendering = false;
     }
     document.body.renderWeek = renderWeek;
@@ -4230,6 +4260,22 @@ function updateDailyBreakdown(dailyWorkTime) {
         
         dailyBreakdownEl.appendChild(dailyItem);
     });
+}
+
+// --- Journal / Interstitial Journaling ---
+function initializeJournalToggle() {
+    const journalToggleBtn = document.getElementById('journal-toggle');
+    if (!journalToggleBtn) return;
+
+    journalToggleBtn.addEventListener('click', () => {
+        if (window.HybridJournalUI) {
+            window.HybridJournalUI.openTimeline();
+        }
+    });
+
+    if (window.HybridJournalUI && window.HybridJournalUI.initTimelineControls) {
+        window.HybridJournalUI.initTimelineControls();
+    }
 }
 
 /**

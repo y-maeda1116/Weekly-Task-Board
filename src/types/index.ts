@@ -166,3 +166,4 @@ export * from './task';
 export * from './storage';
 export * from './dom';
 export * from './app';
+export * from './journal';

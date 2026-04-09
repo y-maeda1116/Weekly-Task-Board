@@ -74,6 +74,7 @@
                 <button id="statistics-toggle" title="統計">📊</button>
                 <button id="template-toggle" title="テンプレート">📋</button>
                 <button id="theme-toggle" title="テーマ切替">🌙</button>
+                <button id="journal-toggle" title="ジャーナル">📝</button>
                 <div id="more-menu" style="position: relative; display: inline-block;">
                     <button id="more-menu-btn" title="その他">︙</button>
                     <div id="more-menu-dropdown" style="display: none; position: absolute; right: 0; top: 100%; background: var(--card-background); border: 1px solid var(--border-color); border-radius: 4px; box-shadow: 0 2px 8px var(--shadow-color); z-index: 1000; min-width: 150px;">
@@ -127,6 +128,20 @@
                 </div>
             </div>
         </aside>
+    </div>
+
+    <!-- ジャーナルタイムラインパネル -->
+    <div id="journal-timeline-panel" class="dashboard-panel" style="display: none;">
+        <div class="dashboard-header">
+            <h2>📝 実行ログ</h2>
+            <div id="journal-date-controls">
+                <button id="journal-prev-day">前日</button>
+                <input type="date" id="journal-date-picker" readonly>
+                <button id="journal-next-day">次日</button>
+            </div>
+            <button id="close-journal-timeline" class="close-btn">&times;</button>
+        </div>
+        <div id="journal-timeline-content" class="dashboard-content"></div>
     </div>
 
     <!-- ダッシュボードパネル -->
