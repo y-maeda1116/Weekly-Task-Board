@@ -3,7 +3,7 @@
  * Start buttons, modals, and timeline panel for interstitial journaling
  * Standalone version with no external dependencies
  */
-class HybridLogger {
+class JournalUILogger {
     info(message, ...args) {
         console.log(`[JournalUI] ${message}`, ...args);
     }
@@ -11,7 +11,7 @@ class HybridLogger {
         console.error(`[JournalUI] ${message}`, ...args);
     }
 }
-const logger = new HybridLogger();
+const logger = new JournalUILogger();
 let buttonAbortController = null;
 function getManager() {
     return window.HybridJournalManager;
