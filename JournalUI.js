@@ -11,7 +11,7 @@ class JournalUILogger {
         console.error(`[JournalUI] ${message}`, ...args);
     }
 }
-const logger = new JournalUILogger();
+const journalUILogger = new JournalUILogger();
 let buttonAbortController = null;
 function getManager() {
     return window.HybridJournalManager;
@@ -36,7 +36,7 @@ function injectStartButtons() {
     cleanupStartButtons();
     const manager = getManager();
     if (!manager) {
-        logger.error('HybridJournalManager not available');
+        journalUILogger.error('HybridJournalManager not available');
         return;
     }
     const activeEntry = manager.getActiveEntry();
@@ -68,7 +68,7 @@ function injectStartButtons() {
         }, { signal });
         taskEl.appendChild(btn);
     });
-    logger.info('Start buttons injected');
+    journalUILogger.info('Start buttons injected');
 }
 function handleStartClick(taskId, taskEl) {
     const manager = getManager();
