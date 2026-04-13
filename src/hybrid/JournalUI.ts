@@ -110,7 +110,13 @@ function handleStartClick(taskId: string, taskEl: Element): void {
     }
   }
 
-  const taskName = taskEl.querySelector('.task-name')?.textContent || '不明なタスク';
+  const taskName = (() => {
+    const nameEl = taskEl.querySelector('.task-name');
+    const sigEl = nameEl?.querySelector('.task-signifier');
+    const sigText = sigEl ? sigEl.textContent : '';
+    const fullText = nameEl?.textContent?.trim() || '不明なタスク';
+    return (sigText + fullText).trim();
+  })();
   const entry = manager.createEntry(taskId, taskName) as JournalEntry;
 
   showJournalModal(entry);

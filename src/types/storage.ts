@@ -34,6 +34,7 @@ export interface WeekdayVisibility {
 export interface Settings {
   ideal_daily_minutes: number;
   weekday_visibility: WeekdayVisibility;
+  morningPageEnabled?: boolean;
 }
 
 /**

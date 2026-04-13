@@ -281,7 +281,8 @@ function loadTasks() {
         actual_time: typeof task.actual_time === 'number' ? task.actual_time : 0,
         is_recurring: typeof task.is_recurring === 'boolean' ? task.is_recurring : false,
         recurrence_pattern: task.recurrence_pattern || null,
-        recurrence_end_date: task.recurrence_end_date || null
+        recurrence_end_date: task.recurrence_end_date || null,
+        signifier: task.signifier || null
     })).map(task => {
         // 時間データのバリデーション
         const validationResult = validateTaskTimeData(task);
@@ -2151,6 +2152,19 @@ if (window.HybridJournalManager) {
 }
 initializeJournalToggle();
 
+// マイグレーション機能の初期化
+initializeMigrationModal();
+
+// 週次レビュー機能の初期化
+if (window.HybridWeeklyReviewUI) {
+    window.HybridWeeklyReviewUI.initialize();
+}
+
+// モーニングページ機能の初期化
+if (window.HybridMorningPagesUI) {
+    window.HybridMorningPagesUI.initialize();
+}
+
 // --- Modal Logic ---
 addTaskBtn.addEventListener('click', () => {
     openTaskModal();
@@ -2693,7 +2707,27 @@ function initializeTemplatePanel() {
         
         const taskNameDiv = document.createElement('div');
         taskNameDiv.className = 'task-name';
-        taskNameDiv.textContent = task.name;
+
+        // Bullet Journal Signifier
+        const SIGNIFIER_MAP = { task: '\u30FB', note: '\uFF0D', important: '\uFF01', consider: '\uFF1F', idea: '\u2601' };
+        const SIGNIFIER_ORDER = [null, 'task', 'note', 'important', 'consider', 'idea'];
+
+        if (task.signifier) {
+            const sigSpan = document.createElement('span');
+            sigSpan.className = 'task-signifier';
+            sigSpan.textContent = SIGNIFIER_MAP[task.signifier] + ' ';
+            sigSpan.dataset.signifier = task.signifier;
+            sigSpan.addEventListener('click', (e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                const cur = SIGNIFIER_ORDER.indexOf(task.signifier);
+                task.signifier = SIGNIFIER_ORDER[(cur + 1) % SIGNIFIER_ORDER.length];
+                saveTasks();
+                renderWeek();
+            });
+            taskNameDiv.appendChild(sigSpan);
+        }
+        taskNameDiv.appendChild(document.createTextNode(task.name));
         
         const prioritySpan = document.createElement('span');
         prioritySpan.className = `task-priority ${task.priority || 'medium'}`;
@@ -4276,6 +4310,153 @@ function initializeJournalToggle() {
     if (window.HybridJournalUI && window.HybridJournalUI.initTimelineControls) {
         window.HybridJournalUI.initTimelineControls();
     }
+}
+
+/**
+ * マイグレーションモーダル制御
+ */
+function initializeMigrationModal() {
+    const migrationToggle = document.getElementById('migration-toggle');
+    const migrationModal = document.getElementById('migration-modal');
+    const closeBtn = document.getElementById('close-migration-modal');
+    const taskListEl = document.getElementById('migration-task-list');
+    const nextWeekBtn = document.getElementById('migrate-next-week-btn');
+    const nextDayBtn = document.getElementById('migrate-next-day-btn');
+    const unassignedBtn = document.getElementById('migrate-unassigned-btn');
+
+    if (!migrationToggle || !migrationModal) return;
+
+    let selectedTaskIds = new Set();
+
+    function getSelectedIds() {
+        return Array.from(selectedTaskIds);
+    }
+
+    function openMigrationModal() {
+        if (!window.HybridTaskMigration) return;
+
+        const monday = getMonday(currentDate);
+        const weekStart = formatDate(monday);
+        const endDate = new Date(monday);
+        endDate.setDate(monday.getDate() + 6);
+        const weekEnd = formatDate(endDate);
+
+        const incomplete = window.HybridTaskMigration.getIncompleteTasksForWeek(weekStart, weekEnd);
+        selectedTaskIds = new Set();
+
+        while (taskListEl.firstChild) {
+            taskListEl.removeChild(taskListEl.firstChild);
+        }
+
+        if (incomplete.length === 0) {
+            const emptyMsg = document.createElement('div');
+            emptyMsg.style.cssText = 'padding: 20px; text-align: center; color: var(--font-color);';
+            emptyMsg.textContent = '移行対象の未完了タスクはありません';
+            taskListEl.appendChild(emptyMsg);
+        } else {
+            incomplete.forEach(function(task) {
+                selectedTaskIds.add(task.id);
+                const item = document.createElement('div');
+                item.className = 'migration-task-item';
+
+                const cb = document.createElement('input');
+                cb.type = 'checkbox';
+                cb.checked = true;
+                cb.dataset.taskId = task.id;
+                cb.addEventListener('change', function() {
+                    if (cb.checked) {
+                        selectedTaskIds.add(task.id);
+                    } else {
+                        selectedTaskIds.delete(task.id);
+                    }
+                });
+
+                const label = document.createElement('span');
+                label.className = 'migration-task-name';
+                label.textContent = task.name;
+
+                const dateSpan = document.createElement('span');
+                dateSpan.className = 'migration-task-date';
+                dateSpan.textContent = task.assigned_date || '';
+
+                item.appendChild(cb);
+                item.appendChild(label);
+                item.appendChild(dateSpan);
+                taskListEl.appendChild(item);
+            });
+        }
+
+        migrationModal.style.display = 'block';
+    }
+
+    function closeMigrationModal() {
+        migrationModal.style.display = 'none';
+    }
+
+    function executeMigration(dayOffset) {
+        const ids = getSelectedIds();
+        if (ids.length === 0) return;
+
+        let count;
+        if (dayOffset === null) {
+            count = window.HybridTaskMigration.migrateTasksToUnassigned(ids);
+        } else {
+            const rawTasks = JSON.parse(localStorage.getItem('weekly-task-board.tasks') || '[]');
+            const idSet = {};
+            ids.forEach(function(id) { idSet[id] = true; });
+            var migratedCount = 0;
+            var updatedTasks = [];
+
+            for (var i = 0; i < rawTasks.length; i++) {
+                var task = rawTasks[i];
+                if (idSet[task.id] && !task.completed) {
+                    updatedTasks.push(Object.assign({}, task, {
+                        name: '> ' + task.name,
+                        completed: true
+                    }));
+
+                    var srcDate = task.assigned_date || task.date;
+                    var d = new Date(srcDate + 'T00:00:00');
+                    d.setDate(d.getDate() + dayOffset);
+                    var newDate = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+
+                    updatedTasks.push(Object.assign({}, task, {
+                        id: 'task-' + Date.now() + '-' + Math.random().toString(36).substring(2, 11),
+                        name: task.name.replace(/^>\s*/, ''),
+                        assigned_date: newDate,
+                        date: newDate,
+                        completed: false,
+                        actual_time: 0
+                    }));
+                    migratedCount++;
+                } else {
+                    updatedTasks.push(task);
+                }
+            }
+
+            localStorage.setItem('weekly-task-board.tasks', JSON.stringify(updatedTasks));
+            count = migratedCount;
+        }
+
+        closeMigrationModal();
+        tasks = loadTasks();
+        renderWeek();
+        updateDashboard();
+
+        if (count > 0) {
+            console.log('Migrated ' + count + ' tasks');
+        }
+    }
+
+    migrationToggle.addEventListener('click', openMigrationModal);
+    if (closeBtn) closeBtn.addEventListener('click', closeMigrationModal);
+    if (nextWeekBtn) nextWeekBtn.addEventListener('click', function() { executeMigration(7); });
+    if (nextDayBtn) nextDayBtn.addEventListener('click', function() { executeMigration(1); });
+    if (unassignedBtn) unassignedBtn.addEventListener('click', function() { executeMigration(null); });
+
+    window.addEventListener('click', function(e) {
+        if (e.target === migrationModal) closeMigrationModal();
+    });
 }
 
 /**

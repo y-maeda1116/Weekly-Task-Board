@@ -75,6 +75,9 @@
                 <button id="template-toggle" title="テンプレート">📋</button>
                 <button id="theme-toggle" title="テーマ切替">🌙</button>
                 <button id="journal-toggle" title="ジャーナル">📝</button>
+                <button id="migration-toggle" title="タスク移行">➡️</button>
+                <button id="review-toggle" title="週次レビュー">📋</button>
+                <button id="morning-pages-toggle" title="モーニングページ">🌅</button>
                 <div id="more-menu" style="position: relative; display: inline-block;">
                     <button id="more-menu-btn" title="その他">︙</button>
                     <div id="more-menu-dropdown" style="display: none; position: absolute; right: 0; top: 100%; background: var(--card-background); border: 1px solid var(--border-color); border-radius: 4px; box-shadow: 0 2px 8px var(--shadow-color); z-index: 1000; min-width: 150px;">
@@ -243,6 +246,45 @@
         </div>
     </div>
 
+    <!-- マイグレーションモーダル -->
+    <div id="migration-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" id="close-migration-modal">&times;</span>
+            <h2>➡️ タスク移行</h2>
+            <p class="migration-description">未完了のタスクを次の期間に移行します。元のタスクには「>」マークが付きます。</p>
+            <div id="migration-task-list"></div>
+            <div id="migration-actions">
+                <button id="migrate-next-week-btn" class="migration-action-btn">次週へ移行</button>
+                <button id="migrate-next-day-btn" class="migration-action-btn">翌日へ移行</button>
+                <button id="migrate-unassigned-btn" class="migration-action-btn">未割り当てへ</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 週次レビューパネル -->
+    <div id="review-panel" class="dashboard-panel" style="display: none;">
+        <div class="dashboard-header">
+            <h2>📋 週次レビュー <span id="review-week-range" style="font-size:0.7em;color:#888;"></span></h2>
+            <button id="close-review" class="close-btn">&times;</button>
+        </div>
+        <div class="dashboard-content">
+            <div id="review-stats" class="review-stats-grid"></div>
+            <div id="review-journal-time" class="review-section"></div>
+            <div class="review-section review-achievements">
+                <h3>🏆 トップ3実績</h3>
+                <p class="review-hint">完了タスクから3つ選択してください</p>
+                <div id="review-achievement-list"></div>
+            </div>
+            <div class="review-section">
+                <h3>⏱ タスク別時間</h3>
+                <div id="review-task-time-table"></div>
+            </div>
+            <div class="review-export">
+                <button id="review-export-btn" class="review-export-btn">Markdownでコピー</button>
+            </div>
+        </div>
+    </div>
+
     <!-- タスク追加モーダル -->
     <div id="task-modal" class="modal">
         <div class="modal-content">
@@ -371,6 +413,12 @@
     <script src="TaskRendering.js?v=1.4.1" defer></script>
     <script src="JournalManager.js?v=1.4.1" defer></script>
     <script src="JournalUI.js?v=1.4.1" defer></script>
+    <script src="SignifierManager.js?v=1.4.1" defer></script>
+    <script src="TaskMigration.js?v=1.4.1" defer></script>
+    <script src="WeeklyReview.js?v=1.4.1" defer></script>
+    <script src="WeeklyReviewUI.js?v=1.4.1" defer></script>
+    <script src="MorningPages.js?v=1.4.1" defer></script>
+    <script src="MorningPagesUI.js?v=1.4.1" defer></script>
 
     <!-- バージョン情報（デバッグ用） -->
 

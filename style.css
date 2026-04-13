@@ -398,6 +398,412 @@ main#task-board.weekdays-1 {
     flex-grow: 1;
 }
 
+/* ===== Bullet Journal Signifiers ===== */
+.task-signifier {
+    cursor: pointer;
+    user-select: none;
+    transition: transform 0.2s ease;
+    display: inline-block;
+}
+.task-signifier:hover {
+    transform: scale(1.3);
+    color: var(--primary-color);
+}
+.task-signifier[data-signifier="important"] {
+    color: #e74c3c;
+    font-weight: bold;
+}
+.task-signifier[data-signifier="idea"] {
+    color: #3498db;
+}
+[data-theme="dark"] .task-signifier[data-signifier="important"] {
+    color: #ff6b7a;
+}
+[data-theme="dark"] .task-signifier[data-signifier="idea"] {
+    color: #5aa3f0;
+}
+
+/* ===== Migration Modal ===== */
+.migration-description {
+    font-size: 0.9em;
+    color: #666;
+    margin-bottom: 15px;
+}
+[data-theme="dark"] .migration-description {
+    color: #aaa;
+}
+#migration-task-list {
+    max-height: 300px;
+    overflow-y: auto;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    padding: 10px;
+    margin: 15px 0;
+}
+.migration-task-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 4px;
+    border-bottom: 1px solid var(--border-color);
+}
+.migration-task-item:last-child {
+    border-bottom: none;
+}
+.migration-task-name {
+    flex: 1;
+    font-weight: bold;
+}
+.migration-task-date {
+    font-size: 0.85em;
+    color: #888;
+}
+#migration-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+.migration-action-btn {
+    padding: 8px 16px;
+    border: 1px solid var(--primary-color);
+    border-radius: 4px;
+    background: transparent;
+    color: var(--primary-color);
+    cursor: pointer;
+    font-size: 0.9em;
+    transition: all 0.2s ease;
+}
+.migration-action-btn:hover {
+    background: var(--primary-color);
+    color: #fff;
+}
+
+/* ===== Weekly Review Panel ===== */
+.review-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px;
+    margin-bottom: 20px;
+}
+.review-stat-card {
+    padding: 16px;
+    border-radius: 8px;
+    text-align: center;
+    color: #fff;
+}
+.review-stat-value {
+    font-size: 1.6em;
+    font-weight: bold;
+    display: block;
+}
+.review-stat-label {
+    font-size: 0.85em;
+    opacity: 0.9;
+}
+.review-section {
+    margin: 20px 0;
+    border-top: 1px solid var(--border-color);
+    padding-top: 15px;
+}
+.review-section h3 {
+    margin-bottom: 10px;
+}
+.review-hint {
+    font-size: 0.85em;
+    color: #888;
+    margin-bottom: 10px;
+}
+.review-journal-total {
+    font-size: 1.1em;
+    font-weight: bold;
+    margin-bottom: 8px;
+}
+.review-journal-days {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+.review-journal-day-item {
+    padding: 4px 10px;
+    border-radius: 4px;
+    background: var(--card-background);
+    border: 1px solid var(--border-color);
+    font-size: 0.85em;
+}
+.review-achievement-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    margin-bottom: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.review-achievement-item:hover {
+    border-color: var(--primary-color);
+}
+.review-achievement-item.selected {
+    border-color: var(--primary-color);
+    background-color: rgba(74, 144, 226, 0.1);
+}
+.review-achievement-item input[type="checkbox"] {
+    accent-color: var(--primary-color);
+    width: 16px;
+    height: 16px;
+}
+.review-task-time-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9em;
+}
+.review-task-time-table th,
+.review-task-time-table td {
+    padding: 8px;
+    border-bottom: 1px solid var(--border-color);
+    text-align: left;
+}
+.review-task-time-table th {
+    font-weight: bold;
+    color: var(--font-color);
+}
+.review-status-badge {
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 0.8em;
+}
+.review-status-badge.completed {
+    background: #e8f5e8;
+    color: #27ae60;
+}
+.review-status-badge.in-progress {
+    background: #fff3e0;
+    color: #f39c12;
+}
+.review-export {
+    margin-top: 20px;
+    text-align: center;
+}
+.review-export-btn {
+    padding: 10px 24px;
+    border: 2px solid var(--primary-color);
+    border-radius: 6px;
+    background: transparent;
+    color: var(--primary-color);
+    font-size: 1em;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.review-export-btn:hover {
+    background: var(--primary-color);
+    color: #fff;
+}
+
+/* ===== Morning Pages ===== */
+.morning-pages-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: var(--background-color);
+    z-index: 10002;
+    display: flex;
+    flex-direction: column;
+    padding: 30px;
+    box-sizing: border-box;
+}
+.morning-pages-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 800px;
+    margin: 0 auto 20px;
+    width: 100%;
+}
+.morning-pages-header h2 {
+    color: var(--primary-color);
+    margin: 0;
+}
+.morning-pages-close-btn {
+    padding: 8px 16px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background: var(--card-background);
+    color: var(--font-color);
+    cursor: pointer;
+    font-size: 0.9em;
+    transition: all 0.2s ease;
+}
+.morning-pages-close-btn:hover {
+    background: var(--primary-color);
+    color: #fff;
+    border-color: var(--primary-color);
+}
+.morning-pages-editor {
+    flex: 1;
+    width: 100%;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    background-color: var(--card-background);
+    color: var(--font-color);
+    font-size: 1.1em;
+    line-height: 1.8;
+    resize: none;
+    font-family: inherit;
+    box-sizing: border-box;
+}
+.morning-pages-editor:focus {
+    outline: none;
+    border-color: var(--primary-color);
+}
+.morning-pages-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 800px;
+    margin: 20px auto 0;
+    width: 100%;
+}
+.morning-pages-wordcount {
+    font-size: 0.85em;
+    color: #888;
+}
+.morning-pages-actions {
+    display: flex;
+    gap: 10px;
+}
+.morning-pages-extract-btn {
+    padding: 10px 20px;
+    border: 2px solid var(--secondary-color);
+    border-radius: 6px;
+    background: transparent;
+    color: var(--secondary-color);
+    font-size: 0.95em;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.morning-pages-extract-btn:hover {
+    background: var(--secondary-color);
+    color: #fff;
+}
+
+/* Extract preview dialog */
+.morning-extract-dialog {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 10003;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.morning-extract-content {
+    background: var(--card-background);
+    border-radius: 8px;
+    padding: 24px;
+    max-width: 600px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+.morning-extract-content h3 {
+    margin: 0 0 8px;
+}
+.morning-extract-hint {
+    font-size: 0.85em;
+    color: #888;
+    margin: 0 0 15px;
+}
+.morning-extract-list {
+    margin-bottom: 15px;
+}
+.morning-extract-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 4px;
+    border-bottom: 1px solid var(--border-color);
+}
+.morning-extract-item:last-child {
+    border-bottom: none;
+}
+.morning-extract-item input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--primary-color);
+}
+.morning-extract-target {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 15px;
+}
+.morning-extract-target-label {
+    font-size: 0.9em;
+    font-weight: bold;
+}
+.morning-extract-target-select {
+    padding: 6px 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background: var(--card-background);
+    color: var(--font-color);
+}
+.morning-extract-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+}
+.morning-extract-register-btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 6px;
+    background: var(--primary-color);
+    color: #fff;
+    font-size: 0.95em;
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+}
+.morning-extract-register-btn:hover {
+    opacity: 0.85;
+}
+.morning-extract-cancel-btn {
+    padding: 10px 20px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    background: transparent;
+    color: var(--font-color);
+    font-size: 0.95em;
+    cursor: pointer;
+}
+
+/* Notification toast */
+.morning-notification {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 12px 24px;
+    background: var(--primary-color);
+    color: #fff;
+    border-radius: 6px;
+    font-size: 0.95em;
+    z-index: 10004;
+    transition: opacity 0.5s ease;
+}
+.morning-notification-fade {
+    opacity: 0;
+}
+
 .task-time {
     font-size: 0.9em;
     color: #666;

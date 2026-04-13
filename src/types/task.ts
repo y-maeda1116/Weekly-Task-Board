@@ -42,6 +42,12 @@ export interface RecurrenceConfig {
 }
 
 /**
+ * Signifier type for Bullet Journal elements
+ * Represents the nature/type of a task entry
+ */
+export type SignifierType = 'task' | 'note' | 'important' | 'consider' | 'idea';
+
+/**
  * Due date time period type
  */
 export type DueTimePeriod = 'morning' | 'afternoon' | null;
@@ -76,6 +82,7 @@ export interface Task {
   is_recurring: boolean;
   recurrence_pattern: RecurrencePattern;
   recurrence_end_date: string | null;
+  signifier?: SignifierType | null;
 }
 
 /**
