@@ -481,7 +481,7 @@ function initializeModal() {
 /**
  * Public API
  */
-export const TaskModal = {
+const TaskModal = {
     // Modal control
     openCreateModal,
     openEditModal,

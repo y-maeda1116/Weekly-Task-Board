@@ -99,7 +99,7 @@ let isRendering = false;
 /**
  * Initialize all DOM element references
  */
-export function initializeDOMElements() {
+function initializeDOMElements() {
     const success = initializeElementReferences() &&
         initializeEventListeners();
     if (success) {
@@ -205,7 +205,7 @@ function initializeElementReferences() {
 /**
  * Initialize all event listeners
  */
-export function initializeEventListeners() {
+function initializeEventListeners() {
     let success = true;
     success = success && initializeModalEventListeners();
     success = success && initializeTaskFormEventListeners();
@@ -473,13 +473,13 @@ function initializeUnassignedListeners() {
 /**
  * Get all DOM references
  */
-export function getDOMRefs() {
+function getDOMRefs() {
     return { ...refs };
 }
 /**
  * Close modal
  */
-export function closeModal() {
+function closeModal() {
     if (refs.modal) {
         domManager.hide(refs.modal);
         isRendering = false;
@@ -490,7 +490,7 @@ export function closeModal() {
 /**
  * Open task modal
  */
-export function openTaskModal(dayId) {
+function openTaskModal(dayId) {
     isRendering = true;
     currentTaskId = dayId || null;
     if (refs.modal) {
@@ -523,18 +523,18 @@ export function openTaskModal(dayId) {
  * Update week offset and navigation
  */
 let weekOffset = 0;
-export function updateWeekOffset(offset) {
+function updateWeekOffset(offset) {
     weekOffset += offset;
     logger.info(`Week offset updated to ${weekOffset}`);
 }
-export function getWeekOffset() {
+function getWeekOffset() {
     return weekOffset;
 }
 /**
  * Update current date
  * Delegates to existing script.js
  */
-export function updateCurrentDate(date) {
+function updateCurrentDate(date) {
     logger.info(`Current date updated to ${formatDate(date)}`);
 }
 // --- Settings Functions ---
@@ -542,7 +542,7 @@ export function updateCurrentDate(date) {
  * Update category filter
  * Delegates to existing script.js
  */
-export function updateCategoryFilter(filter) {
+function updateCategoryFilter(filter) {
     if (refs.categoryFilterSelect) {
         refs.categoryFilterSelect.value = filter;
     }
@@ -551,7 +551,7 @@ export function updateCategoryFilter(filter) {
  * Update ideal daily minutes
  * Delegates to existing script.js
  */
-export function updateIdealDailyMinutes(minutes) {
+function updateIdealDailyMinutes(minutes) {
     if (refs.idealDailyMinutesInput) {
         refs.idealDailyMinutesInput.value = String(minutes);
     }
@@ -561,20 +561,20 @@ export function updateIdealDailyMinutes(minutes) {
  * Toggle theme
  * Delegates to existing script.js
  */
-export function toggleTheme() {
+function toggleTheme() {
     logger.info('Theme toggle triggered');
 }
 /**
  * Get current theme
  */
-export function getCurrentTheme() {
+function getCurrentTheme() {
     return document.documentElement.getAttribute('data-theme');
 }
 // --- More Menu Functions ---
 /**
  * Toggle more menu
  */
-export function toggleMoreMenu() {
+function toggleMoreMenu() {
     if (!refs.moreMenuDropdown)
         return;
     const isVisible = refs.moreMenuDropdown.style.display === 'block';
@@ -584,20 +584,20 @@ export function toggleMoreMenu() {
 /**
  * Export data
  */
-export function exportData() {
+function exportData() {
     logger.info('Export data triggered');
 }
 /**
  * Import data
  */
-export function importData(file) {
+function importData(file) {
     logger.info(`Import file: ${file.name}`);
 }
 // --- Archive Functions ---
 /**
  * Toggle archive view
  */
-export function toggleArchiveView() {
+function toggleArchiveView() {
     if (!refs.archiveView)
         return;
     const isVisible = refs.archiveView.style.display === 'block';
@@ -607,7 +607,7 @@ export function toggleArchiveView() {
 /**
  * Close archive view
  */
-export function closeArchiveView() {
+function closeArchiveView() {
     if (refs.archiveView) {
         refs.archiveView.style.display = 'none';
     }
@@ -616,14 +616,14 @@ export function closeArchiveView() {
 /**
  * Clear archive
  */
-export function clearArchive() {
+function clearArchive() {
     logger.info('Clear archive triggered');
 }
 // --- Statistics/Dashboard Functions ---
 /**
  * Toggle statistics
  */
-export function toggleStatistics() {
+function toggleStatistics() {
     if (!refs.dashboardPanel)
         return;
     const isVisible = refs.dashboardPanel.style.display === 'block';
@@ -634,7 +634,7 @@ export function toggleStatistics() {
 /**
  * Toggle template panel
  */
-export function toggleTemplatePanel() {
+function toggleTemplatePanel() {
     if (!refs.templatePanel)
         return;
     const isVisible = refs.templatePanel.style.display === 'block';
@@ -644,7 +644,7 @@ export function toggleTemplatePanel() {
 /**
  * Close template panel
  */
-export function closeTemplatePanel() {
+function closeTemplatePanel() {
     if (refs.templatePanel) {
         domManager.hide(refs.templatePanel);
     }
@@ -653,7 +653,7 @@ export function closeTemplatePanel() {
  * Search templates
  * @param searchTerm - Search term
  */
-export function searchTemplates(searchTerm) {
+function searchTemplates(searchTerm) {
     if (refs.templateSearchInput) {
         refs.templateSearchInput.value = searchTerm;
     }
@@ -663,7 +663,7 @@ export function searchTemplates(searchTerm) {
  * Sort templates
  * @param sortBy - Sort option
  */
-export function sortTemplates(sortBy) {
+function sortTemplates(sortBy) {
     if (refs.templateSortSelect) {
         refs.templateSortSelect.value = sortBy;
     }
@@ -672,14 +672,14 @@ export function sortTemplates(sortBy) {
 /**
  * Save as template
  */
-export function saveTaskAsTemplate() {
+function saveTaskAsTemplate() {
     logger.info('Save as template triggered');
 }
 // --- Helper Functions ---
 /**
  * Format date for display
  */
-export function formatDate(date) {
+function formatDate(date) {
     const y = date.getFullYear();
     const m = String(date.getMonth() + 1).padStart(2, '0');
     const d = String(date.getDate()).padStart(2, '0');
@@ -688,7 +688,7 @@ export function formatDate(date) {
 /**
  * Get DOM element reference
  */
-export function getRef(key) {
+function getRef(key) {
     return refs[key];
 }
 // Expose to window for use by existing script.js

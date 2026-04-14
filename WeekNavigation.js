@@ -262,7 +262,7 @@ function initializeWeekNavigation() {
 /**
  * Public API
  */
-export const WeekNavigation = {
+const WeekNavigation = {
     // Navigation
     previousWeek,
     currentWeek,

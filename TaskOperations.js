@@ -417,7 +417,7 @@ function deleteTemplate(templateId) {
 /**
  * Public API
  */
-export const TaskOperations = {
+const TaskOperations = {
     // Task CRUD
     createTask,
     addTask,

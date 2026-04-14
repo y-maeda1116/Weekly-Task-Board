@@ -303,7 +303,7 @@ function getFilterSummary(tasks, options) {
 /**
  * Public API
  */
-export const TaskFiltering = {
+const TaskFiltering = {
     // Basic filtering
     filterTasks,
     sortTasks,

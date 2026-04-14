@@ -407,7 +407,7 @@ function handleDrop(event) {
 /**
  * Public API
  */
-export const TaskRendering = {
+const TaskRendering = {
     // Rendering
     createTaskElement,
     renderTasksToContainer,
