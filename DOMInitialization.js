@@ -1,3 +1,5 @@
+(function() {
+'use strict';
 /**
  * DOM Initialization Module - Complete
  * Full migration of DOM initialization from script.js to TypeScript
@@ -719,3 +721,4 @@ window.HybridDOMInitialization = {
     getRef
 };
 console.log('Hybrid DOM initialization module loaded');
+})();

@@ -1,3 +1,5 @@
+(function() {
+'use strict';
 /**
  * Week Navigation Module
  * Type-safe week navigation and date functions
@@ -290,3 +292,4 @@ const WeekNavigation = {
 // Expose to window for use by existing script.js
 window.HybridWeekNavigation = WeekNavigation;
 console.log('Hybrid week navigation module loaded');
+})();

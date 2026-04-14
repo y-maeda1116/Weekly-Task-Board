@@ -1,3 +1,5 @@
+(function() {
+'use strict';
 /**
  * Task Operations Module
  * Type-safe task completion, editing, and operations
@@ -452,3 +454,4 @@ const TaskOperations = {
 // Expose to window for use by existing script.js
 window.HybridTaskOperations = TaskOperations;
 console.log('Hybrid task operations module loaded');
+})();

@@ -1,3 +1,5 @@
+(function() {
+'use strict';
 /**
  * Task Modal Module
  * Type-safe task modal form handling
@@ -500,3 +502,4 @@ const TaskModal = {
 // Expose to window for use by existing script.js
 window.HybridTaskModal = TaskModal;
 console.log('Hybrid task modal module loaded');
+})();

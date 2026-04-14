@@ -1,3 +1,5 @@
+(function() {
+'use strict';
 /**
  * Journal Manager Module
  * Interstitial journaling data CRUD and localStorage persistence
@@ -176,3 +178,4 @@ const JournalManager = {
 
 window.HybridJournalManager = JournalManager;
 console.log('Journal manager module loaded');
+})();

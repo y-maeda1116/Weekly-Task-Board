@@ -1,3 +1,5 @@
+(function() {
+'use strict';
 /**
  * Task Rendering Module
  * Type-safe task rendering and DOM operations
@@ -430,3 +432,4 @@ const TaskRendering = {
 // Expose to window for use by existing script.js
 window.HybridTaskRendering = TaskRendering;
 console.log('Hybrid task rendering module loaded');
+})();

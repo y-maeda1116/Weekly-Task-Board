@@ -1,3 +1,5 @@
+(function() {
+'use strict';
 /**
  * Task Filtering Module
  * Type-safe task filtering and sorting functions
@@ -339,3 +341,4 @@ const TaskFiltering = {
 // Expose to window for use by existing script.js
 window.HybridTaskFiltering = TaskFiltering;
 console.log('Hybrid task filtering module loaded');
+})();
