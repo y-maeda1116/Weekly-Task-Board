@@ -75,8 +75,8 @@ function injectStartButtons(): void {
 
     if (isActive) {
       btn.classList.add('active');
-      btn.textContent = '\u25CF 実行中...';
-      btn.title = 'ジャーナル実行中';
+      btn.textContent = '\u25A0 \u505C\u6B62';
+      btn.title = '\u3053\u306E\u30BF\u30B9\u30AF\u306E\u30B8\u30E3\u30FC\u30CA\u30EB\u3092\u505C\u6B62';
     } else {
       btn.textContent = '\u25B6 開始';
       btn.title = 'このタスクのジャーナルを開始';
@@ -100,7 +100,13 @@ function handleStartClick(taskId: string, taskEl: Element): void {
 
   const activeEntry = manager.getActiveEntry() as JournalEntry | null;
 
-  if (activeEntry && activeEntry.taskId === taskId) return;
+  if (activeEntry && activeEntry.taskId === taskId) {
+    if (confirm('\u3053\u306E\u30BF\u30B9\u30AF\u306E\u30B8\u30E3\u30FC\u30CA\u30EB\u3092\u505C\u6B62\u3057\u307E\u3059\u304B\uFF1F')) {
+      manager.completeEntry(activeEntry.id, '');
+      injectStartButtons();
+    }
+    return;
+  }
 
   if (activeEntry) {
     if (confirm(`現在「${activeEntry.taskName}」を実行中です。\n現在のタスクを完了して新しいタスクを開始しますか？`)) {
