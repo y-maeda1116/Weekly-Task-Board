@@ -2067,6 +2067,7 @@ const categoryFilterSelect = document.getElementById('filter-category');
 let editingTaskId = null;
 let isRendering = false;
 let selectedDate = null;
+let migrationNotified = false;
 
 // アプリケーションバージョン（キャッシュ対策）
 const APP_VERSION = '1.5.1';
@@ -3077,7 +3078,6 @@ function initializeTemplatePanel() {
     }
     document.body.renderWeek = renderWeek;
 
-    let migrationNotified = false;
     function checkIncompleteFromPreviousWeek(currentMonday) {
         if (migrationNotified) return;
         if (!window.HybridTaskMigration) return;
