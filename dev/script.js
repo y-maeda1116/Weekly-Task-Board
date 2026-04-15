@@ -2069,8 +2069,25 @@ let isRendering = false;
 let selectedDate = null;
 let migrationNotified = false;
 
+// Bullet Journal Signifiers
+const SIGNIFIER_ORDER = [null, 'task', 'note', 'important', 'consider', 'idea'];
+const SIGNIFIER_MAP = {
+    task: '\u30FB',
+    note: '\uFF0D',
+    important: '\uFF01',
+    consider: '\uFF1F',
+    idea: '\u2605'
+};
+const SIGNIFIER_LABELS = {
+    task: '\u30BF\u30B9\u30AF',
+    note: '\u30E1\u30E2',
+    important: '\u91CD\u8981',
+    consider: '\u691C\u8A0E',
+    idea: '\u30A2\u30A4\u30C7\u30A2'
+};
+
 // アプリケーションバージョン（キャッシュ対策）
-const APP_VERSION = '1.5.7';
+const APP_VERSION = '1.5.8';
 const BUILD_DATE = '2026-04-15';
 
 // バージョン情報をログ出力（キャッシュ確認用）
