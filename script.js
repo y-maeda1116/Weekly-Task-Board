@@ -2492,6 +2492,9 @@ function initializeTemplatePanel() {
         }, 300);
         selectedDate = null;
     }
+
+    // グローバルに公開（HTML onclick用）
+    window.closeTaskModal = closeTaskModal;
     
     // モーダル内でのTabキー循環（アクセシビリティ向上）
     modal.addEventListener('keydown', (event) => {
