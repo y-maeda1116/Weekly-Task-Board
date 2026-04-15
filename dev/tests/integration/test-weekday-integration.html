@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>曜日表示設定機能 統合テスト</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .test-container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .test-result {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        
+        .test-result.passed {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .test-result.failed {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .test-summary {
+            background-color: #e9ecef;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        
+        button:hover {
+            background-color: #0056b3;
+        }
+        
+        .mock-task-board {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 10px;
+            margin: 20px 0;
+            transition: grid-template-columns 0.4s ease;
+        }
+        
+        .mock-day-column {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 10px;
+            min-height: 100px;
+            transition: all 0.4s ease;
+        }
+        
+        .mock-day-column.hidden {
+            display: none;
+        }
+        
+        .mock-day-column.hiding {
+            opacity: 0;
+            transform: scaleX(0.8);
+        }
+        
+        .mock-day-column.showing {
+            opacity: 1;
+            transform: scaleX(1);
+        }
+        
+        .mock-task {
+            background: #007bff;
+            color: white;
+            padding: 5px;
+            margin: 5px 0;
+            border-radius: 3px;
+            font-size: 12px;
+        }
+        
+        .weekday-controls {
+            margin: 20px 0;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 4px;
+        }
+        
+        .weekday-controls label {
+            margin-right: 15px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>曜日表示設定機能 統合テスト</h1>
+    
+    <div class="test-container">
+        <h2>テスト環境</h2>
+        <p>このページでは曜日表示設定機能の統合テストを実行します。</p>
+        
+        <div class="weekday-controls">
+            <h3>曜日表示設定</h3>
+            <label><input type="checkbox" id="show-monday" checked> 月</label>
+            <label><input type="checkbox" id="show-tuesday" checked> 火</label>
+            <label><input type="checkbox" id="show-wednesday" checked> 水</label>
+            <label><input type="checkbox" id="show-thursday" checked> 木</label>
+            <label><input type="checkbox" id="show-friday" checked> 金</label>
+            <label><input type="checkbox" id="show-saturday" checked> 土</label>
+            <label><input type="checkbox" id="show-sunday" checked> 日</label>
+        </div>
+        
+        <div class="mock-task-board" id="mock-task-board">
+            <div class="mock-day-column" data-day="monday">
+                <h4>月曜日</h4>
+                <div class="mock-task">タスク1</div>
+                <div class="mock-task">タスク2</div>
+            </div>
+            <div class="mock-day-column" data-day="tuesday">
+                <h4>火曜日</h4>
+                <div class="mock-task">タスク3</div>
+            </div>
+            <div class="mock-day-column" data-day="wednesday">
+                <h4>水曜日</h4>
+                <div class="mock-task">タスク4</div>
+                <div class="mock-task">タスク5</div>
+            </div>
+            <div class="mock-day-column" data-day="thursday">
+                <h4>木曜日</h4>
+            </div>
+            <div class="mock-day-column" data-day="friday">
+                <h4>金曜日</h4>
+                <div class="mock-task">タスク6</div>
+            </div>
+            <div class="mock-day-column" data-day="saturday">
+                <h4>土曜日</h4>
+            </div>
+            <div class="mock-day-column" data-day="sunday">
+                <h4>日曜日</h4>
+                <div class="mock-task">タスク7</div>
+            </div>
+        </div>
+        
+        <button onclick="runAllIntegrationTests()">統合テスト実行</button>
+        <button onclick="resetTestEnvironment()">環境リセット</button>
+    </div>
+    
+    <div class="test-container">
+        <h2>テスト結果</h2>
+        <div id="test-results"></div>
+        <div id="test-summary" class="test-summary" style="display: none;"></div>
+    </div>
+
+    <script>
+        // テスト結果を格納
+        let integrationTestResults = {
+            passed: 0,
+            failed: 0,
+            total: 0,
+            details: []
+        };
+
+        // WeekdayManager のモック実装
+        class MockWeekdayManager {
+            constructor() {
+                this.dayNames = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+                this.dayLabels = ['月', '火', '水', '木', '金', '土', '日'];
+                this.weekdaySettings = {
+                    monday: true,
+                    tuesday: true,
+                    wednesday: true,
+                    thursday: true,
+                    friday: true,
+                    saturday: true,
+                    sunday: true
+                };
+            }
+            
+            toggleWeekday(dayName, visible) {
+                if (this.dayNames.includes(dayName)) {
+                    this.weekdaySettings[dayName] = visible;
+                    return true;
+                }
+                return false;
+            }
+            
+            getVisibleWeekdays() {
+                return this.dayNames.filter(day => this.weekdaySettings[day]);
+            }
+            
+            getHiddenWeekdays() {
+                return this.dayNames.filter(day => !this.weekdaySettings[day]);
+            }
+            
+            isWeekdayVisible(dayName) {
+                return this.weekdaySettings[dayName] || false;
+            }
+        }
+
+        const mockWeekdayManager = new MockWeekdayManager();
+
+        /**
+         * テスト実行関数
+         */
+        function runIntegrationTest(testName, testFunction) {
+            integrationTestResults.total++;
+            try {
+                const result = testFunction();
+                if (result === true) {
+                    integrationTestResults.passed++;
+                    integrationTestResults.details.push(`✅ ${testName}: PASSED`);
+                    displayTestResult(testName, 'passed', 'PASSED');
+                } else {
+                    integrationTestResults.failed++;
+                    integrationTestResults.details.push(`❌ ${testName}: FAILED - ${result}`);
+                    displayTestResult(testName, 'failed', `FAILED - ${result}`);
+                }
+            } catch (error) {
+                integrationTestResults.failed++;
+                integrationTestResults.details.push(`❌ ${testName}: ERROR - ${error.message}`);
+                displayTestResult(testName, 'failed', `ERROR - ${error.message}`);
+            }
+        }
+
+        /**
+         * テスト結果を画面に表示
+         */
+        function displayTestResult(testName, status, message) {
+            const resultsDiv = document.getElementById('test-results');
+            const resultDiv = document.createElement('div');
+            resultDiv.className = `test-result ${status}`;
+            resultDiv.textContent = `${testName}: ${message}`;
+            resultsDiv.appendChild(resultDiv);
+        }
+
+        /**
+         * UI操作と設定変更の連携テスト
+         */
+        function testUISettingIntegration() {
+            // チェックボックスの状態を確認
+            const mondayCheckbox = document.getElementById('show-monday');
+            const mondayColumn = document.querySelector('[data-day="monday"]');
+            
+            if (!mondayCheckbox || !mondayColumn) {
+                return 'UI要素が見つからない';
+            }
+            
+            // 初期状態の確認
+            if (!mondayCheckbox.checked) {
+                return '初期状態でチェックボックスがチェックされていない';
+            }
+            
+            if (mondayColumn.classList.contains('hidden')) {
+                return '初期状態で月曜日列が非表示になっている';
+            }
+            
+            // チェックボックスを外す
+            mondayCheckbox.checked = false;
+            mockWeekdayManager.toggleWeekday('monday', false);
+            updateMockUI();
+            
+            // 非表示状態の確認
+            if (!mondayColumn.classList.contains('hidden')) {
+                return 'チェックボックスを外しても列が非表示にならない';
+            }
+            
+            // チェックボックスを戻す
+            mondayCheckbox.checked = true;
+            mockWeekdayManager.toggleWeekday('monday', true);
+            updateMockUI();
+            
+            // 表示状態の確認
+            if (mondayColumn.classList.contains('hidden')) {
+                return 'チェックボックスをチェックしても列が表示されない';
+            }
+            
+            return true;
+        }
+
+        /**
+         * 複数曜日の同時変更テスト
+         */
+        function testMultipleWeekdayChanges() {
+            const weekendDays = ['saturday', 'sunday'];
+            const weekendCheckboxes = weekendDays.map(day => document.getElementById(`show-${day}`));
+            const weekendColumns = weekendDays.map(day => document.querySelector(`[data-day="${day}"]`));
+            
+            // 週末を非表示にする
+            weekendDays.forEach((day, index) => {
+                weekendCheckboxes[index].checked = false;
+                mockWeekdayManager.toggleWeekday(day, false);
+            });
+            
+            updateMockUI();
+            
+            // 非表示状態の確認
+            for (let i = 0; i < weekendColumns.length; i++) {
+                if (!weekendColumns[i].classList.contains('hidden')) {
+                    return `${weekendDays[i]}が非表示にならない`;
+                }
+            }
+            
+            // 表示曜日数の確認
+            const visibleCount = mockWeekdayManager.getVisibleWeekdays().length;
+            if (visibleCount !== 5) {
+                return `表示曜日数が正しくない: 期待値5、実際${visibleCount}`;
+            }
+            
+            // 週末を再表示
+            weekendDays.forEach((day, index) => {
+                weekendCheckboxes[index].checked = true;
+                mockWeekdayManager.toggleWeekday(day, true);
+            });
+            
+            updateMockUI();
+            
+            // 表示状態の確認
+            for (let i = 0; i < weekendColumns.length; i++) {
+                if (weekendColumns[i].classList.contains('hidden')) {
+                    return `${weekendDays[i]}が再表示されない`;
+                }
+            }
+            
+            return true;
+        }
+
+        /**
+         * グリッドレイアウトの動的変更テスト
+         */
+        function testGridLayoutChanges() {
+            const taskBoard = document.getElementById('mock-task-board');
+            
+            // 初期状態（7列）の確認
+            const initialColumns = taskBoard.style.gridTemplateColumns || 'repeat(7, 1fr)';
+            if (!initialColumns.includes('7')) {
+                return '初期状態のグリッド列数が正しくない';
+            }
+            
+            // 3つの曜日を非表示にする
+            const hideDays = ['wednesday', 'saturday', 'sunday'];
+            hideDays.forEach(day => {
+                const checkbox = document.getElementById(`show-${day}`);
+                checkbox.checked = false;
+                mockWeekdayManager.toggleWeekday(day, false);
+            });
+            
+            updateMockUI();
+            
+            // グリッド列数の確認（4列になるはず）
+            const visibleCount = mockWeekdayManager.getVisibleWeekdays().length;
+            if (visibleCount !== 4) {
+                return `表示曜日数が正しくない: 期待値4、実際${visibleCount}`;
+            }
+            
+            // 元に戻す
+            hideDays.forEach(day => {
+                const checkbox = document.getElementById(`show-${day}`);
+                checkbox.checked = true;
+                mockWeekdayManager.toggleWeekday(day, true);
+            });
+            
+            updateMockUI();
+            
+            return true;
+        }
+
+        /**
+         * データ整合性テスト
+         */
+        function testDataConsistency() {
+            // 設定とUI状態の整合性確認
+            const checkboxes = document.querySelectorAll('.weekday-controls input[type="checkbox"]');
+            const dayNames = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+            
+            for (let i = 0; i < checkboxes.length; i++) {
+                const checkbox = checkboxes[i];
+                const dayName = dayNames[i];
+                const isChecked = checkbox.checked;
+                const isVisible = mockWeekdayManager.isWeekdayVisible(dayName);
+                
+                if (isChecked !== isVisible) {
+                    return `${dayName}の設定とUI状態が一致しない`;
+                }
+            }
+            
+            // 表示/非表示曜日数の整合性確認
+            const visibleCount = mockWeekdayManager.getVisibleWeekdays().length;
+            const hiddenCount = mockWeekdayManager.getHiddenWeekdays().length;
+            
+            if (visibleCount + hiddenCount !== 7) {
+                return `表示曜日数と非表示曜日数の合計が7でない: ${visibleCount} + ${hiddenCount}`;
+            }
+            
+            return true;
+        }
+
+        /**
+         * パフォーマンステスト（簡易版）
+         */
+        function testPerformance() {
+            const startTime = performance.now();
+            
+            // 複数回の切り替えを実行
+            for (let i = 0; i < 10; i++) {
+                mockWeekdayManager.toggleWeekday('saturday', i % 2 === 0);
+                mockWeekdayManager.toggleWeekday('sunday', i % 2 === 1);
+                updateMockUI();
+            }
+            
+            const endTime = performance.now();
+            const duration = endTime - startTime;
+            
+            // 500ms以内に完了することを確認
+            if (duration > 500) {
+                return `パフォーマンステストに失敗: ${duration.toFixed(2)}ms > 500ms`;
+            }
+            
+            return true;
+        }
+
+        /**
+         * モックUIの更新
+         */
+        function updateMockUI() {
+            const columns = document.querySelectorAll('.mock-day-column');
+            const taskBoard = document.getElementById('mock-task-board');
+            
+            columns.forEach((column, index) => {
+                const dayName = mockWeekdayManager.dayNames[index];
+                const isVisible = mockWeekdayManager.isWeekdayVisible(dayName);
+                
+                if (isVisible) {
+                    column.classList.remove('hidden', 'hiding');
+                    column.classList.add('showing');
+                    setTimeout(() => column.classList.remove('showing'), 400);
+                } else {
+                    column.classList.add('hiding');
+                    setTimeout(() => {
+                        column.classList.add('hidden');
+                        column.classList.remove('hiding');
+                    }, 400);
+                }
+            });
+            
+            // グリッド列数を更新
+            const visibleCount = mockWeekdayManager.getVisibleWeekdays().length;
+            taskBoard.style.gridTemplateColumns = `repeat(${visibleCount}, 1fr)`;
+        }
+
+        /**
+         * 全統合テストを実行
+         */
+        function runAllIntegrationTests() {
+            // 結果をリセット
+            integrationTestResults = { passed: 0, failed: 0, total: 0, details: [] };
+            document.getElementById('test-results').innerHTML = '';
+            document.getElementById('test-summary').style.display = 'none';
+            
+            // 環境をリセット
+            resetTestEnvironment();
+            
+            // テストを実行
+            runIntegrationTest('UI操作と設定変更の連携テスト', testUISettingIntegration);
+            runIntegrationTest('複数曜日の同時変更テスト', testMultipleWeekdayChanges);
+            runIntegrationTest('グリッドレイアウトの動的変更テスト', testGridLayoutChanges);
+            runIntegrationTest('データ整合性テスト', testDataConsistency);
+            runIntegrationTest('パフォーマンステスト', testPerformance);
+            
+            // サマリーを表示
+            setTimeout(() => {
+                displayTestSummary();
+            }, 1000);
+        }
+
+        /**
+         * テストサマリーを表示
+         */
+        function displayTestSummary() {
+            const summaryDiv = document.getElementById('test-summary');
+            const successRate = ((integrationTestResults.passed / integrationTestResults.total) * 100).toFixed(1);
+            
+            summaryDiv.innerHTML = `
+                <h3>統合テスト結果サマリー</h3>
+                <p><strong>総テスト数:</strong> ${integrationTestResults.total}</p>
+                <p><strong>成功:</strong> ${integrationTestResults.passed}</p>
+                <p><strong>失敗:</strong> ${integrationTestResults.failed}</p>
+                <p><strong>成功率:</strong> ${successRate}%</p>
+                ${integrationTestResults.failed === 0 ? 
+                    '<p style="color: green; font-weight: bold;">🎉 すべての統合テストが成功しました！</p>' : 
+                    '<p style="color: red; font-weight: bold;">⚠️ 一部のテストが失敗しました。</p>'
+                }
+            `;
+            summaryDiv.style.display = 'block';
+        }
+
+        /**
+         * テスト環境をリセット
+         */
+        function resetTestEnvironment() {
+            // チェックボックスを全てチェック状態に
+            const checkboxes = document.querySelectorAll('.weekday-controls input[type="checkbox"]');
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = true;
+            });
+            
+            // WeekdayManagerをリセット
+            mockWeekdayManager.dayNames.forEach(day => {
+                mockWeekdayManager.toggleWeekday(day, true);
+            });
+            
+            // UIを更新
+            updateMockUI();
+        }
+
+        // チェックボックスのイベントリスナーを設定
+        document.addEventListener('DOMContentLoaded', () => {
+            const checkboxes = document.querySelectorAll('.weekday-controls input[type="checkbox"]');
+            const dayNames = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+            
+            checkboxes.forEach((checkbox, index) => {
+                checkbox.addEventListener('change', (e) => {
+                    const dayName = dayNames[index];
+                    mockWeekdayManager.toggleWeekday(dayName, e.target.checked);
+                    updateMockUI();
+                });
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ウィークリータスクボード</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="apple-touch-icon" sizes="180x180" href="favicon.svg">
+    <link rel="manifest" href="manifest.json">
+    
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#4a90e2">
+    <meta name="description" content="効率的なタスク管理のためのウィークリータスクボード">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="タスクボード">
+    
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <h1>ウィークリータスクボード</h1>
+        <div id="header-controls">
+            <!-- グループ1: メイン操作 -->
+            <div id="header-group-main">
+                <button id="add-task-btn">タスクを追加</button>
+            </div>
+
+            <!-- グループ2: フィルター・表示設定 -->
+            <div id="header-group-filters">
+                <div id="category-filter">
+                    <select id="filter-category">
+                        <option value="">すべて表示</option>
+                        <option value="task">タスク</option>
+                        <option value="meeting">打ち合わせ</option>
+                        <option value="review">レビュー</option>
+                        <option value="bugfix">バグ修正</option>
+                        <option value="document">ドキュメント作成</option>
+                        <option value="research">学習・調査</option>
+                    </select>
+                </div>
+                <div id="user-settings">
+                    <input type="number" id="ideal-daily-minutes" value="480" step="30" title="1日の理想稼働時間">
+                </div>
+                <button id="weekday-filter-btn" title="表示する曜日を選択">曜日設定</button>
+                <div id="weekday-settings" style="display: none;">
+                    <div id="weekday-checkboxes" role="group" aria-label="曜日表示設定">
+                        <label><input type="checkbox" id="show-monday" checked> 月</label>
+                        <label><input type="checkbox" id="show-tuesday" checked> 火</label>
+                        <label><input type="checkbox" id="show-wednesday" checked> 水</label>
+                        <label><input type="checkbox" id="show-thursday" checked> 木</label>
+                        <label><input type="checkbox" id="show-friday" checked> 金</label>
+                        <label><input type="checkbox" id="show-saturday" checked> 土</label>
+                        <label><input type="checkbox" id="show-sunday" checked> 日</label>
+                    </div>
+                    <div id="weekday-help" class="sr-only">チェックを外すとその曜日が非表示になり、タスクは未割り当てエリアに移動します</div>
+                </div>
+            </div>
+
+            <!-- グループ3: ナビゲーション -->
+            <div id="header-group-navigation">
+                <button id="prev-week">前週</button>
+                <button id="today">今週</button>
+                <button id="next-week">次週</button>
+                <div id="date-picker-wrapper">
+                    <input type="date" id="date-picker" readonly>
+                </div>
+            </div>
+
+            <!-- グループ4: ユーティリティ -->
+            <div id="header-group-utility">
+                <button id="statistics-toggle" title="統計">📊</button>
+                <button id="template-toggle" title="テンプレート">📋</button>
+                <button id="theme-toggle" title="テーマ切替">🌙</button>
+                <button id="journal-toggle" title="ジャーナル">📝</button>
+                <button id="migration-toggle" title="タスク移行">➡️</button>
+                <button id="review-toggle" title="週次レビュー">📋</button>
+                <button id="morning-pages-toggle" title="モーニングページ">🌅</button>
+                <div id="more-menu" style="position: relative; display: inline-block;">
+                    <button id="more-menu-btn" title="その他">︙</button>
+                    <div id="more-menu-dropdown" style="display: none; position: absolute; right: 0; top: 100%; background: var(--card-background); border: 1px solid var(--border-color); border-radius: 4px; box-shadow: 0 2px 8px var(--shadow-color); z-index: 1000; min-width: 150px;">
+                        <button id="export-data-btn" style="display: block; width: 100%; text-align: left; padding: 10px 15px; border: none; background: none; cursor: pointer; border-bottom: 1px solid var(--border-color);">エクスポート</button>
+                        <button id="import-data-btn" style="display: block; width: 100%; text-align: left; padding: 10px 15px; border: none; background: none; cursor: pointer; border-bottom: 1px solid var(--border-color);">インポート</button>
+                        <button id="archive-toggle" style="display: block; width: 100%; text-align: left; padding: 10px 15px; border: none; background: none; cursor: pointer;">アーカイブ</button>
+                    </div>
+                </div>
+                <input type="file" id="import-file-input" style="display: none;" accept=".json">
+            </div>
+        </div>
+        <h2 id="week-title"></h2>
+    </header>
+
+    <div id="app-container">
+        <main id="task-board">
+            <div class="day-column" id="monday">
+                <h3>月曜日 <span class="daily-total-time"></span></h3>
+                <div class="day-column-hint">クリックでタスク作成</div>
+            </div>
+            <div class="day-column" id="tuesday">
+                <h3>火曜日 <span class="daily-total-time"></span></h3>
+                <div class="day-column-hint">クリックでタスク作成</div>
+            </div>
+            <div class="day-column" id="wednesday">
+                <h3>水曜日 <span class="daily-total-time"></span></h3>
+                <div class="day-column-hint">クリックでタスク作成</div>
+            </div>
+            <div class="day-column" id="thursday">
+                <h3>木曜日 <span class="daily-total-time"></span></h3>
+                <div class="day-column-hint">クリックでタスク作成</div>
+            </div>
+            <div class="day-column" id="friday">
+                <h3>金曜日 <span class="daily-total-time"></span></h3>
+                <div class="day-column-hint">クリックでタスク作成</div>
+            </div>
+            <div class="day-column" id="saturday">
+                <h3>土曜日 <span class="daily-total-time"></span></h3>
+                <div class="day-column-hint">クリックでタスク作成</div>
+            </div>
+            <div class="day-column" id="sunday">
+                <h3>日曜日 <span class="daily-total-time"></span></h3>
+                <div class="day-column-hint">クリックでタスク作成</div>
+            </div>
+        </main>
+        <aside id="sidebar">
+            <div id="unassigned-tasks" class="day-column">
+                <h3>未割り当て/持ち越し</h3>
+                <div id="unassigned-list" class="task-list">
+                    <!-- Unassigned tasks will be rendered here -->
+                </div>
+            </div>
+        </aside>
+    </div>
+
+    <!-- ジャーナルタイムラインパネル -->
+    <div id="journal-timeline-panel" class="dashboard-panel" style="display: none;">
+        <div class="dashboard-header">
+            <h2>📝 実行ログ</h2>
+            <div id="journal-date-controls">
+                <button id="journal-prev-day">前日</button>
+                <input type="date" id="journal-date-picker" readonly>
+                <button id="journal-next-day">次日</button>
+            </div>
+            <button id="close-journal-timeline" class="close-btn">&times;</button>
+        </div>
+        <div id="journal-timeline-content" class="dashboard-content"></div>
+    </div>
+
+    <!-- ダッシュボードパネル -->
+    <div id="dashboard-panel" class="dashboard-panel" style="display: none;">
+        <div class="dashboard-header">
+            <h2>📊 週間統計</h2>
+            <div id="dashboard-date-controls">
+                <button id="dashboard-prev-week">前週</button>
+                <input type="date" id="dashboard-date-picker" readonly>
+                <button id="dashboard-next-week">次週</button>
+            </div>
+            <button id="close-dashboard" class="close-btn">&times;</button>
+        </div>
+        <div id="dashboard-content" class="dashboard-content">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <span class="stat-label">完了率</span>
+                    <span class="stat-value" id="completion-rate-value">0%</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-label">完了タスク</span>
+                    <span class="stat-value" id="completed-tasks-value">0/0</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-label">見積時間</span>
+                    <span class="stat-value" id="estimated-time-value">0h</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-label">実績時間</span>
+                    <span class="stat-value" id="actual-time-value">0h</span>
+                </div>
+            </div>
+            <div class="chart-container">
+                <h3>カテゴリ別時間分析</h3>
+                <div id="category-breakdown" class="category-breakdown">
+                    <!-- カテゴリ別の時間分析がここに表示される -->
+                </div>
+            </div>
+            <div class="daily-breakdown-container">
+                <h3>日別作業時間</h3>
+                <div id="daily-breakdown" class="daily-breakdown">
+                    <!-- 日別の作業時間がここに表示される -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- アーカイブビュー -->
+    <div id="archive-view" style="display: none;">
+        <div id="archive-header">
+            <h2>📁 完了タスクアーカイブ</h2>
+            <div id="archive-controls">
+                <button id="close-archive">✕ 閉じる</button>
+                <button id="clear-archive">🗑️ 全削除</button>
+            </div>
+        </div>
+        <div id="archive-content">
+            <div id="archive-list">
+                <!-- アーカイブされたタスクがここに表示される -->
+            </div>
+        </div>
+    </div>
+
+    <!-- コンテキストメニュー -->
+    <div id="day-context-menu" class="context-menu" style="display: none;" role="menu" aria-label="日付列操作メニュー">
+        <div class="context-menu-item" data-action="move-all-tasks" role="menuitem" tabindex="0">
+            📤 全タスクを未割り当てに移動
+        </div>
+        <div class="context-menu-item" data-action="hide-day" role="menuitem" tabindex="0">
+            👁️ この曜日を非表示
+        </div>
+        <div class="context-menu-separator" role="separator"></div>
+        <div class="context-menu-item" data-action="cancel" role="menuitem" tabindex="0">
+            ❌ キャンセル
+        </div>
+    </div>
+
+    <!-- テンプレート管理パネル -->
+    <div id="template-panel" class="template-panel" style="display: none;">
+        <div class="template-panel-header">
+            <h2>📋 テンプレート管理</h2>
+            <button id="close-template-panel" class="close-btn">&times;</button>
+        </div>
+        <div class="template-panel-toolbar">
+            <input type="text" id="template-search" placeholder="テンプレートを検索..." class="template-search">
+            <select id="template-sort" class="template-sort">
+                <option value="recent">最新順</option>
+                <option value="name">名前順</option>
+                <option value="usage">使用回数順</option>
+            </select>
+        </div>
+        <div id="template-panel-content" class="template-panel-content">
+            <div id="template-list" class="template-list">
+                <!-- テンプレート一覧がここに表示される -->
+            </div>
+            <div id="template-empty" class="template-empty">
+                テンプレートがまだ登録されていません
+            </div>
+        </div>
+    </div>
+
+    <!-- マイグレーションモーダル -->
+    <div id="migration-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" id="close-migration-modal">&times;</span>
+            <h2>➡️ タスク移行</h2>
+            <p class="migration-description">未完了のタスクを次の期間に移行します。元のタスクには「>」マークが付きます。</p>
+            <div id="migration-task-list"></div>
+            <div id="migration-actions">
+                <button id="migrate-next-week-btn" class="migration-action-btn">次週へ移行</button>
+                <button id="migrate-next-day-btn" class="migration-action-btn">翌日へ移行</button>
+                <button id="migrate-unassigned-btn" class="migration-action-btn">未割り当てへ</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 週次レビューパネル -->
+    <div id="review-panel" class="dashboard-panel" style="display: none;">
+        <div class="dashboard-header">
+            <h2>📋 週次レビュー <span id="review-week-range" style="font-size:0.7em;color:#888;"></span></h2>
+            <button id="close-review" class="close-btn">&times;</button>
+        </div>
+        <div class="dashboard-content">
+            <p class="review-description">その週のタスク完了状況とジャーナル作業時間を振り返り、週報をMarkdownで出力できます。</p>
+            <h3>📊 サマリー</h3>
+            <div id="review-stats" class="review-stats-grid"></div>
+            <h3>⏱ ジャーナル作業時間</h3>
+            <p class="review-hint">ジャーナルの開始/完了から計算した実際の作業時間です</p>
+            <div id="review-journal-time" class="review-section"></div>
+            <div class="review-section review-achievements">
+                <h3>🏆 トップ3実績</h3>
+                <p class="review-hint">完了タスクからベスト3を選択 → Markdown週報に含まれます</p>
+                <div id="review-achievement-list"></div>
+            </div>
+            <div class="review-section">
+                <h3>📋 タスク別時間</h3>
+                <div id="review-task-time-table"></div>
+            </div>
+            <div class="review-export">
+                <button id="review-export-btn" class="review-export-btn">📋 Markdownでコピー</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- タスク追加モーダル -->
+    <div id="task-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="window.closeTaskModal && window.closeTaskModal()">&times;</span>
+            <h2>タスクを新規登録</h2>
+            <form id="task-form">
+                <label for="task-name">タスク名:</label>
+                <input type="text" id="task-name" required>
+
+                <label for="estimated-time">見積もり時間 (時間):</label>
+                <input type="number" id="estimated-time" min="0" step="0.5" required>
+
+                <label for="actual-time">実績時間 (時間):</label>
+                <input type="number" id="actual-time" min="0" step="0.5" value="0">
+
+                <label for="task-priority">優先度:</label>
+                <select id="task-priority" required>
+                    <option value="medium">中</option>
+                    <option value="high">高</option>
+                    <option value="low">低</option>
+                </select>
+
+                <label for="task-category">カテゴリ:</label>
+                <select id="task-category" required>
+                    <option value="task">タスク</option>
+                    <option value="meeting">打ち合わせ</option>
+                    <option value="review">レビュー</option>
+                    <option value="bugfix">バグ修正</option>
+                    <option value="document">ドキュメント作成</option>
+                    <option value="research">学習・調査</option>
+                </select>
+
+                <label for="task-date">担当日:</label>
+                <input type="date" id="task-date" required readonly>
+
+                <label for="due-date">期限:</label>
+                <div id="due-date-container">
+                    <input type="date" id="due-date" readonly>
+                    <select id="due-time-period">
+                        <option value="">指定なし</option>
+                        <option value="morning">午前</option>
+                        <option value="afternoon">午後</option>
+                    </select>
+                    <select id="due-hour" style="display: none;">
+                        <option value="">時間指定なし</option>
+                        <option value="9">9時</option>
+                        <option value="10">10時</option>
+                        <option value="11">11時</option>
+                        <option value="12">12時</option>
+                        <option value="13">13時</option>
+                        <option value="14">14時</option>
+                        <option value="15">15時</option>
+                        <option value="16">16時</option>
+                        <option value="17">17時</option>
+                        <option value="18">18時</option>
+                        <option value="19">19時</option>
+                        <option value="20">20時</option>
+                        <option value="21">21時</option>
+                        <option value="22">22時</option>
+                    </select>
+                </div>
+
+                <label for="task-details">詳細メモ:</label>
+                <textarea id="task-details"></textarea>
+
+                <!-- 繰り返しタスク設定セクション -->
+                <fieldset id="recurrence-fieldset">
+                    <legend>繰り返し設定</legend>
+                    
+                    <label for="is-recurring">
+                        <input type="checkbox" id="is-recurring">
+                        繰り返しタスクにする
+                    </label>
+
+                    <div id="recurrence-options" style="display: none;">
+                        <!-- パターン選択UI (9.2) -->
+                        <label for="recurrence-pattern">繰り返しパターン:</label>
+                        <select id="recurrence-pattern">
+                            <option value="">選択してください</option>
+                            <option value="daily">毎日</option>
+                            <option value="weekly">毎週</option>
+                            <option value="monthly">毎月</option>
+                        </select>
+
+                        <!-- 終了日設定UI (9.3) -->
+                        <label for="recurrence-end-date">終了日:</label>
+                        <div id="recurrence-end-date-container">
+                            <input type="date" id="recurrence-end-date" readonly>
+                            <span class="recurrence-info">終了日を指定しない場合は空白のままにしてください</span>
+                        </div>
+                    </div>
+                </fieldset>
+
+                <div id="form-buttons">
+                    <button type="submit">登録</button>
+                    <button type="button" id="duplicate-task-btn" style="display: none;">📋 複製</button>
+                    <button type="button" id="save-as-template-btn" style="display: none;">💾 テンプレートとして保存</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- カレンダー連携設定（認証情報） - ローカルで config.js を作成してください -->
+    <script>
+        // config.js が存在する場合のみ読み込む
+        const configScript = document.createElement('script');
+        configScript.src = 'config.js';
+        configScript.onerror = function() {
+            console.info('ℹ️ config.js が見つかりません（カレンダー連携は利用できません）');
+            // config.example.js を参考に config.js を作成するとカレンダー連携が有効になります
+            window.CALENDAR_CONFIG = null;
+        };
+        configScript.defer = true;
+        document.head.appendChild(configScript);
+    </script>
+
+    <!-- メインスクリプト（deferでDOM解析完了後に実行） -->
+    <script src="script.js?v=1.5.5" defer></script>
+
+    <!-- TypeScript Hybrid Modules (gradual migration - standalone) -->
+    <script src="DOMInitialization.js?v=1.5.5" defer></script>
+    <script src="WeekNavigation.js?v=1.5.5" defer></script>
+    <script src="TaskOperations.js?v=1.5.5" defer></script>
+    <script src="TaskModal.js?v=1.5.5" defer></script>
+    <script src="TaskFiltering.js?v=1.5.5" defer></script>
+    <script src="TaskRendering.js?v=1.5.5" defer></script>
+    <script src="JournalManager.js?v=1.5.5" defer></script>
+    <script src="JournalUI.js?v=1.5.5" defer></script>
+    <script src="SignifierManager.js?v=1.5.5" defer></script>
+    <script src="TaskMigration.js?v=1.5.5" defer></script>
+    <script src="WeeklyReview.js?v=1.5.5" defer></script>
+    <script src="WeeklyReviewUI.js?v=1.5.5" defer></script>
+    <script src="MorningPages.js?v=1.5.5" defer></script>
+    <script src="MorningPagesUI.js?v=1.5.5" defer></script>
+
+    <!-- バージョン情報（デバッグ用） -->
+
+    <!-- バージョン情報（デバッグ用） -->
+    <script>
+        // アプリバージョンをグローバルに設定（キャッシュ確認用）
+        window.APP_VERSION = '1.5.5';
+        window.BUILD_DATE = '2026-04-15';
+        console.log(`%c📋 ウィークリータスクボード v${window.APP_VERSION} (${window.BUILD_DATE})`, 'font-size: 14px; color: #4a90e2; font-weight: bold;');
+    </script>
+</body>
+</html>

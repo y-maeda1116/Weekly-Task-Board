@@ -1,0 +1,4766 @@
+:root {
+    --primary-color: #4a90e2;
+    --secondary-color: #f5a623;
+    --background-color: #f7f8fc;
+    --font-color: #333;
+    --border-color: #ddd;
+    --header-height: 120px;
+    --card-background: #fff;
+    --modal-background: #fefefe;
+    --shadow-color: rgba(0,0,0,0.1);
+    --task-shadow: rgba(0,0,0,0.05);
+}
+
+/* ダークモードのテーマ */
+[data-theme="dark"] {
+    --primary-color: #5aa3f0;
+    --secondary-color: #ffc947;
+    --background-color: #1a1a1a;
+    --font-color: #e0e0e0;
+    --border-color: #404040;
+    --card-background: #2d2d2d;
+    --modal-background: #2d2d2d;
+    --shadow-color: rgba(0,0,0,0.3);
+    --task-shadow: rgba(0,0,0,0.2);
+}
+
+body {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    background-color: var(--background-color);
+    color: var(--font-color);
+    margin: 0;
+    line-height: 1.6;
+}
+
+header {
+    background-color: var(--card-background);
+    padding: 20px 40px;
+    box-shadow: 0 2px 4px var(--shadow-color);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+h1 {
+    text-align: center;
+    color: var(--primary-color);
+    margin: 0 0 10px 0;
+}
+
+#header-controls {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 20px;
+    padding: 10px 0;
+}
+
+/* ヘッダーグループのスタイル */
+#header-group-main,
+#header-group-filters,
+#header-group-navigation,
+#header-group-utility {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* グループ間の区切り線 */
+#header-group-main {
+    padding-right: 15px;
+    border-right: 2px solid var(--border-color);
+}
+
+#header-group-filters {
+    padding-right: 15px;
+    border-right: 2px solid var(--border-color);
+}
+
+#header-group-navigation {
+    padding-right: 15px;
+    border-right: 2px solid var(--border-color);
+}
+
+/* メイン操作ボタン */
+#add-task-btn {
+    padding: 10px 16px;
+    font-size: 0.95em;
+    font-weight: 600;
+    background-color: var(--primary-color);
+    color: white;
+}
+
+#add-task-btn:hover {
+    opacity: 0.9;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(74, 144, 226, 0.3);
+}
+
+/* フィルターグループ */
+#category-filter select {
+    padding: 8px 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background-color: var(--card-background);
+    color: var(--font-color);
+    font-size: 0.9em;
+    cursor: pointer;
+    min-width: 120px;
+}
+
+#user-settings input {
+    width: 60px;
+    padding: 6px 8px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background-color: var(--card-background);
+    color: var(--font-color);
+    font-size: 0.9em;
+}
+
+#weekday-filter-btn {
+    padding: 8px 12px;
+    font-size: 0.9em;
+}
+
+/* 曜日設定ドロップダウン */
+#weekday-settings {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background-color: var(--card-background);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    padding: 12px;
+    box-shadow: 0 4px 12px var(--shadow-color);
+    z-index: 1000;
+    margin-top: 5px;
+}
+
+#weekday-checkboxes {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+#weekday-checkboxes label {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.9em;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 3px;
+    transition: background-color 0.2s;
+}
+
+#weekday-checkboxes label:hover {
+    background-color: rgba(74, 144, 226, 0.1);
+}
+
+#weekday-checkboxes input[type="checkbox"] {
+    cursor: pointer;
+    width: 16px;
+    height: 16px;
+    accent-color: var(--primary-color);
+}
+
+/* ナビゲーションボタン */
+#header-group-navigation button {
+    padding: 8px 12px;
+    font-size: 0.9em;
+}
+
+#date-picker {
+    background-color: var(--card-background);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    padding: 6px 10px;
+    color: var(--font-color);
+    font-size: 0.9em;
+    cursor: pointer;
+    min-width: 110px;
+    text-align: center;
+}
+
+/* ユーティリティボタン */
+#header-group-utility button {
+    padding: 8px 10px;
+    font-size: 0.95em;
+    background-color: transparent;
+    border: 1px solid var(--border-color);
+    color: var(--font-color);
+    cursor: pointer;
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+
+#header-group-utility button:hover {
+    background-color: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+}
+
+/* その他メニュー */
+#more-menu {
+    position: relative;
+}
+
+#more-menu-dropdown {
+    background-color: var(--card-background);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    box-shadow: 0 4px 12px var(--shadow-color);
+    z-index: 1000;
+    min-width: 150px;
+}
+
+#more-menu-dropdown button {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: 10px 15px;
+    border: none;
+    background: none;
+    color: var(--font-color);
+    cursor: pointer;
+    font-size: 0.9em;
+    transition: background-color 0.2s;
+}
+
+#more-menu-dropdown button:hover {
+    background-color: rgba(74, 144, 226, 0.1);
+}
+
+#more-menu-dropdown button:not(:last-child) {
+    border-bottom: 1px solid var(--border-color);
+}
+
+#week-title {
+    text-align: center;
+    margin: 10px 0 0 0;
+    color: #555;
+}
+
+#app-container {
+    display: flex;
+    padding: 20px;
+    gap: 20px;
+}
+
+main#task-board {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 15px;
+    flex-grow: 1; /* Takes up remaining space */
+    transition: grid-template-columns 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Dynamic grid columns based on visible weekdays */
+main#task-board.weekdays-6 {
+    grid-template-columns: repeat(6, 1fr);
+}
+
+main#task-board.weekdays-5 {
+    grid-template-columns: repeat(5, 1fr);
+}
+
+main#task-board.weekdays-4 {
+    grid-template-columns: repeat(4, 1fr);
+}
+
+main#task-board.weekdays-3 {
+    grid-template-columns: repeat(3, 1fr);
+}
+
+main#task-board.weekdays-2 {
+    grid-template-columns: repeat(2, 1fr);
+}
+
+main#task-board.weekdays-1 {
+    grid-template-columns: 1fr;
+}
+
+#sidebar {
+    width: 280px; /* Fixed width for the sidebar */
+    flex-shrink: 0; /* Prevents the sidebar from shrinking */
+}
+
+#unassigned-tasks {
+    background-color: var(--card-background);
+    border-radius: 8px;
+    padding: 15px;
+    box-shadow: 0 1px 3px var(--task-shadow);
+    height: 100%; /* Make it fill the sidebar height */
+}
+
+.day-column {
+    background-color: var(--card-background);
+    border-radius: 8px;
+    padding: 15px;
+    box-shadow: 0 1px 3px var(--task-shadow);
+    min-height: 200px; /* Ensure columns are valid drop targets */
+    transition: background-color 0.2s ease; /* Smooth transition for drag-over */
+}
+
+.day-column h3 {
+    margin-top: 0;
+    border-bottom: 2px solid var(--border-color);
+    padding-bottom: 10px;
+    color: var(--primary-color);
+}
+
+/* Drag-and-drop highlight */
+.day-column.drag-over {
+    background-color: #eaf2ff;
+    border: 2px dashed var(--primary-color);
+}
+
+/* Task styles */
+.task {
+    background-color: var(--card-background);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    padding: 10px;
+    margin-bottom: 10px;
+    box-shadow: 0 1px 2px var(--task-shadow);
+    /* 🚨 修正 1: デリゲーションが機能するように cursor: pointer に変更 */
+    cursor: pointer; 
+    display: flex;
+    flex-direction: column; /* Align content vertically */
+    gap: 5px; /* Space between header and due date */
+    transition: background-color 0.2s ease;
+    position: relative; /* カテゴリバーの配置のため */
+}
+
+/* Category bar styles */
+.category-bar {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 5px;
+    border-radius: 4px 0 0 4px;
+    background-color: var(--secondary-color); /* デフォルト色 */
+}
+
+.task-header {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    gap: 10px;
+    margin-left: 5px; /* カテゴリバーの分だけ右にずらす */
+}
+
+.task-due-date {
+    font-size: 0.85em;
+    color: #c0392b; /* A darker red for deadlines */
+    font-weight: bold;
+    align-self: flex-start; /* Align to the left */
+    padding-left: 30px; /* Indent to align with task name (adjusted for category bar) */
+}
+
+.task.completed {
+    background-color: #f7f8fc;
+    border-left-color: #b0b0b0;
+    opacity: 0.8;
+}
+
+.task.completed .task-name {
+    text-decoration: line-through;
+    color: #888;
+}
+
+.task-checkbox {
+    /* 🚨 修正 2: チェックボックスのカーソルとz-indexを強制 */
+    cursor: pointer;
+    position: relative; 
+    z-index: 5;
+    /* チェックボックスを大きくする */
+    width: 20px;
+    height: 20px;
+    transform: scale(1.2);
+    margin-right: 8px;
+    transition: transform 0.2s ease;
+}
+
+.task-checkbox:hover {
+    transform: scale(1.3);
+}
+
+.task-checkbox:checked {
+    transform: scale(1.4);
+}
+
+.task-name {
+    font-weight: bold;
+    flex-grow: 1;
+}
+
+/* ===== Bullet Journal Signifiers ===== */
+.task-signifier {
+    cursor: pointer;
+    user-select: none;
+    transition: transform 0.2s ease;
+    display: inline-block;
+}
+.task-signifier-empty {
+    opacity: 0.3;
+    font-size: 0.8em;
+}
+.task-signifier-empty:hover {
+    opacity: 0.7;
+}
+.task-signifier:hover {
+    transform: scale(1.3);
+    color: var(--primary-color);
+}
+.task-signifier[data-signifier="important"] {
+    color: #e74c3c;
+    font-weight: bold;
+}
+.task-signifier[data-signifier="idea"] {
+    color: #3498db;
+}
+[data-theme="dark"] .task-signifier[data-signifier="important"] {
+    color: #ff6b7a;
+}
+[data-theme="dark"] .task-signifier[data-signifier="idea"] {
+    color: #5aa3f0;
+}
+
+/* ===== Migration Modal ===== */
+.migration-description {
+    font-size: 0.9em;
+    color: #666;
+    margin-bottom: 15px;
+}
+[data-theme="dark"] .migration-description {
+    color: #aaa;
+}
+#migration-task-list {
+    max-height: 300px;
+    overflow-y: auto;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    padding: 10px;
+    margin: 15px 0;
+}
+.migration-task-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 4px;
+    border-bottom: 1px solid var(--border-color);
+}
+.migration-task-item:last-child {
+    border-bottom: none;
+}
+.migration-task-name {
+    flex: 1;
+    font-weight: bold;
+}
+.migration-task-date {
+    font-size: 0.85em;
+    color: #888;
+}
+#migration-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+.migration-action-btn {
+    padding: 8px 16px;
+    border: 1px solid var(--primary-color);
+    border-radius: 4px;
+    background: transparent;
+    color: var(--primary-color);
+    cursor: pointer;
+    font-size: 0.9em;
+    transition: all 0.2s ease;
+}
+.migration-action-btn:hover {
+    background: var(--primary-color);
+    color: #fff;
+}
+.migration-alert {
+    animation: migration-pulse 2s infinite;
+    border-radius: 4px;
+}
+@keyframes migration-pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(245, 166, 35, 0.4); }
+    50% { box-shadow: 0 0 0 6px rgba(245, 166, 35, 0); }
+}
+
+/* ===== Weekly Review Panel ===== */
+.review-description {
+    font-size: 0.9em;
+    color: #666;
+    margin-bottom: 15px;
+    line-height: 1.5;
+}
+[data-theme="dark"] .review-description {
+    color: #aaa;
+}
+.review-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px;
+    margin-bottom: 20px;
+}
+.review-stat-card {
+    padding: 16px;
+    border-radius: 8px;
+    text-align: center;
+    color: #fff;
+}
+.review-stat-value {
+    font-size: 1.6em;
+    font-weight: bold;
+    display: block;
+}
+.review-stat-label {
+    font-size: 0.85em;
+    opacity: 0.9;
+}
+.review-section {
+    margin: 20px 0;
+    border-top: 1px solid var(--border-color);
+    padding-top: 15px;
+}
+.review-section h3 {
+    margin-bottom: 10px;
+}
+.review-hint {
+    font-size: 0.85em;
+    color: #888;
+    margin-bottom: 10px;
+}
+.review-journal-total {
+    font-size: 1.1em;
+    font-weight: bold;
+    margin-bottom: 8px;
+}
+.review-journal-days {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+.review-journal-day-item {
+    padding: 4px 10px;
+    border-radius: 4px;
+    background: var(--card-background);
+    border: 1px solid var(--border-color);
+    font-size: 0.85em;
+}
+.review-achievement-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    margin-bottom: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.review-achievement-item:hover {
+    border-color: var(--primary-color);
+}
+.review-achievement-item.selected {
+    border-color: var(--primary-color);
+    background-color: rgba(74, 144, 226, 0.1);
+}
+.review-achievement-item input[type="checkbox"] {
+    accent-color: var(--primary-color);
+    width: 16px;
+    height: 16px;
+}
+.review-task-time-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9em;
+}
+.review-task-time-table th,
+.review-task-time-table td {
+    padding: 8px;
+    border-bottom: 1px solid var(--border-color);
+    text-align: left;
+}
+.review-task-time-table th {
+    font-weight: bold;
+    color: var(--font-color);
+}
+.review-status-badge {
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 0.8em;
+}
+.review-status-badge.completed {
+    background: #e8f5e8;
+    color: #27ae60;
+}
+.review-status-badge.in-progress {
+    background: #fff3e0;
+    color: #f39c12;
+}
+.review-export {
+    margin-top: 20px;
+    text-align: center;
+}
+.review-export-btn {
+    padding: 10px 24px;
+    border: 2px solid var(--primary-color);
+    border-radius: 6px;
+    background: transparent;
+    color: var(--primary-color);
+    font-size: 1em;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.review-export-btn:hover {
+    background: var(--primary-color);
+    color: #fff;
+}
+
+/* ===== Morning Pages ===== */
+.morning-pages-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: var(--background-color);
+    z-index: 10002;
+    display: flex;
+    flex-direction: column;
+    padding: 30px;
+    box-sizing: border-box;
+}
+.morning-pages-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 800px;
+    margin: 0 auto 20px;
+    width: 100%;
+}
+.morning-pages-header h2 {
+    color: var(--primary-color);
+    margin: 0;
+}
+.morning-pages-close-btn {
+    padding: 8px 16px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background: var(--card-background);
+    color: var(--font-color);
+    cursor: pointer;
+    font-size: 0.9em;
+    transition: all 0.2s ease;
+}
+.morning-pages-close-btn:hover {
+    background: var(--primary-color);
+    color: #fff;
+    border-color: var(--primary-color);
+}
+.morning-pages-editor {
+    flex: 1;
+    width: 100%;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    background-color: var(--card-background);
+    color: var(--font-color);
+    font-size: 1.1em;
+    line-height: 1.8;
+    resize: none;
+    font-family: inherit;
+    box-sizing: border-box;
+}
+.morning-pages-editor:focus {
+    outline: none;
+    border-color: var(--primary-color);
+}
+.morning-pages-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 800px;
+    margin: 20px auto 0;
+    width: 100%;
+}
+.morning-pages-wordcount {
+    font-size: 0.85em;
+    color: #888;
+}
+.morning-pages-actions {
+    display: flex;
+    gap: 10px;
+}
+.morning-pages-extract-btn {
+    padding: 10px 20px;
+    border: 2px solid var(--secondary-color);
+    border-radius: 6px;
+    background: transparent;
+    color: var(--secondary-color);
+    font-size: 0.95em;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.morning-pages-extract-btn:hover {
+    background: var(--secondary-color);
+    color: #fff;
+}
+
+/* Extract preview dialog */
+.morning-extract-dialog {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 10003;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.morning-extract-content {
+    background: var(--card-background);
+    border-radius: 8px;
+    padding: 24px;
+    max-width: 600px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+.morning-extract-content h3 {
+    margin: 0 0 8px;
+}
+.morning-extract-hint {
+    font-size: 0.85em;
+    color: #888;
+    margin: 0 0 15px;
+}
+.morning-extract-list {
+    margin-bottom: 15px;
+}
+.morning-extract-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 4px;
+    border-bottom: 1px solid var(--border-color);
+}
+.morning-extract-item:last-child {
+    border-bottom: none;
+}
+.morning-extract-item input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--primary-color);
+}
+.morning-extract-target {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 15px;
+}
+.morning-extract-target-label {
+    font-size: 0.9em;
+    font-weight: bold;
+}
+.morning-extract-target-select {
+    padding: 6px 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background: var(--card-background);
+    color: var(--font-color);
+}
+.morning-extract-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+}
+.morning-extract-register-btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 6px;
+    background: var(--primary-color);
+    color: #fff;
+    font-size: 0.95em;
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+}
+.morning-extract-register-btn:hover {
+    opacity: 0.85;
+}
+.morning-extract-cancel-btn {
+    padding: 10px 20px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    background: transparent;
+    color: var(--font-color);
+    font-size: 0.95em;
+    cursor: pointer;
+}
+
+/* Notification toast */
+.morning-notification {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 12px 24px;
+    background: var(--primary-color);
+    color: #fff;
+    border-radius: 6px;
+    font-size: 0.95em;
+    z-index: 10004;
+    transition: opacity 0.5s ease;
+}
+.morning-notification-fade {
+    opacity: 0;
+}
+
+.task-time {
+    font-size: 0.9em;
+    color: #666;
+}
+
+/* Style for the task being dragged */
+.task.dragging {
+    opacity: 0.5;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    /* ドラッグ中は cursor: grab に戻す */
+    cursor: grab; 
+}
+
+#unassigned-list {
+    min-height: 100px;
+}
+
+/* Modal styles - 後方で定義済み */
+form label {
+    display: block;
+    margin-top: 10px;
+}
+
+form input, form textarea, form button {
+    width: 100%;
+    padding: 8px;
+    margin-top: 5px;
+    box-sizing: border-box;
+}
+
+form button {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    cursor: pointer;
+    margin-top: 20px;
+}
+
+button {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.95em;
+    white-space: nowrap;
+    transition: all 0.2s ease;
+}
+
+button:hover {
+    opacity: 0.85;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+/* User settings in header */
+#user-settings {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+#user-settings label {
+    font-size: 0.9em;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+#user-settings input {
+    width: 70px;
+    padding: 6px 8px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background-color: var(--card-background);
+    color: var(--font-color);
+    font-size: 0.9em;
+}
+
+/* Category filter in header */
+#category-filter {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+#category-filter label {
+    font-size: 0.9em;
+    color: var(--font-color);
+    white-space: nowrap;
+    font-weight: 500;
+}
+
+#category-filter select {
+    padding: 8px 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background-color: var(--card-background);
+    color: var(--font-color);
+    font-size: 0.9em;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-width: 130px;
+}
+
+#category-filter select:hover {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.1);
+}
+
+#category-filter select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
+}
+
+/* ダークモード用のカテゴリフィルター */
+[data-theme="dark"] #category-filter select {
+    background-color: var(--card-background);
+    color: var(--font-color);
+    border-color: var(--border-color);
+}
+
+[data-theme="dark"] #category-filter select:hover {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(90, 163, 240, 0.1);
+}
+
+[data-theme="dark"] #category-filter select:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(90, 163, 240, 0.2);
+}
+
+/* Active filter indicator */
+#category-filter.filter-active {
+    background-color: rgba(74, 144, 226, 0.1);
+    padding: 8px;
+    border-radius: 6px;
+    border: 1px solid rgba(74, 144, 226, 0.3);
+}
+
+#category-filter.filter-active label {
+    color: var(--primary-color);
+    font-weight: 600;
+}
+
+#category-filter.filter-active select {
+    border-color: var(--primary-color);
+    background-color: var(--card-background);
+}
+
+/* Weekday settings styles */
+#weekday-settings {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin: 0;
+    flex-basis: 100%;
+    order: 10;
+}
+
+#weekday-settings label {
+    font-size: 0.9em;
+    color: var(--font-color);
+    font-weight: 500;
+}
+
+#weekday-checkboxes {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+#weekday-checkboxes label {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.9em;
+    cursor: pointer;
+    padding: 6px 10px;
+    border-radius: 4px;
+    border: 1px solid transparent;
+    transition: all 0.2s;
+    user-select: none;
+    background-color: rgba(74, 144, 226, 0.05);
+}
+
+#weekday-checkboxes label:hover {
+    background-color: rgba(74, 144, 226, 0.15);
+    border-color: var(--primary-color);
+}
+
+#weekday-checkboxes input[type="checkbox"] {
+    margin: 0;
+    cursor: pointer;
+    width: 18px;
+    height: 18px;
+    accent-color: var(--primary-color);
+}
+
+/* ダークモード用の曜日設定 */
+[data-theme="dark"] #weekday-settings label {
+    color: var(--font-color);
+}
+
+[data-theme="dark"] #weekday-checkboxes label:hover {
+    background-color: rgba(90, 163, 240, 0.1);
+}
+
+/* Day column visibility animations */
+.day-column.hidden {
+    display: none;
+}
+
+.day-column.hiding {
+    opacity: 0;
+    transform: scaleX(0.8);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    transform-origin: center;
+    pointer-events: none;
+}
+
+.day-column.showing {
+    opacity: 1;
+    transform: scaleX(1);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    transform-origin: center;
+}
+
+/* アクセシビリティ用のスクリーンリーダー専用テキスト */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* フォーカス時に表示 */
+.sr-only:focus {
+    position: static;
+    width: auto;
+    height: auto;
+    padding: 4px 8px;
+    margin: 0;
+    overflow: visible;
+    clip: auto;
+    white-space: normal;
+    background-color: var(--primary-color);
+    color: white;
+    border-radius: 4px;
+}
+
+/* コンテキストメニューのキーボードナビゲーション */
+.context-menu-item:focus {
+    outline: 2px solid var(--primary-color);
+    outline-offset: -2px;
+    background-color: var(--primary-color);
+    color: white;
+}
+
+/* 曜日チェックボックスのフォーカススタイル */
+#weekday-checkboxes input[type="checkbox"]:focus {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+}
+
+#weekday-checkboxes label:focus-within {
+    background-color: rgba(74, 144, 226, 0.1);
+    border-radius: 4px;
+}
+.day-column:not(.hidden):not(.hiding):hover {
+    background-color: rgba(74, 144, 226, 0.02);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px var(--task-shadow);
+    transition: all 0.2s ease;
+}
+
+[data-theme="dark"] .day-column:not(.hidden):not(.hiding):hover {
+    background-color: rgba(90, 163, 240, 0.05);
+}
+
+/* Weekday notification styles */
+.weekday-notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background-color: var(--primary-color);
+    color: white;
+    padding: 12px 20px;
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 10000;
+    font-size: 0.9em;
+    opacity: 0;
+    transform: translateX(100%);
+    transition: all 0.3s ease;
+}
+
+.weekday-notification.show {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+/* Bulk move notification styles */
+.bulk-move-notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background-color: var(--primary-color);
+    color: white;
+    padding: 12px 20px;
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 10000;
+    font-size: 0.9em;
+    opacity: 0;
+    transform: translateX(100%);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    max-width: 350px;
+}
+
+.bulk-move-notification.show {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.bulk-move-notification.success {
+    background-color: #27ae60;
+}
+
+.bulk-move-notification.info {
+    background-color: var(--primary-color);
+}
+
+.bulk-move-notification.warning {
+    background-color: #f39c12;
+}
+
+.bulk-move-notification.error {
+    background-color: #e74c3c;
+}
+
+.notification-icon {
+    font-size: 1.1em;
+}
+
+.notification-message {
+    flex: 1;
+}
+
+/* Context menu styles */
+.context-menu {
+    position: fixed;
+    background: var(--card-background);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 10001;
+    min-width: 220px;
+    padding: 4px 0;
+    font-size: 0.9em;
+}
+
+.context-menu-item {
+    padding: 10px 15px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    user-select: none;
+}
+
+.context-menu-item:hover {
+    background-color: var(--hover-color, rgba(74, 144, 226, 0.1));
+}
+
+.context-menu-item:active {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.context-menu-separator {
+    height: 1px;
+    background-color: var(--border-color);
+    margin: 4px 0;
+}
+
+/* ダークモード用のコンテキストメニュー */
+[data-theme="dark"] .context-menu {
+    background: var(--card-background);
+    border-color: var(--border-color);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+[data-theme="dark"] .context-menu-item:hover {
+    background-color: rgba(90, 163, 240, 0.1);
+}
+
+[data-theme="dark"] .context-menu-separator {
+    background-color: var(--border-color);
+}
+
+/* ダークモード用の通知 */
+[data-theme="dark"] .bulk-move-notification {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+/* ダークモード用のアクティブフィルター */
+[data-theme="dark"] #category-filter.filter-active {
+    background-color: rgba(90, 163, 240, 0.1);
+    border-color: rgba(90, 163, 240, 0.3);
+}
+
+[data-theme="dark"] #category-filter.filter-active label {
+    color: var(--primary-color);
+}
+
+/* Daily total time display */
+.daily-total-time {
+    font-size: 0.9em;
+    font-weight: bold;
+    color: var(--font-color);
+    margin-left: 8px;
+}
+
+.daily-total-time.overload {
+    color: #e74c3c; /* A nice red color for warnings */
+}
+
+/* Responsive Design for Mobile */
+@media (max-width: 768px) {
+    #app-container {
+        flex-direction: column;
+    }
+
+    main#task-board {
+        grid-template-columns: 1fr;
+    }
+    
+    /* モバイルでは動的グリッド調整を無効化 */
+    main#task-board.weekdays-1,
+    main#task-board.weekdays-2,
+    main#task-board.weekdays-3,
+    main#task-board.weekdays-4,
+    main#task-board.weekdays-5,
+    main#task-board.weekdays-6 {
+        grid-template-columns: 1fr;
+    }
+
+    #sidebar {
+        width: 100%;
+    }
+
+    #header-controls {
+        flex-direction: column;
+        gap: 15px;
+        align-items: stretch; /* Stretch items to fill width */
+    }
+
+    #navigation {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 10px;
+    }
+
+    header {
+        padding: 15px 20px;
+        position: static; /* Let header scroll with page on mobile */
+    }
+
+    body {
+        padding-top: 0; /* Remove padding when header is not sticky */
+    }
+
+    .modal-content {
+        width: 90%;
+        margin: 20% auto;
+    }
+}
+
+@media (max-width: 480px) {
+    h1 {
+        font-size: 1.5em;
+    }
+
+    #navigation button, #add-task-btn {
+        width: 100%;
+    }
+
+    #user-settings {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    #category-filter {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    #category-filter select {
+        width: 100%;
+    }
+    
+    #weekday-settings {
+        flex-direction: column;
+        align-items: stretch;
+        margin: 10px 0;
+    }
+    
+    #weekday-checkboxes {
+        justify-content: center;
+        margin-top: 5px;
+    }
+    
+    .bulk-move-notification {
+        right: 10px;
+        left: 10px;
+        text-align: center;
+        max-width: none;
+    }
+    
+    .context-menu {
+        min-width: 200px;
+        font-size: 0.85em;
+    }
+    
+    .context-menu-item {
+        padding: 12px 15px;
+    }
+}
+/* Modal styles - 最終調整 */
+.modal {
+    display: none; /* 💡 初期状態を確実に非表示にする */
+    position: fixed;
+    z-index: 9999; /* 💡 z-indexを最大値に近く設定 */
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.5);
+    /* スクロール抑制のための設定 */
+    overscroll-behavior: contain;
+}
+
+.modal-content {
+    background-color: var(--modal-background);
+    margin: 5% auto; /* 💡 上部マージンを減らして画面中央寄りに */
+    padding: 20px;
+    border: 1px solid var(--border-color);
+    width: 80%;
+    max-width: 500px;
+    max-height: 90vh; /* 💡 最大高さを設定 */
+    border-radius: 8px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); /* 💡 より強いシャドウ */
+    overflow-y: auto; /* 💡 モーダル内でのスクロールを許可 */
+    /* スムーズなアニメーション */
+    transform: scale(0.9);
+    opacity: 0;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+/* モーダルの閉じるボタン */
+.modal .close-btn {
+    color: #aaa;
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+    line-height: 1;
+}
+
+.modal .close-btn:hover,
+.modal .close-btn:focus {
+    color: #333;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+[data-theme="dark"] .modal .close-btn {
+    color: #888;
+}
+
+[data-theme="dark"] .modal .close-btn:hover,
+[data-theme="dark"] .modal .close-btn:focus {
+    color: #ccc;
+}
+
+/* モーダル表示時のアニメーション */
+.modal.show .modal-content {
+    transform: scale(1);
+    opacity: 1;
+}
+
+/* スクロール抑制用のbodyクラス */
+body.modal-open {
+    overflow: hidden;
+    position: fixed;
+    width: 100%;
+    /* モバイルでのスクロール抑制を強化 */
+    -webkit-overflow-scrolling: touch;
+}
+
+/* モバイル対応の改善 */
+@media (max-width: 768px) {
+    .modal-content {
+        margin: 2% auto;
+        width: 95%;
+        max-height: 95vh;
+        padding: 15px;
+    }
+    
+    /* モバイルでのキーボード表示時の調整 */
+    @supports (-webkit-touch-callout: none) {
+        body.modal-open {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+        }
+    }
+}
+
+/* ダークモード切り替えボタン */
+#theme-toggle {
+    background: none;
+    border: 2px solid var(--border-color);
+    color: var(--font-color);
+    padding: 8px 12px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 0.9em;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+#theme-toggle:hover {
+    background-color: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+}
+
+/* ダークモード用のドラッグオーバー効果 */
+[data-theme="dark"] .day-column.drag-over {
+    background-color: #2a3a5c;
+    border: 2px dashed var(--primary-color);
+}
+
+/* ダークモード用のタスク完了スタイル */
+[data-theme="dark"] .task.completed {
+    background-color: #1f1f1f;
+    border-left-color: #666;
+    opacity: 0.7;
+}
+
+/* ダークモード用のフォーカススタイル */
+[data-theme="dark"] input:focus,
+[data-theme="dark"] textarea:focus,
+[data-theme="dark"] select:focus {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+}
+
+/* ダークモード用のフォーム要素 */
+[data-theme="dark"] input,
+[data-theme="dark"] textarea,
+[data-theme="dark"] select {
+    background-color: var(--card-background);
+    color: var(--font-color);
+    border: 1px solid var(--border-color);
+}
+
+/* 日付入力フィールドの改善 */
+.date-input-wrapper {
+    position: relative;
+    display: inline-block;
+    width: 100%;
+}
+
+input[type="date"], input[type="datetime-local"] {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background-color: var(--card-background);
+    color: var(--font-color);
+    font-size: 1em;
+    cursor: pointer;
+    position: relative;
+    /* 直接入力を無効にする */
+    caret-color: transparent;
+}
+
+/* 日付入力フィールド全体をクリック可能にする */
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: auto;
+    height: auto;
+    color: transparent;
+    background: transparent;
+    cursor: pointer;
+}
+
+/* Firefox用の日付入力スタイル */
+input[type="date"]::-moz-focus-inner,
+input[type="datetime-local"]::-moz-focus-inner {
+    border: 0;
+    padding: 0;
+}
+
+/* 日付入力フィールドのホバー効果 */
+input[type="date"]:hover,
+input[type="datetime-local"]:hover {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.1);
+}
+
+/* 日付入力フィールドのフォーカス効果 */
+input[type="date"]:focus,
+input[type="datetime-local"]:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
+}
+
+/* ダークモード用の日付入力スタイル */
+[data-theme="dark"] input[type="date"]:hover,
+[data-theme="dark"] input[type="datetime-local"]:hover {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(90, 163, 240, 0.1);
+}
+
+[data-theme="dark"] input[type="date"]:focus,
+[data-theme="dark"] input[type="datetime-local"]:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(90, 163, 240, 0.2);
+}
+
+/* フォームラベルの改善 */
+form label {
+    display: block;
+    margin-top: 15px;
+    margin-bottom: 5px;
+    font-weight: 500;
+    color: var(--font-color);
+}
+
+/* 日付関連のラベルをクリック可能に見せる */
+label[for="task-date"],
+label[for="due-date"] {
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+label[for="task-date"]:hover,
+label[for="due-date"]:hover {
+    color: var(--primary-color);
+}
+
+/* 日付入力フィールドにアイコンを追加 */
+label[for="task-date"]::after,
+label[for="due-date"]::after {
+    content: " 📅";
+    font-size: 0.9em;
+    opacity: 0.7;
+}
+
+/* フォーム全体の改善 */
+form input, form textarea {
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* 日付入力フィールドをカレンダー専用にする */
+input[type="date"], input[type="datetime-local"] {
+    /* キーボード入力を無効にする */
+    pointer-events: auto;
+}
+
+/* 日付入力フィールドの見た目を改善 */
+input[type="date"]::-webkit-datetime-edit,
+input[type="datetime-local"]::-webkit-datetime-edit {
+    padding: 0;
+    color: var(--font-color);
+}
+
+input[type="date"]::-webkit-datetime-edit-text,
+input[type="datetime-local"]::-webkit-datetime-edit-text {
+    color: var(--font-color);
+    padding: 0 2px;
+}
+
+input[type="date"]::-webkit-datetime-edit-month-field,
+input[type="date"]::-webkit-datetime-edit-day-field,
+input[type="date"]::-webkit-datetime-edit-year-field,
+input[type="datetime-local"]::-webkit-datetime-edit-month-field,
+input[type="datetime-local"]::-webkit-datetime-edit-day-field,
+input[type="datetime-local"]::-webkit-datetime-edit-year-field,
+input[type="datetime-local"]::-webkit-datetime-edit-hour-field,
+input[type="datetime-local"]::-webkit-datetime-edit-minute-field {
+    color: var(--font-color);
+    background: transparent;
+}
+
+/* 空の日付フィールドにプレースホルダー風の表示 */
+input[type="date"]:invalid,
+input[type="datetime-local"]:invalid {
+    color: #999;
+}
+
+/* カレンダーアイコンを強調 */
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="%234a90e2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>');
+    background-size: 16px 16px;
+    background-repeat: no-repeat;
+    background-position: center;
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    opacity: 0.8;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator:hover,
+input[type="datetime-local"]::-webkit-calendar-picker-indicator:hover {
+    opacity: 1;
+}
+
+/* ダークモード用のカレンダーアイコン */
+[data-theme="dark"] input[type="date"]::-webkit-calendar-picker-indicator,
+[data-theme="dark"] input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="%235aa3f0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>');
+}
+
+/* readonly状態の日付入力フィールドのスタイル */
+input[type="date"][readonly],
+input[type="datetime-local"][readonly] {
+    background-color: var(--card-background);
+    cursor: pointer;
+    opacity: 1;
+}
+
+input[type="date"][readonly]:hover,
+input[type="datetime-local"][readonly]:hover {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.1);
+}
+
+input[type="date"][readonly]:focus,
+input[type="datetime-local"][readonly]:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
+}
+
+/* ダークモード用のreadonly状態 */
+[data-theme="dark"] input[type="date"][readonly]:hover,
+[data-theme="dark"] input[type="datetime-local"][readonly]:hover {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(90, 163, 240, 0.1);
+}
+
+[data-theme="dark"] input[type="date"][readonly]:focus,
+[data-theme="dark"] input[type="datetime-local"][readonly]:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(90, 163, 240, 0.2);
+}
+
+/* アーカイブビューのスタイル */
+#archive-view {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: var(--background-color);
+    z-index: 1500;
+    overflow-y: auto;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+#archive-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    padding: 20px;
+    background-color: var(--card-background);
+    border-radius: 8px;
+    box-shadow: 0 2px 4px var(--shadow-color);
+}
+
+#archive-header h2 {
+    margin: 0;
+    color: var(--primary-color);
+}
+
+#archive-controls {
+    display: flex;
+    gap: 10px;
+}
+
+#archive-controls button {
+    padding: 8px 16px;
+    font-size: 0.9em;
+}
+
+#close-archive {
+    background-color: #6c757d;
+}
+
+#clear-archive {
+    background-color: #dc3545;
+}
+
+#archive-content {
+    background-color: var(--card-background);
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 4px var(--shadow-color);
+    min-height: 400px;
+}
+
+#archive-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 15px;
+}
+
+/* アーカイブされたタスクのスタイル */
+.archived-task {
+    background-color: var(--background-color);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    padding: 15px;
+    box-shadow: 0 1px 2px var(--task-shadow);
+    transition: transform 0.2s ease;
+    position: relative; /* カテゴリバーの配置のため */
+}
+
+.archived-task:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px var(--task-shadow);
+}
+
+.archived-task-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 10px;
+    margin-left: 5px; /* カテゴリバーの分だけ右にずらす */
+}
+
+.archived-task-name {
+    font-weight: bold;
+    color: var(--font-color);
+    text-decoration: line-through;
+    opacity: 0.8;
+}
+
+.archived-task-time {
+    font-size: 0.9em;
+    color: #28a745;
+    font-weight: bold;
+}
+
+.archived-task-dates {
+    font-size: 0.85em;
+    color: #666;
+    margin-bottom: 8px;
+    margin-left: 5px; /* カテゴリバーの分だけ右にずらす */
+}
+
+.archived-task-details {
+    font-size: 0.9em;
+    color: var(--font-color);
+    opacity: 0.7;
+    line-height: 1.4;
+    margin-left: 5px; /* カテゴリバーの分だけ右にずらす */
+}
+
+.archived-task-completed-date {
+    font-size: 0.8em;
+    color: #28a745;
+    font-weight: bold;
+    margin-top: 10px;
+    text-align: right;
+    margin-right: 0; /* 右端は調整不要 */
+}
+
+/* アーカイブが空の場合のメッセージ */
+.archive-empty {
+    text-align: center;
+    color: #666;
+    font-style: italic;
+    padding: 40px;
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 768px) {
+    #archive-view {
+        padding: 10px;
+    }
+    
+    #archive-header {
+        flex-direction: column;
+        gap: 15px;
+        text-align: center;
+    }
+    
+    #archive-list {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* 優先度による色分け */
+.task.priority-high {
+    border-left-color: #dc3545; /* 赤 */
+}
+
+.task.priority-medium {
+    border-left-color: var(--secondary-color); /* オレンジ（既存） */
+}
+
+.task.priority-low {
+    border-left-color: #28a745; /* 緑 */
+}
+
+/* 優先度インジケーター */
+.task-priority {
+    font-size: 0.8em;
+    font-weight: bold;
+    padding: 2px 6px;
+    border-radius: 3px;
+    margin-left: 5px;
+}
+
+.task-priority.high {
+    background-color: #dc3545;
+    color: white;
+}
+
+.task-priority.medium {
+    background-color: var(--secondary-color);
+    color: white;
+}
+
+.task-priority.low {
+    background-color: #28a745;
+    color: white;
+}
+
+/* ダークモード用の優先度色調整 */
+[data-theme="dark"] .task.priority-high {
+    border-left-color: #ff6b7a;
+}
+
+[data-theme="dark"] .task.priority-medium {
+    border-left-color: #ffc947;
+}
+
+[data-theme="dark"] .task.priority-low {
+    border-left-color: #51cf66;
+}
+
+[data-theme="dark"] .task-priority.high {
+    background-color: #ff6b7a;
+}
+
+[data-theme="dark"] .task-priority.medium {
+    background-color: #ffc947;
+}
+
+[data-theme="dark"] .task-priority.low {
+    background-color: #51cf66;
+}
+
+/* カテゴリによる色分け */
+.task.category-task .category-bar {
+    background-color: #3498db;
+}
+
+.task.category-meeting .category-bar {
+    background-color: #27ae60;
+}
+
+.task.category-review .category-bar {
+    background-color: #f39c12;
+}
+
+.task.category-bugfix .category-bar {
+    background-color: #e74c3c;
+}
+
+.task.category-document .category-bar {
+    background-color: #9b59b6;
+}
+
+.task.category-research .category-bar {
+    background-color: #f1c40f;
+}
+
+/* カテゴリ背景色の適用（オプション） */
+.task.category-task {
+    background-color: #e3f2fd;
+}
+
+.task.category-meeting {
+    background-color: #e8f5e8;
+}
+
+.task.category-review {
+    background-color: #fff3e0;
+}
+
+.task.category-bugfix {
+    background-color: #ffebee;
+}
+
+.task.category-document {
+    background-color: #f3e5f5;
+}
+
+.task.category-research {
+    background-color: #fffde7;
+}
+
+/* ダークモード用のカテゴリ背景色 */
+[data-theme="dark"] .task.category-task {
+    background-color: rgba(52, 152, 219, 0.1);
+}
+
+[data-theme="dark"] .task.category-meeting {
+    background-color: rgba(39, 174, 96, 0.1);
+}
+
+[data-theme="dark"] .task.category-review {
+    background-color: rgba(243, 156, 18, 0.1);
+}
+
+[data-theme="dark"] .task.category-bugfix {
+    background-color: rgba(231, 76, 60, 0.1);
+}
+
+[data-theme="dark"] .task.category-document {
+    background-color: rgba(155, 89, 182, 0.1);
+}
+
+[data-theme="dark"] .task.category-research {
+    background-color: rgba(241, 196, 15, 0.1);
+}
+
+/* 優先度選択のスタイル */
+#task-priority {
+    width: 100%;
+    padding: 8px;
+    margin-top: 5px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background-color: var(--card-background);
+    color: var(--font-color);
+    font-size: 1em;
+}
+
+/* 日付クリックでタスク作成機能 */
+.day-column {
+    position: relative;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.day-column:hover {
+    background-color: rgba(74, 144, 226, 0.05);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px var(--task-shadow);
+}
+
+.day-column h3 {
+    position: relative;
+}
+
+.day-column h3::after {
+    content: "📝";
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    font-size: 0.8em;
+}
+
+.day-column:hover h3::after {
+    opacity: 0.6;
+}
+
+/* ダークモード用のホバー効果 */
+[data-theme="dark"] .day-column:hover {
+    background-color: rgba(90, 163, 240, 0.1);
+}
+
+/* タスク作成ヒント */
+.day-column-hint {
+    position: absolute;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.75em;
+    color: #999;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    pointer-events: none;
+}
+
+.day-column:hover .day-column-hint {
+    opacity: 1;
+}
+
+/* 未割り当てエリアは除外 */
+#unassigned-tasks {
+    cursor: default;
+}
+
+#unassigned-tasks:hover {
+    background-color: var(--card-background);
+    transform: none;
+    box-shadow: 0 1px 3px var(--task-shadow);
+}
+
+#unassigned-tasks h3::after {
+    display: none;
+}
+
+/* タスク完了時の爽快アニメーション */
+@keyframes taskSwirlDisappear {
+    0% {
+        transform: scale(1) rotate(0deg) translateX(0) translateY(0);
+        opacity: 1;
+        filter: blur(0px);
+    }
+    20% {
+        transform: scale(1.05) rotate(90deg) translateX(5px) translateY(-5px);
+        opacity: 1;
+        box-shadow: 0 0 15px rgba(40, 167, 69, 0.8);
+    }
+    40% {
+        transform: scale(0.9) rotate(270deg) translateX(-10px) translateY(10px);
+        opacity: 0.8;
+        box-shadow: 0 0 25px rgba(40, 167, 69, 0.9);
+        filter: blur(1px);
+    }
+    60% {
+        transform: scale(0.7) rotate(450deg) translateX(15px) translateY(-15px);
+        opacity: 0.6;
+        box-shadow: 0 0 35px rgba(40, 167, 69, 1);
+        filter: blur(2px);
+    }
+    80% {
+        transform: scale(0.4) rotate(630deg) translateX(-20px) translateY(20px);
+        opacity: 0.3;
+        box-shadow: 0 0 45px rgba(40, 167, 69, 1);
+        filter: blur(3px);
+    }
+    100% {
+        transform: scale(0) rotate(900deg) translateX(25px) translateY(-25px);
+        opacity: 0;
+        box-shadow: 0 0 60px rgba(40, 167, 69, 1);
+        filter: blur(5px);
+    }
+}
+
+@keyframes checkboxSuccess {
+    0% {
+        transform: scale(1.2);
+    }
+    50% {
+        transform: scale(1.6);
+        box-shadow: 0 0 15px rgba(40, 167, 69, 0.8);
+    }
+    100% {
+        transform: scale(1.4);
+        box-shadow: 0 0 5px rgba(40, 167, 69, 0.4);
+    }
+}
+
+@keyframes confettiFall {
+    0% {
+        transform: scale(0) rotate(0deg) translateY(0);
+        opacity: 1;
+    }
+    10% {
+        transform: scale(1.2) rotate(45deg) translateY(-20px);
+        opacity: 1;
+    }
+    30% {
+        transform: scale(1) rotate(180deg) translateY(-10px);
+        opacity: 1;
+    }
+    60% {
+        transform: scale(0.8) rotate(360deg) translateY(50px);
+        opacity: 0.7;
+    }
+    100% {
+        transform: scale(0.3) rotate(720deg) translateY(150px);
+        opacity: 0;
+    }
+}
+
+@keyframes confettiExplode {
+    0% {
+        transform: scale(0) rotate(0deg);
+        opacity: 1;
+    }
+    20% {
+        transform: scale(1.5) rotate(90deg);
+        opacity: 1;
+    }
+    40% {
+        transform: scale(1.2) rotate(270deg);
+        opacity: 0.9;
+    }
+    70% {
+        transform: scale(0.8) rotate(450deg);
+        opacity: 0.6;
+    }
+    100% {
+        transform: scale(0) rotate(720deg);
+        opacity: 0;
+    }
+}
+
+/* タスク完了アニメーションクラス */
+.task.completing {
+    animation: taskSwirlDisappear 1.5s ease-out forwards;
+    z-index: 10;
+    position: relative;
+}
+
+.task-checkbox.success-animation {
+    animation: checkboxSuccess 0.6s ease-out;
+}
+
+/* 紙吹雪エフェクト用 */
+.confetti {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 15;
+}
+
+.confetti.red { background-color: #dc3545; }
+.confetti.orange { background-color: #f5a623; }
+.confetti.green { background-color: #28a745; }
+.confetti.blue { background-color: #4a90e2; }
+.confetti.purple { background-color: #6f42c1; }
+
+.confetti.fall {
+    animation: confettiFall 2s ease-out forwards;
+}
+
+.confetti.explode {
+    animation: confettiExplode 1.5s ease-out forwards;
+}
+
+/* 完了時の光る効果 */
+@keyframes glowPulse {
+    0% {
+        box-shadow: 0 0 5px rgba(40, 167, 69, 0.3);
+    }
+    50% {
+        box-shadow: 0 0 25px rgba(40, 167, 69, 0.8), 0 0 35px rgba(40, 167, 69, 0.6);
+    }
+    100% {
+        box-shadow: 0 0 5px rgba(40, 167, 69, 0.3);
+    }
+}
+
+.task.glow-effect {
+    animation: glowPulse 0.8s ease-in-out;
+}
+
+/* 成功メッセージ */
+.success-message {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: linear-gradient(135deg, #28a745, #20c997);
+    color: white;
+    padding: 15px 25px;
+    border-radius: 25px;
+    font-weight: bold;
+    font-size: 1.1em;
+    box-shadow: 0 8px 25px rgba(40, 167, 69, 0.4);
+    z-index: 20;
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0);
+    transition: all 0.3s ease-out;
+}
+
+.success-message.show {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+}
+
+.success-message::before {
+    content: "🎉";
+    margin-right: 8px;
+    font-size: 1.2em;
+}
+
+/* ダークモード用の調整 */
+[data-theme="dark"] .success-message {
+    background: linear-gradient(135deg, #51cf66, #40c057);
+    box-shadow: 0 8px 25px rgba(81, 207, 102, 0.4);
+}
+
+/* 日付ピッカーのカスタマイズ */
+#date-picker-wrapper {
+    position: relative;
+    display: inline-block;
+}
+
+#navigation {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+#navigation button {
+    padding: 8px 12px;
+    font-size: 0.9em;
+}
+
+#data-management {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+#add-task-btn {
+    padding: 8px 12px;
+    font-size: 0.95em;
+    font-weight: 500;
+    background-color: var(--primary-color);
+}
+
+#date-picker {
+    background-color: var(--card-background);
+    border: 2px solid var(--border-color);
+    border-radius: 4px;
+    padding: 8px 12px;
+    color: var(--font-color);
+    font-size: 0.9em;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-width: 120px;
+    text-align: center;
+}
+
+#date-picker:hover {
+    border-color: var(--primary-color);
+    background-color: rgba(74, 144, 226, 0.05);
+}
+
+#date-picker:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
+}
+
+/* カレンダーアイコンを完全に非表示 */
+#date-picker::-webkit-calendar-picker-indicator {
+    display: none;
+    -webkit-appearance: none;
+}
+
+#date-picker::-webkit-inner-spin-button,
+#date-picker::-webkit-outer-spin-button {
+    display: none;
+    -webkit-appearance: none;
+}
+
+/* Firefox用 */
+#date-picker::-moz-calendar-picker {
+    display: none;
+}
+
+/* 日付ピッカーのreadonly状態でもクリック可能に見せる */
+#date-picker[readonly] {
+    cursor: pointer;
+    background-color: var(--card-background);
+}
+
+#date-picker[readonly]:hover {
+    border-color: var(--primary-color);
+    background-color: rgba(74, 144, 226, 0.05);
+}
+
+/* ダークモード用 */
+[data-theme="dark"] #date-picker:hover {
+    background-color: rgba(90, 163, 240, 0.1);
+}
+
+[data-theme="dark"] #date-picker[readonly]:hover {
+    background-color: rgba(90, 163, 240, 0.1);
+}
+
+/* アーカイブタスクの復元機能 */
+.archived-task-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid var(--border-color);
+}
+
+.restore-task-btn {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-size: 0.8em;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.restore-task-btn:hover {
+    background-color: #3a7bc8;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(74, 144, 226, 0.3);
+}
+
+.delete-task-btn {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-size: 0.8em;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.delete-task-btn:hover {
+    background-color: #c82333;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(220, 53, 69, 0.3);
+}
+
+/* ダークモード用 */
+[data-theme="dark"] .restore-task-btn {
+    background-color: var(--primary-color);
+}
+
+[data-theme="dark"] .restore-task-btn:hover {
+    background-color: #4a9eff;
+}
+
+[data-theme="dark"] .delete-task-btn:hover {
+    background-color: #ff6b7a;
+}
+
+/* 復元アニメーション */
+@keyframes restoreAnimation {
+    0% {
+        transform: scale(1) rotate(0deg);
+        opacity: 1;
+    }
+    50% {
+        transform: scale(1.1) rotate(5deg);
+        opacity: 0.8;
+        box-shadow: 0 0 15px rgba(74, 144, 226, 0.6);
+    }
+    100% {
+        transform: scale(0) rotate(10deg);
+        opacity: 0;
+        box-shadow: 0 0 25px rgba(74, 144, 226, 0.8);
+    }
+}
+
+.archived-task.restoring {
+    animation: restoreAnimation 0.8s ease-out forwards;
+}
+
+/* フォームボタンのスタイル */
+#form-buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+#form-buttons button {
+    flex: 1;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1em;
+    transition: all 0.2s ease;
+}
+
+#form-buttons button[type="submit"] {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+#form-buttons button[type="submit"]:hover {
+    background-color: #3a7bc8;
+}
+
+#duplicate-task-btn {
+    background-color: #28a745;
+    color: white;
+}
+
+#duplicate-task-btn:hover {
+    background-color: #218838;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(40, 167, 69, 0.3);
+}
+
+/* ダークモード用 */
+[data-theme="dark"] #duplicate-task-btn {
+    background-color: #51cf66;
+}
+
+[data-theme="dark"] #duplicate-task-btn:hover {
+    background-color: #40c057;
+}
+
+/* 複製成功メッセージ */
+.duplicate-message {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: linear-gradient(135deg, #28a745, #20c997);
+    color: white;
+    padding: 15px 25px;
+    border-radius: 25px;
+    font-weight: bold;
+    font-size: 1.1em;
+    box-shadow: 0 8px 25px rgba(40, 167, 69, 0.4);
+    z-index: 20;
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0);
+    transition: all 0.3s ease-out;
+}
+
+.duplicate-message.show {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+}
+
+.duplicate-message::before {
+    content: "📋";
+    margin-right: 8px;
+    font-size: 1.2em;
+}
+
+[data-theme="dark"] .duplicate-message {
+    background: linear-gradient(135deg, #51cf66, #40c057);
+    box-shadow: 0 8px 25px rgba(81, 207, 102, 0.4);
+}
+
+/* 完了タスクを含む時間表示の改善 */
+.daily-total-time {
+    font-size: 0.9em;
+    font-weight: bold;
+    color: var(--font-color);
+    margin-left: 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    line-height: 1.2;
+}
+
+.daily-total-time .total-time {
+    color: var(--font-color);
+}
+
+.daily-total-time .completed-time {
+    font-size: 0.8em;
+    color: #28a745;
+    opacity: 0.8;
+}
+
+.daily-total-time.overload .total-time {
+    color: #e74c3c;
+}
+
+/* ダークモード用 */
+[data-theme="dark"] .daily-total-time .completed-time {
+    color: #51cf66;
+}
+
+/* 期限入力のスタイル */
+#due-date-container {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+#due-date-container input,
+#due-date-container select {
+    padding: 8px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background-color: var(--card-background);
+    color: var(--font-color);
+    font-size: 0.9em;
+}
+
+#due-date {
+    flex: 1;
+    min-width: 140px;
+}
+
+#due-time-period,
+#due-hour {
+    min-width: 100px;
+}
+
+#due-time-period:focus,
+#due-hour:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
+}
+
+/* ダークモード用 */
+[data-theme="dark"] #due-date-container input,
+[data-theme="dark"] #due-date-container select {
+    background-color: var(--card-background);
+    color: var(--font-color);
+    border-color: var(--border-color);
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 480px) {
+    #due-date-container {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    #due-date,
+    #due-time-period,
+    #due-hour {
+        width: 100%;
+    }
+}
+
+
+/* 時間比較表示のスタイル */
+.time-overrun {
+    color: #e74c3c;
+    font-weight: bold;
+    font-size: 0.85em;
+}
+
+.time-underrun {
+    color: #27ae60;
+    font-weight: bold;
+    font-size: 0.85em;
+}
+
+.time-match {
+    color: #3498db;
+    font-weight: bold;
+    font-size: 0.85em;
+}
+
+/* ダークモード用の時間比較表示 */
+[data-theme="dark"] .time-overrun {
+    color: #ff6b7a;
+}
+
+[data-theme="dark"] .time-underrun {
+    color: #51cf66;
+}
+
+[data-theme="dark"] .time-match {
+    color: #5aa3f0;
+}
+
+/* 時間超過タスクの視覚的表示 */
+.task.time-overrun-indicator {
+    border-right: 3px solid #e74c3c;
+}
+
+.task.time-underrun-indicator {
+    border-right: 3px solid #27ae60;
+}
+
+.task.time-match-indicator {
+    border-right: 3px solid #3498db;
+}
+
+
+/* 時間超過タスクの強調表示 */
+.task.time-overrun-indicator {
+    border-right: 3px solid #e74c3c;
+    background: linear-gradient(to right, var(--card-background) 0%, rgba(231, 76, 60, 0.05) 100%);
+}
+
+.task.time-overrun-indicator:hover {
+    background: linear-gradient(to right, var(--card-background) 0%, rgba(231, 76, 60, 0.1) 100%);
+    box-shadow: 0 2px 8px rgba(231, 76, 60, 0.2);
+}
+
+/* 時間短縮タスクの表示 */
+.task.time-underrun-indicator {
+    border-right: 3px solid #27ae60;
+    background: linear-gradient(to right, var(--card-background) 0%, rgba(39, 174, 96, 0.05) 100%);
+}
+
+.task.time-underrun-indicator:hover {
+    background: linear-gradient(to right, var(--card-background) 0%, rgba(39, 174, 96, 0.1) 100%);
+    box-shadow: 0 2px 8px rgba(39, 174, 96, 0.2);
+}
+
+/* 時間一致タスクの表示 */
+.task.time-match-indicator {
+    border-right: 3px solid #3498db;
+    background: linear-gradient(to right, var(--card-background) 0%, rgba(52, 152, 219, 0.05) 100%);
+}
+
+.task.time-match-indicator:hover {
+    background: linear-gradient(to right, var(--card-background) 0%, rgba(52, 152, 219, 0.1) 100%);
+    box-shadow: 0 2px 8px rgba(52, 152, 219, 0.2);
+}
+
+/* ダークモード用の時間超過タスク */
+[data-theme="dark"] .task.time-overrun-indicator {
+    background: linear-gradient(to right, var(--card-background) 0%, rgba(255, 107, 122, 0.1) 100%);
+}
+
+[data-theme="dark"] .task.time-overrun-indicator:hover {
+    background: linear-gradient(to right, var(--card-background) 0%, rgba(255, 107, 122, 0.15) 100%);
+    box-shadow: 0 2px 8px rgba(255, 107, 122, 0.2);
+}
+
+/* ダークモード用の時間短縮タスク */
+[data-theme="dark"] .task.time-underrun-indicator {
+    background: linear-gradient(to right, var(--card-background) 0%, rgba(81, 207, 102, 0.1) 100%);
+}
+
+[data-theme="dark"] .task.time-underrun-indicator:hover {
+    background: linear-gradient(to right, var(--card-background) 0%, rgba(81, 207, 102, 0.15) 100%);
+    box-shadow: 0 2px 8px rgba(81, 207, 102, 0.2);
+}
+
+/* ダークモード用の時間一致タスク */
+[data-theme="dark"] .task.time-match-indicator {
+    background: linear-gradient(to right, var(--card-background) 0%, rgba(90, 163, 240, 0.1) 100%);
+}
+
+[data-theme="dark"] .task.time-match-indicator:hover {
+    background: linear-gradient(to right, var(--card-background) 0%, rgba(90, 163, 240, 0.15) 100%);
+    box-shadow: 0 2px 8px rgba(90, 163, 240, 0.2);
+}
+
+/* 時間超過警告アイコン */
+.time-overrun::before {
+    content: '⚠️ ';
+    margin-right: 2px;
+}
+
+/* 時間短縮成功アイコン */
+.time-underrun::before {
+    content: '✅ ';
+    margin-right: 2px;
+}
+
+/* 時間一致アイコン */
+.time-match::before {
+    content: '✓ ';
+    margin-right: 2px;
+}
+
+/* 時間超過タスクの点滅アニメーション（オプション） */
+@keyframes time-overrun-pulse {
+    0%, 100% {
+        box-shadow: 0 2px 8px rgba(231, 76, 60, 0.2);
+    }
+    50% {
+        box-shadow: 0 2px 12px rgba(231, 76, 60, 0.4);
+    }
+}
+
+.task.time-overrun-indicator.highlight {
+    animation: time-overrun-pulse 2s ease-in-out infinite;
+}
+
+/* 時間超過度合いによる色分け */
+.task.time-overrun-severe {
+    border-right-width: 5px;
+    border-right-color: #c0392b;
+}
+
+.task.time-overrun-moderate {
+    border-right-width: 4px;
+    border-right-color: #e74c3c;
+}
+
+.task.time-overrun-minor {
+    border-right-width: 3px;
+    border-right-color: #e67e22;
+}
+
+/* 時間超過度合いの背景色 */
+.task.time-overrun-severe {
+    background: linear-gradient(to right, var(--card-background) 0%, rgba(192, 57, 43, 0.1) 100%);
+}
+
+.task.time-overrun-moderate {
+    background: linear-gradient(to right, var(--card-background) 0%, rgba(231, 76, 60, 0.08) 100%);
+}
+
+.task.time-overrun-minor {
+    background: linear-gradient(to right, var(--card-background) 0%, rgba(230, 126, 34, 0.08) 100%);
+}
+
+/* ダークモード用の時間超過度合い */
+[data-theme="dark"] .task.time-overrun-severe {
+    background: linear-gradient(to right, var(--card-background) 0%, rgba(255, 107, 122, 0.15) 100%);
+}
+
+[data-theme="dark"] .task.time-overrun-moderate {
+    background: linear-gradient(to right, var(--card-background) 0%, rgba(255, 107, 122, 0.1) 100%);
+}
+
+[data-theme="dark"] .task.time-overrun-minor {
+    background: linear-gradient(to right, var(--card-background) 0%, rgba(255, 159, 64, 0.1) 100%);
+}
+
+/* 時間超過度合いの表示 */
+.time-overrun-severe {
+    color: #c0392b !important;
+}
+
+.time-overrun-moderate {
+    color: #e74c3c !important;
+}
+
+.time-overrun-minor {
+    color: #e67e22 !important;
+}
+
+
+/* ダッシュボードパネルのスタイル */
+#dashboard-panel {
+    background-color: var(--card-background);
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 4px var(--shadow-color);
+    border: 1px solid var(--border-color);
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 2000;
+    max-width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+    width: 800px;
+    display: none;
+}
+
+#dashboard-panel::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: -1;
+}
+
+.dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid var(--border-color);
+}
+
+.dashboard-header h2 {
+    margin: 0;
+    color: var(--primary-color);
+    font-size: 1.3em;
+}
+
+.toggle-btn {
+    background-color: transparent;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    padding: 6px 12px;
+    cursor: pointer;
+    color: var(--font-color);
+    font-size: 1.2em;
+    transition: all 0.2s ease;
+}
+
+.toggle-btn:hover {
+    background-color: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+}
+
+#dashboard-content {
+    display: grid;
+    gap: 20px;
+    transition: all 0.3s ease;
+}
+
+#dashboard-content.collapsed {
+    display: none;
+}
+
+/* 統計グリッド */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 15px;
+}
+
+.stat-card {
+    background: linear-gradient(135deg, var(--primary-color), rgba(74, 144, 226, 0.7));
+    color: white;
+    padding: 20px;
+    border-radius: 8px;
+    text-align: center;
+    box-shadow: 0 2px 8px var(--shadow-color);
+    transition: all 0.2s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px var(--shadow-color);
+}
+
+.stat-label {
+    display: block;
+    font-size: 0.9em;
+    opacity: 0.9;
+    margin-bottom: 8px;
+}
+
+.stat-value {
+    display: block;
+    font-size: 1.8em;
+    font-weight: bold;
+}
+
+/* ダークモード用の統計カード */
+[data-theme="dark"] .stat-card {
+    background: linear-gradient(135deg, var(--primary-color), rgba(90, 163, 240, 0.7));
+}
+
+/* カテゴリ別時間分析 */
+.chart-container {
+    background-color: var(--background-color);
+    border-radius: 8px;
+    padding: 15px;
+    border: 1px solid var(--border-color);
+}
+
+.chart-container h3 {
+    margin-top: 0;
+    color: var(--primary-color);
+    font-size: 1.1em;
+}
+
+.category-breakdown {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
+}
+
+.category-item {
+    background-color: var(--card-background);
+    border-left: 4px solid var(--primary-color);
+    padding: 12px;
+    border-radius: 4px;
+    box-shadow: 0 1px 3px var(--task-shadow);
+}
+
+.category-item-name {
+    font-weight: bold;
+    color: var(--font-color);
+    margin-bottom: 8px;
+    font-size: 0.95em;
+}
+
+.category-item-stats {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85em;
+    color: #666;
+    gap: 8px;
+}
+
+.category-item-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.category-item-stat-label {
+    font-size: 0.75em;
+    opacity: 0.7;
+    margin-bottom: 2px;
+}
+
+.category-item-stat-value {
+    font-weight: bold;
+    color: var(--font-color);
+}
+
+/* ダークモード用のカテゴリアイテム */
+[data-theme="dark"] .category-item-stats {
+    color: #999;
+}
+
+/* 日別作業時間 */
+.daily-breakdown-container {
+    background-color: var(--background-color);
+    border-radius: 8px;
+    padding: 15px;
+    border: 1px solid var(--border-color);
+}
+
+.daily-breakdown-container h3 {
+    margin-top: 0;
+    color: var(--primary-color);
+    font-size: 1.1em;
+}
+
+.daily-breakdown {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 10px;
+}
+
+.daily-item {
+    background-color: var(--card-background);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    padding: 12px;
+    text-align: center;
+    box-shadow: 0 1px 3px var(--task-shadow);
+    transition: all 0.2s ease;
+}
+
+.daily-item:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px var(--task-shadow);
+}
+
+.daily-item-day {
+    font-weight: bold;
+    color: var(--primary-color);
+    margin-bottom: 8px;
+    font-size: 0.95em;
+}
+
+.daily-item-date {
+    font-size: 0.75em;
+    color: #666;
+    margin-bottom: 8px;
+}
+
+.daily-item-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: 0.85em;
+}
+
+.daily-item-stat {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.daily-item-stat-label {
+    color: #666;
+    font-size: 0.8em;
+}
+
+.daily-item-stat-value {
+    font-weight: bold;
+    color: var(--font-color);
+}
+
+.daily-item-tasks {
+    font-size: 0.75em;
+    color: #999;
+    margin-top: 6px;
+    padding-top: 6px;
+    border-top: 1px solid var(--border-color);
+}
+
+/* ダークモード用の日別アイテム */
+[data-theme="dark"] .daily-item-date,
+[data-theme="dark"] .daily-item-stat-label,
+[data-theme="dark"] .daily-item-tasks {
+    color: #999;
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 768px) {
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .category-breakdown {
+        grid-template-columns: 1fr;
+    }
+    
+    .daily-breakdown {
+        grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    }
+}
+
+@media (max-width: 480px) {
+    #dashboard-panel {
+        padding: 15px;
+        margin-bottom: 15px;
+    }
+    
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .dashboard-header {
+        flex-direction: column;
+        gap: 10px;
+        align-items: flex-start;
+    }
+    
+    .toggle-btn {
+        align-self: flex-end;
+    }
+}
+
+
+/* 繰り返しタスク設定UI (9.1, 9.2, 9.3) */
+#recurrence-fieldset {
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    padding: 15px;
+    margin-top: 15px;
+    background-color: rgba(74, 144, 226, 0.02);
+}
+
+#recurrence-fieldset legend {
+    padding: 0 8px;
+    font-weight: 600;
+    color: var(--primary-color);
+    font-size: 0.95em;
+}
+
+/* 繰り返しチェックボックス */
+#is-recurring {
+    margin-right: 8px;
+    cursor: pointer;
+}
+
+#is-recurring + label {
+    display: inline;
+    margin-top: 0;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+/* 繰り返しオプションコンテナ */
+#recurrence-options {
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid var(--border-color);
+}
+
+/* パターン選択UI (9.2) */
+#recurrence-pattern {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background-color: var(--card-background);
+    color: var(--font-color);
+    font-size: 1em;
+    cursor: pointer;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+#recurrence-pattern:hover {
+    border-color: var(--primary-color);
+}
+
+#recurrence-pattern:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
+}
+
+/* 終了日設定UI (9.3) */
+#recurrence-end-date-container {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+#recurrence-end-date {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background-color: var(--card-background);
+    color: var(--font-color);
+    font-size: 1em;
+    cursor: pointer;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+#recurrence-end-date:hover {
+    border-color: var(--primary-color);
+}
+
+#recurrence-end-date:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
+}
+
+/* 繰り返し情報テキスト */
+.recurrence-info {
+    display: block;
+    font-size: 0.85em;
+    color: #999;
+    margin-top: 5px;
+}
+
+/* ダークモード対応 */
+[data-theme="dark"] #recurrence-fieldset {
+    background-color: rgba(90, 163, 240, 0.05);
+    border-color: #404040;
+}
+
+[data-theme="dark"] #recurrence-pattern,
+[data-theme="dark"] #recurrence-end-date {
+    background-color: #2d2d2d;
+    color: #e0e0e0;
+    border-color: #404040;
+}
+
+[data-theme="dark"] #recurrence-pattern:hover,
+[data-theme="dark"] #recurrence-end-date:hover {
+    border-color: #5aa3f0;
+}
+
+[data-theme="dark"] .recurrence-info {
+    color: #666;
+}
+
+
+/* テンプレートパネルのスタイル */
+.template-panel {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 400px;
+    height: 100%;
+    background-color: var(--card-background);
+    box-shadow: -2px 0 8px var(--shadow-color);
+    z-index: 1400;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    animation: slideInRight 0.3s ease;
+}
+
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+    }
+    to {
+        transform: translateX(0);
+    }
+}
+
+.template-panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    border-bottom: 1px solid var(--border-color);
+    background-color: var(--card-background);
+}
+
+.template-panel-header h2 {
+    margin: 0;
+    color: var(--primary-color);
+    font-size: 1.2em;
+}
+
+.template-panel-header .close-btn {
+    background: none;
+    border: none;
+    font-size: 28px;
+    color: var(--font-color);
+    cursor: pointer;
+    padding: 0;
+    width: auto;
+    height: auto;
+}
+
+.template-panel-header .close-btn:hover {
+    color: var(--primary-color);
+}
+
+.template-panel-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+}
+
+.template-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.template-empty {
+    text-align: center;
+    color: #999;
+    font-style: italic;
+    padding: 40px 20px;
+}
+
+.template-item {
+    background-color: var(--background-color);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 15px;
+    transition: all 0.2s ease;
+}
+
+.template-item:hover {
+    box-shadow: 0 2px 8px var(--shadow-color);
+    transform: translateY(-2px);
+}
+
+.template-item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 10px;
+}
+
+.template-item-title {
+    font-weight: bold;
+    color: var(--font-color);
+    flex: 1;
+    word-break: break-word;
+}
+
+.template-item-actions {
+    display: flex;
+    gap: 8px;
+    margin-left: 10px;
+}
+
+.template-item-actions button {
+    padding: 6px 12px;
+    font-size: 0.85em;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.template-use-btn {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.template-use-btn:hover {
+    opacity: 0.9;
+    transform: scale(1.05);
+}
+
+.template-duplicate-btn {
+    background-color: #3498db;
+    color: white;
+}
+
+.template-duplicate-btn:hover {
+    opacity: 0.9;
+    transform: scale(1.05);
+}
+
+.template-delete-btn {
+    background-color: #e74c3c;
+    color: white;
+}
+
+.template-delete-btn:hover {
+    opacity: 0.9;
+    transform: scale(1.05);
+}
+
+.template-item-content {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.template-item-task-name {
+    font-weight: 600;
+    color: var(--font-color);
+    margin-bottom: 5px;
+}
+
+.template-item-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    font-size: 0.85em;
+}
+
+.template-item-category {
+    padding: 4px 8px;
+    border-radius: 3px;
+    font-weight: 500;
+}
+
+.template-item-time {
+    color: #666;
+    background-color: rgba(0, 0, 0, 0.05);
+    padding: 4px 8px;
+    border-radius: 3px;
+}
+
+.template-item-priority {
+    padding: 4px 8px;
+    border-radius: 3px;
+    color: white;
+    font-weight: 500;
+}
+
+.template-item-priority.priority-high {
+    background-color: #dc3545;
+}
+
+.template-item-priority.priority-medium {
+    background-color: #f39c12;
+}
+
+.template-item-priority.priority-low {
+    background-color: #28a745;
+}
+
+.template-item-description {
+    font-size: 0.9em;
+    color: #666;
+    line-height: 1.4;
+    padding: 8px;
+    background-color: rgba(0, 0, 0, 0.02);
+    border-radius: 3px;
+    margin-top: 5px;
+}
+
+.template-item-footer {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.8em;
+    color: #999;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid var(--border-color);
+}
+
+.template-item-created,
+.template-item-usage {
+    white-space: nowrap;
+}
+
+/* ダークモード用のテンプレートパネルスタイル */
+[data-theme="dark"] .template-item {
+    background-color: #1f1f1f;
+}
+
+[data-theme="dark"] .template-item-time {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: #ccc;
+}
+
+[data-theme="dark"] .template-item-description {
+    background-color: rgba(255, 255, 255, 0.05);
+    color: #aaa;
+}
+
+[data-theme="dark"] .template-item-footer {
+    color: #666;
+    border-top-color: var(--border-color);
+}
+
+/* テンプレートパネルツールバー */
+.template-panel-toolbar {
+    display: flex;
+    gap: 10px;
+    padding: 12px;
+    border-bottom: 1px solid var(--border-color);
+    background-color: var(--background-color);
+}
+
+.template-search {
+    flex: 1;
+    padding: 8px 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background-color: var(--background-color);
+    color: var(--font-color);
+    font-size: 0.9em;
+}
+
+.template-search::placeholder {
+    color: #999;
+}
+
+.template-search:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.1);
+}
+
+.template-sort {
+    padding: 8px 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background-color: var(--background-color);
+    color: var(--font-color);
+    font-size: 0.9em;
+    cursor: pointer;
+}
+
+.template-sort:focus {
+    outline: none;
+    border-color: var(--primary-color);
+}
+
+[data-theme="dark"] .template-search,
+[data-theme="dark"] .template-sort {
+    background-color: #2a2a2a;
+    color: #e0e0e0;
+}
+
+[data-theme="dark"] .template-search::placeholder {
+    color: #666;
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 768px) {
+    .template-panel {
+        width: 100%;
+        max-width: 100%;
+    }
+}
+
+/* ===== Outlook同期パネル ===== */
+
+.outlook-sync-panel {
+    position: fixed;
+    right: 0;
+    top: 0;
+    width: 450px;
+    height: 100vh;
+    background-color: var(--card-background);
+    box-shadow: -2px 0 8px var(--shadow-color);
+    z-index: 2000;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    animation: slideInRight 0.3s ease-out;
+}
+
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+    }
+    to {
+        transform: translateX(0);
+    }
+}
+
+.outlook-sync-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    border-bottom: 1px solid var(--border-color);
+    background-color: var(--background-color);
+}
+
+.outlook-sync-header h2 {
+    margin: 0;
+    font-size: 1.3em;
+    color: var(--primary-color);
+}
+
+.outlook-sync-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+}
+
+.outlook-section {
+    margin-bottom: 25px;
+    padding: 15px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    background-color: var(--background-color);
+}
+
+.outlook-section h3 {
+    margin: 0 0 15px 0;
+    font-size: 1.1em;
+    color: var(--font-color);
+}
+
+.outlook-btn-primary,
+.outlook-btn-secondary {
+    padding: 10px 16px;
+    border: none;
+    border-radius: 4px;
+    font-size: 0.95em;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-weight: 500;
+}
+
+.outlook-btn-primary {
+    background-color: var(--primary-color);
+    color: white;
+    width: 100%;
+    margin-bottom: 10px;
+}
+
+.outlook-btn-primary:hover {
+    background-color: #3a7bc8;
+    box-shadow: 0 2px 6px rgba(74, 144, 226, 0.3);
+}
+
+.outlook-btn-primary:active {
+    transform: scale(0.98);
+}
+
+.outlook-btn-secondary {
+    background-color: var(--background-color);
+    color: var(--primary-color);
+    border: 1px solid var(--primary-color);
+    margin-right: 8px;
+    margin-bottom: 8px;
+}
+
+.outlook-btn-secondary:hover {
+    background-color: rgba(74, 144, 226, 0.1);
+}
+
+.outlook-status {
+    margin-top: 10px;
+    padding: 10px;
+    border-radius: 4px;
+    font-size: 0.9em;
+    display: none;
+}
+
+.outlook-status.success {
+    display: block;
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.outlook-status.error {
+    display: block;
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+.outlook-status.info {
+    display: block;
+    background-color: #d1ecf1;
+    color: #0c5460;
+    border: 1px solid #bee5eb;
+}
+
+[data-theme="dark"] .outlook-status.success {
+    background-color: #1e4620;
+    color: #90ee90;
+    border-color: #2d5a2d;
+}
+
+[data-theme="dark"] .outlook-status.error {
+    background-color: #4a2020;
+    color: #ff6b6b;
+    border-color: #6b3030;
+}
+
+[data-theme="dark"] .outlook-status.info {
+    background-color: #1a3a3a;
+    color: #87ceeb;
+    border-color: #2d5a5a;
+}
+
+.outlook-date-inputs {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.outlook-date-group {
+    flex: 1;
+}
+
+.outlook-date-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+    font-size: 0.9em;
+}
+
+.outlook-date-group input {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background-color: var(--background-color);
+    color: var(--font-color);
+    box-sizing: border-box;
+}
+
+.outlook-date-group input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.1);
+}
+
+.outlook-events-toolbar {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+    align-items: center;
+}
+
+.outlook-count {
+    margin-left: auto;
+    font-size: 0.9em;
+    color: #666;
+}
+
+.outlook-events-list {
+    max-height: 300px;
+    overflow-y: auto;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background-color: var(--background-color);
+}
+
+.outlook-event-item {
+    padding: 12px;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.outlook-event-item:hover {
+    background-color: rgba(74, 144, 226, 0.05);
+}
+
+.outlook-event-item input[type="checkbox"] {
+    cursor: pointer;
+    width: 18px;
+    height: 18px;
+}
+
+.outlook-event-info {
+    flex: 1;
+}
+
+.outlook-event-title {
+    font-weight: 500;
+    margin-bottom: 3px;
+}
+
+.outlook-event-time {
+    font-size: 0.85em;
+    color: #666;
+}
+
+.outlook-event-details {
+    background-color: var(--background-color);
+    padding: 15px;
+    border-radius: 4px;
+    border: 1px solid var(--border-color);
+}
+
+.outlook-event-details-row {
+    margin-bottom: 10px;
+    display: flex;
+    gap: 10px;
+}
+
+.outlook-event-details-label {
+    font-weight: 500;
+    min-width: 80px;
+    color: var(--primary-color);
+}
+
+.outlook-event-details-value {
+    flex: 1;
+    word-break: break-word;
+}
+
+.outlook-progress {
+    margin-top: 15px;
+}
+
+.outlook-progress-bar {
+    width: 100%;
+    height: 20px;
+    background-color: var(--background-color);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 8px;
+}
+
+.outlook-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--primary-color), #3a7bc8);
+    width: 0%;
+    transition: width 0.3s ease;
+}
+
+.outlook-progress-text {
+    font-size: 0.9em;
+    color: #666;
+}
+
+.outlook-duplicate-list {
+    max-height: 250px;
+    overflow-y: auto;
+}
+
+.outlook-duplicate-item {
+    padding: 12px;
+    border: 1px solid #f5a623;
+    border-radius: 4px;
+    margin-bottom: 10px;
+    background-color: rgba(245, 166, 35, 0.05);
+}
+
+.outlook-duplicate-item-title {
+    font-weight: 500;
+    margin-bottom: 8px;
+}
+
+.outlook-duplicate-options {
+    display: flex;
+    gap: 8px;
+}
+
+.outlook-duplicate-options button {
+    flex: 1;
+    padding: 6px 10px;
+    font-size: 0.85em;
+    border: 1px solid var(--border-color);
+    border-radius: 3px;
+    background-color: var(--background-color);
+    color: var(--font-color);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.outlook-duplicate-options button:hover {
+    background-color: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 768px) {
+    .outlook-sync-panel {
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .outlook-date-inputs {
+        flex-direction: column;
+    }
+
+    .outlook-events-toolbar {
+        flex-wrap: wrap;
+    }
+}
+
+[data-theme="dark"] .outlook-event-time,
+[data-theme="dark"] .outlook-progress-text,
+[data-theme="dark"] .outlook-count {
+    color: #999;
+}
+
+[data-theme="dark"] .outlook-event-item:hover {
+    background-color: rgba(74, 144, 226, 0.1);
+}
+
+[data-theme="dark"] .outlook-duplicate-item {
+    background-color: rgba(245, 166, 35, 0.1);
+    border-color: #f5a623;
+}
+
+/* ===== Google Calendar同期パネル ===== */
+
+.google-sync-panel {
+    position: fixed;
+    right: 0;
+    top: 0;
+    width: 450px;
+    height: 100vh;
+    background-color: var(--card-background);
+    box-shadow: -2px 0 8px var(--shadow-color);
+    z-index: 2000;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    animation: slideInRight 0.3s ease-out;
+}
+
+.google-sync-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    border-bottom: 1px solid var(--border-color);
+    background-color: var(--background-color);
+}
+
+.google-sync-header h2 {
+    margin: 0;
+    font-size: 1.3em;
+    color: #4285f4; /* Google Blue */
+}
+
+.google-sync-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+}
+
+.google-section {
+    margin-bottom: 25px;
+    padding: 15px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    background-color: var(--background-color);
+}
+
+.google-section h3 {
+    margin: 0 0 15px 0;
+    font-size: 1.1em;
+    color: var(--font-color);
+}
+
+.google-btn-primary,
+.google-btn-secondary {
+    padding: 10px 16px;
+    border: none;
+    border-radius: 4px;
+    font-size: 0.95em;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-weight: 500;
+}
+
+.google-btn-primary {
+    background-color: #4285f4; /* Google Blue */
+    color: white;
+    width: 100%;
+    margin-bottom: 10px;
+}
+
+.google-btn-primary:hover {
+    background-color: #3367d6;
+    box-shadow: 0 2px 6px rgba(66, 133, 244, 0.3);
+}
+
+.google-btn-primary:active {
+    transform: scale(0.98);
+}
+
+.google-btn-secondary {
+    background-color: var(--background-color);
+    color: #4285f4;
+    border: 1px solid #4285f4;
+    margin-right: 8px;
+    margin-bottom: 8px;
+}
+
+.google-btn-secondary:hover {
+    background-color: rgba(66, 133, 244, 0.1);
+}
+
+.google-status {
+    margin-top: 10px;
+    padding: 10px;
+    border-radius: 4px;
+    font-size: 0.9em;
+    display: none;
+}
+
+.google-status.success {
+    display: block;
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.google-status.error {
+    display: block;
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+.google-status.info {
+    display: block;
+    background-color: #d1ecf1;
+    color: #0c5460;
+    border: 1px solid #bee5eb;
+}
+
+[data-theme="dark"] .google-status.success {
+    background-color: #1e4620;
+    color: #90ee90;
+    border-color: #2d5a2d;
+}
+
+[data-theme="dark"] .google-status.error {
+    background-color: #4a2020;
+    color: #ff6b6b;
+    border-color: #6b3030;
+}
+
+[data-theme="dark"] .google-status.info {
+    background-color: #1a3a3a;
+    color: #87ceeb;
+    border-color: #2d5a5a;
+}
+
+.google-calendar-select {
+    margin-bottom: 15px;
+}
+
+.google-calendar-select label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+    font-size: 0.9em;
+}
+
+.google-calendar-select select {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background-color: var(--background-color);
+    color: var(--font-color);
+    box-sizing: border-box;
+}
+
+.google-calendar-select select:focus {
+    outline: none;
+    border-color: #4285f4;
+    box-shadow: 0 0 0 2px rgba(66, 133, 244, 0.1);
+}
+
+.google-date-inputs {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.google-date-group {
+    flex: 1;
+}
+
+.google-date-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+    font-size: 0.9em;
+}
+
+.google-date-group input {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background-color: var(--background-color);
+    color: var(--font-color);
+    box-sizing: border-box;
+}
+
+.google-date-group input:focus {
+    outline: none;
+    border-color: #4285f4;
+    box-shadow: 0 0 0 2px rgba(66, 133, 244, 0.1);
+}
+
+.google-events-toolbar {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+    align-items: center;
+}
+
+.google-count {
+    margin-left: auto;
+    font-size: 0.9em;
+    color: #666;
+}
+
+.google-events-list {
+    max-height: 300px;
+    overflow-y: auto;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background-color: var(--background-color);
+}
+
+.google-event-item {
+    padding: 12px;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.google-event-item:hover {
+    background-color: rgba(66, 133, 244, 0.05);
+}
+
+.google-event-item input[type="checkbox"] {
+    cursor: pointer;
+    width: 18px;
+    height: 18px;
+}
+
+.google-event-info {
+    flex: 1;
+}
+
+.google-event-title {
+    font-weight: 500;
+    margin-bottom: 3px;
+}
+
+.google-event-time {
+    font-size: 0.85em;
+    color: #666;
+}
+
+.google-event-details {
+    background-color: var(--background-color);
+    padding: 15px;
+    border-radius: 4px;
+    border: 1px solid var(--border-color);
+}
+
+.google-event-details-row {
+    margin-bottom: 10px;
+    display: flex;
+    gap: 10px;
+}
+
+.google-event-details-label {
+    font-weight: 500;
+    min-width: 80px;
+    color: #4285f4;
+}
+
+.google-event-details-value {
+    flex: 1;
+    word-break: break-word;
+}
+
+.google-progress {
+    margin-top: 15px;
+}
+
+.google-progress-bar {
+    width: 100%;
+    height: 20px;
+    background-color: var(--background-color);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 8px;
+}
+
+.google-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #4285f4, #34a853);
+    width: 0%;
+    transition: width 0.3s ease;
+}
+
+.google-progress-text {
+    font-size: 0.9em;
+    color: #666;
+}
+
+.google-duplicate-list {
+    max-height: 250px;
+    overflow-y: auto;
+}
+
+.google-duplicate-item {
+    padding: 12px;
+    border: 1px solid #f5a623;
+    border-radius: 4px;
+    margin-bottom: 10px;
+    background-color: rgba(245, 166, 35, 0.05);
+}
+
+.google-duplicate-item-title {
+    font-weight: 500;
+    margin-bottom: 8px;
+}
+
+.google-duplicate-options {
+    display: flex;
+    gap: 8px;
+}
+
+.google-duplicate-options button {
+    flex: 1;
+    padding: 6px 10px;
+    font-size: 0.85em;
+    border: 1px solid var(--border-color);
+    border-radius: 3px;
+    background-color: var(--background-color);
+    color: var(--font-color);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.google-duplicate-options button:hover {
+    background-color: #4285f4;
+    color: white;
+    border-color: #4285f4;
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 768px) {
+    .google-sync-panel {
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .google-date-inputs {
+        flex-direction: column;
+    }
+
+    .google-events-toolbar {
+        flex-wrap: wrap;
+    }
+}
+
+[data-theme="dark"] .google-event-time,
+[data-theme="dark"] .google-progress-text,
+[data-theme="dark"] .google-count {
+    color: #999;
+}
+
+[data-theme="dark"] .google-event-item:hover {
+    background-color: rgba(66, 133, 244, 0.1);
+}
+
+[data-theme="dark"] .google-duplicate-item {
+    background-color: rgba(245, 166, 35, 0.1);
+    border-color: #f5a623;
+}
+
+/* ===== カレンダー設定パネル ===== */
+.calendar-provider-settings {
+    margin-bottom: 20px;
+}
+
+.calendar-provider-settings h3 {
+    margin-bottom: 10px;
+    font-size: 1.1em;
+    color: var(--text-color);
+}
+
+/* フォームグループ */
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+    color: var(--text-color);
+}
+
+.form-group input[type="text"] {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    font-size: 1em;
+    box-sizing: border-box;
+    background-color: var(--bg-primary);
+    color: var(--text-color);
+}
+
+.form-group small {
+    display: block;
+    margin-top: 5px;
+    color: #888;
+    font-size: 0.85em;
+}
+
+.auth-status {
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 6px;
+    font-size: 0.9em;
+    background-color: var(--bg-secondary);
+}
+
+.auth-status.not-configured {
+    color: #888;
+}
+
+.auth-status.configured {
+    color: #4a90e2;
+}
+
+.auth-status.authenticated {
+    color: #28a745;
+    background-color: rgba(40, 167, 69, 0.1);
+}
+
+.calendar-auth-buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.btn-connect-google,
+.btn-connect-outlook,
+.btn-disconnect {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9em;
+    transition: all 0.2s ease;
+}
+
+.btn-connect-google,
+.btn-connect-outlook {
+    background-color: #4a90e2;
+    color: white;
+}
+
+.btn-connect-google {
+    background-color: #4285f4;
+}
+
+.btn-connect-google:hover:not(:disabled) {
+    background-color: #3367d6;
+}
+
+.btn-connect-outlook {
+    background-color: #0078d4;
+}
+
+.btn-connect-outlook:hover:not(:disabled) {
+    background-color: #005a9e;
+}
+
+.btn-connect-google:disabled,
+.btn-connect-outlook:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
+.btn-disconnect {
+    background-color: #6c757d;
+    color: white;
+}
+
+.btn-disconnect:hover {
+    background-color: #5a6268;
+}
+
+/* ===== PWA (Progressive Web App) スタイル ===== */
+
+/* インストールボタン */
+.install-btn {
+    padding: 8px 16px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.9em;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
+.install-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.install-btn:active {
+    transform: translateY(0);
+}
+
+/* 更新通知 */
+.update-notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: white;
+    border-radius: 12px;
+    padding: 16px 20px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    z-index: 10000;
+    animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+.update-notification span {
+    color: var(--text-color);
+    font-size: 0.95em;
+}
+
+.update-notification button {
+    padding: 6px 14px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9em;
+    transition: all 0.2s ease;
+}
+
+#update-btn {
+    background-color: #4a90e2;
+    color: white;
+}
+
+#update-btn:hover {
+    background-color: #357abd;
+}
+
+#dismiss-btn {
+    background-color: transparent;
+    color: #888;
+}
+
+#dismiss-btn:hover {
+    background-color: #f0f0f0;
+    color: #666;
+}
+
+/* 一般的な通知 */
+.notification {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: white;
+    border-radius: 10px;
+    padding: 12px 24px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+    z-index: 10000;
+    transition: all 0.3s ease;
+    opacity: 0;
+}
+
+.notification.show {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+}
+
+.notification-success {
+    border-left: 4px solid #28a745;
+}
+
+.notification-warning {
+    border-left: 4px solid #ffc107;
+}
+
+.notification-error {
+    border-left: 4px solid #dc3545;
+}
+
+.notification-info {
+    border-left: 4px solid #4a90e2;
+}
+
+/* ダークモード対応 */
+[data-theme="dark"] .update-notification,
+[data-theme="dark"] .notification {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+}
+
+[data-theme="dark"] .update-notification span,
+[data-theme="dark"] .notification {
+    color: var(--text-color);
+}
+
+[data-theme="dark"] #dismiss-btn {
+    color: #aaa;
+}
+
+[data-theme="dark"] #dismiss-btn:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* オフラインインジケーター */
+.offline-indicator {
+    position: fixed;
+    bottom: 10px;
+    left: 10px;
+    background: rgba(220, 53, 69, 0.9);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 0.85em;
+    z-index: 9999;
+    display: none;
+}
+
+.offline-indicator.show {
+    display: block;
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 768px) {
+    .update-notification {
+        top: 10px;
+        right: 10px;
+        left: 10px;
+        padding: 12px 16px;
+    }
+
+    .notification {
+        bottom: 10px;
+        left: 10px;
+        right: 10px;
+        transform: translateY(100px);
+    }
+
+    .notification.show {
+        transform: translateY(0);
+    }
+}
+
+/* ===== Journal Start Button ===== */
+.journal-start-btn {
+  display: block;
+  width: 100%;
+  margin-top: 6px;
+  padding: 4px 8px;
+  border: 1px solid var(--primary-color);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--primary-color);
+  font-size: 0.8em;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+
+.journal-start-btn:hover {
+  background: var(--primary-color);
+  color: #fff;
+}
+
+.journal-start-btn.active {
+  background: #27ae60;
+  border-color: #27ae60;
+  color: #fff;
+  animation: journal-pulse 2s infinite;
+  cursor: default;
+}
+
+@keyframes journal-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+/* ===== Journal Modal ===== */
+.journal-modal-overlay {
+  display: flex;
+  position: fixed;
+  z-index: 10000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  align-items: center;
+  justify-content: center;
+}
+
+.journal-modal {
+  background-color: var(--modal-background);
+  padding: 20px;
+  border: 1px solid var(--border-color);
+  width: 90%;
+  max-width: 420px;
+  border-radius: 8px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.journal-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  font-weight: bold;
+  color: var(--font-color);
+}
+
+.journal-modal-time {
+  font-size: 0.85em;
+  color: #666;
+}
+
+[data-theme="dark"] .journal-modal-time {
+  color: #aaa;
+}
+
+.journal-modal-textarea {
+  width: 100%;
+  height: 80px;
+  padding: 8px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  background-color: var(--card-background);
+  color: var(--font-color);
+  font-family: inherit;
+  font-size: 0.95em;
+  resize: vertical;
+  box-sizing: border-box;
+}
+
+.journal-modal-textarea:focus {
+  outline: 2px solid var(--primary-color);
+  border-color: transparent;
+}
+
+.journal-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.journal-modal-save {
+  padding: 6px 16px;
+  border: none;
+  border-radius: 4px;
+  background: var(--primary-color);
+  color: #fff;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.journal-modal-save:hover {
+  opacity: 0.9;
+}
+
+.journal-modal-skip {
+  padding: 6px 16px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--font-color);
+  cursor: pointer;
+  font-family: inherit;
+}
+
+/* ===== Timeline ===== */
+.journal-timeline-entry {
+  display: flex;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.journal-timeline-time {
+  min-width: 90px;
+  font-size: 0.85em;
+  color: #666;
+  padding-top: 2px;
+}
+
+[data-theme="dark"] .journal-timeline-time {
+  color: #aaa;
+}
+
+.journal-timeline-body {
+  flex: 1;
+}
+
+.journal-timeline-title {
+  font-weight: bold;
+  margin-bottom: 4px;
+  color: var(--font-color);
+}
+
+.journal-timeline-icon {
+  margin-right: 4px;
+}
+
+.journal-timeline-journal {
+  font-size: 0.9em;
+  color: var(--font-color);
+  opacity: 0.8;
+  margin-bottom: 4px;
+  white-space: pre-wrap;
+}
+
+.journal-timeline-nextstep {
+  font-size: 0.9em;
+  color: var(--primary-color);
+  margin-top: 4px;
+}
+
+.journal-timeline-gap {
+  text-align: center;
+  padding: 8px;
+  margin: 4px 0;
+  background: var(--card-background);
+  border-radius: 12px;
+  font-size: 0.85em;
+  font-style: italic;
+  color: #888;
+  border: 1px dashed var(--border-color);
+}
+
+[data-theme="dark"] .journal-timeline-gap {
+  color: #aaa;
+}
+
+.journal-gap-icon {
+  margin-right: 4px;
+}
+
+.journal-timeline-empty {
+  text-align: center;
+  padding: 40px;
+  color: #888;
+  font-style: italic;
+}
+

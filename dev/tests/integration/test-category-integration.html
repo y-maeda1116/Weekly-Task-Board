@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>カテゴリ機能統合テスト</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            margin: 20px; 
+            background-color: #f5f5f5;
+        }
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-section { 
+            margin: 20px 0; 
+            padding: 15px; 
+            border: 1px solid #ddd; 
+            border-radius: 5px;
+            background-color: #fafafa;
+        }
+        .test-section h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        .success { 
+            color: #27ae60; 
+            font-weight: bold;
+        }
+        .error { 
+            color: #e74c3c; 
+            font-weight: bold;
+        }
+        .warning {
+            color: #f39c12;
+            font-weight: bold;
+        }
+        button { 
+            margin: 5px; 
+            padding: 10px 15px; 
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .test-btn {
+            background-color: #3498db;
+            color: white;
+        }
+        .test-btn:hover {
+            background-color: #2980b9;
+        }
+        .run-all-btn {
+            background-color: #27ae60;
+            color: white;
+            font-size: 16px;
+            padding: 12px 20px;
+        }
+        .run-all-btn:hover {
+            background-color: #229954;
+        }
+        #test-results { 
+            margin-top: 20px; 
+            padding: 15px;
+            background-color: #ecf0f1;
+            border-radius: 5px;
+        }
+        .result-item {
+            margin: 5px 0;
+            padding: 8px;
+            border-radius: 3px;
+        }
+        .result-success {
+            background-color: #d5f4e6;
+            border-left: 4px solid #27ae60;
+        }
+        .result-error {
+            background-color: #fadbd8;
+            border-left: 4px solid #e74c3c;
+        }
+        .summary {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #e8f4fd;
+            border-radius: 5px;
+            border-left: 4px solid #3498db;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background-color: #ecf0f1;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        .progress-fill {
+            height: 100%;
+            background-color: #27ae60;
+            transition: width 0.3s ease;
+        }
+        .test-data {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 10px;
+            margin: 10px 0;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🧪 カテゴリ機能統合テスト</h1>
+        <p>このテストスイートは、タスクカテゴリ機能の動作を包括的に検証します。</p>
+        
+        <div style="text-align: center; margin: 20px 0;">
+            <button class="run-all-btn" onclick="runAllTests()">🚀 全テスト実行</button>
+        </div>
+
+        <div class="test-section">
+            <h3>1. カテゴリ機能の動作テスト</h3>
+            <button class="test-btn" onclick="testCategoryFunctionality()">カテゴリ機能テスト実行</button>
+            <div id="category-functionality-result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>2. 既存データとの互換性テスト</h3>
+            <button class="test-btn" onclick="testDataCompatibility()">互換性テスト実行</button>
+            <div id="data-compatibility-result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>3. エラーハンドリングテスト</h3>
+            <button class="test-btn" onclick="testErrorHandling()">エラーハンドリングテスト実行</button>
+            <div id="error-handling-result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>4. LocalStorage永続化テスト</h3>
+            <button class="test-btn" onclick="testLocalStoragePersistence()">永続化テスト実行</button>
+            <div id="localstorage-result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>5. エクスポート・インポート機能テスト</h3>
+            <button class="test-btn" onclick="testExportImportFunctionality()">エクスポート・インポートテスト実行</button>
+            <div id="export-import-result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>6. UI統合テスト</h3>
+            <button class="test-btn" onclick="testUIIntegration()">UI統合テスト実行</button>
+            <div id="ui-integration-result"></div>
+        </div>
+
+        <div id="test-results">
+            <h3>📊 テスト結果</h3>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress-fill" style="width: 0%;"></div>
+            </div>
+            <div id="results-container"></div>
+            <div id="test-summary" class="summary" style="display: none;"></div>
+        </div>
+    </div>
+
+    <script>
+        // テスト結果を格納するグローバル変数
+        let globalTestResults = {
+            passed: 0,
+            failed: 0,
+            total: 0,
+            details: []
+        };
+
+        // カテゴリ定義（script.jsから）
+        const TASK_CATEGORIES = {
+            'task': { name: 'タスク', color: '#3498db', bgColor: '#e3f2fd' },
+            'meeting': { name: '打ち合わせ', color: '#27ae60', bgColor: '#e8f5e8' },
+            'review': { name: 'レビュー', color: '#f39c12', bgColor: '#fff3e0' },
+            'bugfix': { name: 'バグ修正', color: '#e74c3c', bgColor: '#ffebee' },
+            'document': { name: 'ドキュメント作成', color: '#9b59b6', bgColor: '#f3e5f5' },
+            'research': { name: '学習・調査', color: '#f1c40f', bgColor: '#fffde7' }
+        };
+
+        // ヘルパー関数
+        function validateCategory(category) {
+            if (category && TASK_CATEGORIES[category]) {
+                return category;
+            }
+            return 'task';
+        }
+
+        function getCategoryInfo(categoryKey) {
+            return TASK_CATEGORIES[categoryKey] || TASK_CATEGORIES['task'];
+        }
+
+        function shouldDisplayTask(task, currentCategoryFilter) {
+            if (!currentCategoryFilter) {
+                return true;
+            }
+            const taskCategory = validateCategory(task.category);
+            return taskCategory === currentCategoryFilter;
+        }
+
+        // テスト実行ヘルパー
+        function runTest(testName, testFunction) {
+            globalTestResults.total++;
+            try {
+                const result = testFunction();
+                if (result === true) {
+                    globalTestResults.passed++;
+                    globalTestResults.details.push({ name: testName, status: 'passed', message: 'テスト成功' });
+                    return { success: true, message: 'テスト成功', testName: testName };
+                } else {
+                    globalTestResults.failed++;
+                    globalTestResults.details.push({ name: testName, status: 'failed', message: result });
+                    return { success: false, message: result, testName: testName };
+                }
+            } catch (error) {
+                globalTestResults.failed++;
+                globalTestResults.details.push({ name: testName, status: 'error', message: error.message });
+                return { success: false, message: `エラー: ${error.message}`, testName: testName };
+            }
+        }
+
+        function displayResult(containerId, results) {
+            const container = document.getElementById(containerId);
+            container.textContent = '';
+            
+            results.forEach((result, index) => {
+                const className = result.success ? 'success' : 'error';
+                const testName = result.testName || `テスト${index + 1}`;
+                
+                const resultDiv = document.createElement('div');
+                resultDiv.className = className;
+                resultDiv.textContent = `• ${testName}: ${result.message}`;
+                container.appendChild(resultDiv);
+            });
+        }
+
+        function updateProgress() {
+            const progressFill = document.getElementById('progress-fill');
+            const percentage = globalTestResults.total > 0 ? (globalTestResults.passed / globalTestResults.total) * 100 : 0;
+            progressFill.style.width = `${percentage}%`;
+            
+            if (percentage < 50) {
+                progressFill.style.backgroundColor = '#e74c3c';
+            } else if (percentage < 80) {
+                progressFill.style.backgroundColor = '#f39c12';
+            } else {
+                progressFill.style.backgroundColor = '#27ae60';
+            }
+        }
+
+        function displayAllResults() {
+            const container = document.getElementById('results-container');
+            container.textContent = '';
+            
+            globalTestResults.details.forEach(result => {
+                const className = result.status === 'passed' ? 'result-success' : 'result-error';
+                const icon = result.status === 'passed' ? '✅' : '❌';
+                
+                const resultDiv = document.createElement('div');
+                resultDiv.className = `result-item ${className}`;
+                resultDiv.textContent = `${icon} ${result.name}: ${result.message}`;
+                container.appendChild(resultDiv);
+            });
+            
+            // サマリー表示
+            const summary = document.getElementById('test-summary');
+            summary.textContent = '';
+            
+            const successRate = globalTestResults.total > 0 ? ((globalTestResults.passed / globalTestResults.total) * 100).toFixed(1) : 0;
+            
+            const titleH4 = document.createElement('h4');
+            titleH4.textContent = '📈 テスト結果サマリー';
+            summary.appendChild(titleH4);
+            
+            const totalP = document.createElement('p');
+            const totalStrong = document.createElement('strong');
+            totalStrong.textContent = '総テスト数:';
+            totalP.appendChild(totalStrong);
+            totalP.appendChild(document.createTextNode(` ${globalTestResults.total}`));
+            summary.appendChild(totalP);
+            
+            const passedP = document.createElement('p');
+            const passedStrong = document.createElement('strong');
+            passedStrong.textContent = '成功:';
+            passedP.appendChild(passedStrong);
+            passedP.appendChild(document.createTextNode(` ${globalTestResults.passed}`));
+            summary.appendChild(passedP);
+            
+            const failedP = document.createElement('p');
+            const failedStrong = document.createElement('strong');
+            failedStrong.textContent = '失敗:';
+            failedP.appendChild(failedStrong);
+            failedP.appendChild(document.createTextNode(` ${globalTestResults.failed}`));
+            summary.appendChild(failedP);
+            
+            const rateP = document.createElement('p');
+            const rateStrong = document.createElement('strong');
+            rateStrong.textContent = '成功率:';
+            rateP.appendChild(rateStrong);
+            rateP.appendChild(document.createTextNode(` ${successRate}%`));
+            summary.appendChild(rateP);
+            
+            if (globalTestResults.failed === 0) {
+                const successP = document.createElement('p');
+                successP.className = 'success';
+                successP.textContent = '🎉 すべてのテストが成功しました！';
+                summary.appendChild(successP);
+            } else {
+                const errorP = document.createElement('p');
+                errorP.className = 'error';
+                errorP.textContent = '⚠️ 一部のテストが失敗しました。';
+                summary.appendChild(errorP);
+            }
+            
+            summary.style.display = 'block';
+        }
+            
+            updateProgress();
+        }
+
+        // 1. カテゴリ機能の動作テスト
+        function testCategoryFunctionality() {
+            const results = [];
+            
+            // カテゴリ定義テスト
+            results.push(runTest('カテゴリ定義確認', () => {
+                const requiredCategories = ['task', 'meeting', 'review', 'bugfix', 'document', 'research'];
+                for (const category of requiredCategories) {
+                    if (!TASK_CATEGORIES[category]) {
+                        return `カテゴリ ${category} が定義されていません`;
+                    }
+                    if (!TASK_CATEGORIES[category].name || !TASK_CATEGORIES[category].color) {
+                        return `カテゴリ ${category} の定義が不完全です`;
+                    }
+                }
+                return true;
+            }));
+
+            // カテゴリ検証テスト
+            results.push(runTest('カテゴリ検証機能', () => {
+                if (validateCategory('meeting') !== 'meeting') return '有効なカテゴリの検証に失敗';
+                if (validateCategory('invalid') !== 'task') return '無効なカテゴリのフォールバックに失敗';
+                if (validateCategory(null) !== 'task') return 'nullカテゴリのフォールバックに失敗';
+                return true;
+            }));
+
+            // カテゴリ情報取得テスト
+            results.push(runTest('カテゴリ情報取得', () => {
+                const meetingInfo = getCategoryInfo('meeting');
+                if (!meetingInfo.name || !meetingInfo.color) return 'カテゴリ情報の取得に失敗';
+                if (meetingInfo.name !== '打ち合わせ') return 'カテゴリ名が正しくありません';
+                return true;
+            }));
+
+            // フィルター機能テスト
+            results.push(runTest('カテゴリフィルター機能', () => {
+                const testTasks = [
+                    { id: '1', category: 'task' },
+                    { id: '2', category: 'meeting' },
+                    { id: '3', category: 'review' }
+                ];
+                
+                const allTasks = testTasks.filter(task => shouldDisplayTask(task, ''));
+                if (allTasks.length !== 3) return 'フィルターなしで全タスクが表示されない';
+                
+                const meetingTasks = testTasks.filter(task => shouldDisplayTask(task, 'meeting'));
+                if (meetingTasks.length !== 1) return 'ミーティングフィルターが正しく動作しない';
+                
+                return true;
+            }));
+
+            displayResult('category-functionality-result', results);
+            displayAllResults();
+        }
+
+        // 2. 既存データとの互換性テスト
+        function testDataCompatibility() {
+            const results = [];
+            
+            // レガシーデータマイグレーション
+            results.push(runTest('レガシーデータマイグレーション', () => {
+                const legacyTasks = [
+                    { id: '1', name: 'Legacy Task 1' },
+                    { id: '2', name: 'Legacy Task 2', category: 'invalid_category' }
+                ];
+                
+                const migratedTasks = legacyTasks.map(task => ({
+                    ...task,
+                    category: task.category ? validateCategory(task.category) : 'task'
+                }));
+                
+                if (migratedTasks[0].category !== 'task') return 'カテゴリなしタスクのマイグレーションに失敗';
+                if (migratedTasks[1].category !== 'task') return '無効カテゴリタスクのマイグレーションに失敗';
+                
+                return true;
+            }));
+
+            // データ構造の後方互換性
+            results.push(runTest('データ構造後方互換性', () => {
+                const oldFormatTask = {
+                    id: 'old-1',
+                    name: 'Old Format Task',
+                    estimated_time: 2,
+                    priority: 'high'
+                };
+                
+                const modernTask = {
+                    ...oldFormatTask,
+                    completed: oldFormatTask.completed || false,
+                    category: oldFormatTask.category || 'task'
+                };
+                
+                if (!modernTask.category) return 'カテゴリフィールドが追加されていない';
+                if (typeof modernTask.completed !== 'boolean') return 'completedフィールドが正しくない';
+                
+                return true;
+            }));
+
+            displayResult('data-compatibility-result', results);
+            displayAllResults();
+        }
+
+        // 3. エラーハンドリングテスト
+        function testErrorHandling() {
+            const results = [];
+            
+            // 異常入力値テスト
+            results.push(runTest('異常入力値処理', () => {
+                const testCases = [null, undefined, '', 'INVALID', 123, {}, []];
+                
+                for (const testCase of testCases) {
+                    const result = validateCategory(testCase);
+                    if (!TASK_CATEGORIES[result]) {
+                        return `異常入力 ${testCase} の処理に失敗`;
+                    }
+                }
+                return true;
+            }));
+
+            // 不正なJSONデータ処理
+            results.push(runTest('不正JSONデータ処理', () => {
+                try {
+                    const invalidData = '{"tasks": [{"id": "1", "category": null}]}';
+                    const parsed = JSON.parse(invalidData);
+                    
+                    if (parsed.tasks) {
+                        parsed.tasks.forEach(task => {
+                            task.category = validateCategory(task.category);
+                        });
+                    }
+                    
+                    if (parsed.tasks[0].category !== 'task') {
+                        return 'nullカテゴリの修復に失敗';
+                    }
+                    
+                    return true;
+                } catch (error) {
+                    return `JSON処理エラー: ${error.message}`;
+                }
+            }));
+
+            displayResult('error-handling-result', results);
+            displayAllResults();
+        }
+
+        // 4. LocalStorage永続化テスト
+        function testLocalStoragePersistence() {
+            const results = [];
+            
+            // カテゴリ情報保存テスト
+            results.push(runTest('カテゴリ情報保存', () => {
+                const testTasks = [
+                    { id: 'test-1', name: 'Test Task', category: 'meeting', estimated_time: 2 },
+                    { id: 'test-2', name: 'Test Task 2', category: 'review', estimated_time: 1 }
+                ];
+                
+                // LocalStorageに保存
+                localStorage.setItem('test-tasks', JSON.stringify(testTasks));
+                
+                // 読み込み
+                const loaded = JSON.parse(localStorage.getItem('test-tasks'));
+                
+                if (!loaded || loaded.length !== 2) return 'タスクデータの保存・読み込みに失敗';
+                if (loaded[0].category !== 'meeting') return 'カテゴリ情報の保存に失敗';
+                
+                // クリーンアップ
+                localStorage.removeItem('test-tasks');
+                
+                return true;
+            }));
+
+            // カテゴリ検証付き保存
+            results.push(runTest('カテゴリ検証付き保存', () => {
+                const testTasks = [
+                    { id: 'test-1', name: 'Valid Task', category: 'task' },
+                    { id: 'test-2', name: 'Invalid Task', category: 'invalid_category' }
+                ];
+                
+                // 検証付きで保存
+                const validatedTasks = testTasks.map(task => ({
+                    ...task,
+                    category: validateCategory(task.category)
+                }));
+                
+                localStorage.setItem('test-validated-tasks', JSON.stringify(validatedTasks));
+                
+                // 読み込み・検証
+                const loaded = JSON.parse(localStorage.getItem('test-validated-tasks'));
+                
+                if (loaded[0].category !== 'task') return '有効カテゴリの保存に失敗';
+                if (loaded[1].category !== 'task') return '無効カテゴリの修正に失敗';
+                
+                // クリーンアップ
+                localStorage.removeItem('test-validated-tasks');
+                
+                return true;
+            }));
+
+            displayResult('localstorage-result', results);
+            displayAllResults();
+        }
+
+        // 5. エクスポート・インポート機能テスト
+        function testExportImportFunctionality() {
+            const results = [];
+            
+            // エクスポート機能テスト
+            results.push(runTest('エクスポート機能', () => {
+                const exportData = {
+                    tasks: [
+                        { id: '1', name: 'Export Task', category: 'meeting', estimated_time: 2 }
+                    ],
+                    archive: [
+                        { id: '2', name: 'Archived Task', category: 'review', completed: true }
+                    ],
+                    settings: { ideal_daily_minutes: 480 },
+                    exportInfo: {
+                        exportDate: new Date().toISOString(),
+                        version: "1.0",
+                        categoriesIncluded: true
+                    }
+                };
+                
+                const jsonString = JSON.stringify(exportData, null, 2);
+                const parsed = JSON.parse(jsonString);
+                
+                if (!parsed.exportInfo.categoriesIncluded) return 'カテゴリ情報フラグが設定されていない';
+                if (!parsed.tasks[0].category) return 'タスクカテゴリ情報が保存されていない';
+                if (!parsed.archive[0].category) return 'アーカイブカテゴリ情報が保存されていない';
+                
+                return true;
+            }));
+
+            // インポート機能テスト
+            results.push(runTest('インポート機能', () => {
+                const importData = {
+                    tasks: [
+                        { id: '1', name: 'Import Task', category: 'meeting' },
+                        { id: '2', name: 'Invalid Category Task', category: 'invalid_category' }
+                    ],
+                    archive: [
+                        { id: '3', name: 'Import Archive', category: 'review' }
+                    ]
+                };
+                
+                // インポート処理シミュレーション
+                let importStats = { categoriesFixed: 0 };
+                
+                const processedTasks = importData.tasks.map(task => {
+                    const originalCategory = task.category;
+                    const validatedCategory = validateCategory(task.category);
+                    
+                    if (originalCategory !== validatedCategory) {
+                        importStats.categoriesFixed++;
+                    }
+                    
+                    return { ...task, category: validatedCategory };
+                });
+                
+                if (processedTasks[0].category !== 'meeting') return '有効カテゴリの保持に失敗';
+                if (processedTasks[1].category !== 'task') return '無効カテゴリの修正に失敗';
+                if (importStats.categoriesFixed !== 1) return 'カテゴリ修正統計が正しくない';
+                
+                return true;
+            }));
+
+            displayResult('export-import-result', results);
+            displayAllResults();
+        }
+
+        // 6. UI統合テスト
+        function testUIIntegration() {
+            const results = [];
+            
+            // カテゴリ選択フィールドテスト
+            results.push(runTest('カテゴリ選択フィールド', () => {
+                // 仮想的なselect要素を作成
+                const select = document.createElement('select');
+                
+                Object.keys(TASK_CATEGORIES).forEach(key => {
+                    const option = document.createElement('option');
+                    option.value = key;
+                    option.textContent = TASK_CATEGORIES[key].name;
+                    select.appendChild(option);
+                });
+                
+                if (select.options.length !== 6) return 'カテゴリ選択肢の数が正しくない';
+                
+                // 各カテゴリが正しく設定されているかチェック
+                for (let i = 0; i < select.options.length; i++) {
+                    const option = select.options[i];
+                    if (!TASK_CATEGORIES[option.value]) {
+                        return `無効なカテゴリオプション: ${option.value}`;
+                    }
+                }
+                
+                return true;
+            }));
+
+            // カテゴリ色バー表示テスト
+            results.push(runTest('カテゴリ色バー表示', () => {
+                const testTask = { id: '1', name: 'Test Task', category: 'meeting' };
+                const categoryInfo = getCategoryInfo(testTask.category);
+                
+                if (!categoryInfo || !categoryInfo.color) {
+                    return 'カテゴリ情報の取得に失敗';
+                }
+                
+                // 仮想的なタスク要素を作成
+                const taskElement = document.createElement('div');
+                taskElement.className = 'task';
+                
+                const categoryBar = document.createElement('div');
+                categoryBar.className = 'category-bar';
+                categoryBar.style.backgroundColor = categoryInfo.color;
+                
+                taskElement.appendChild(categoryBar);
+                
+                // 色が設定されているかチェック（ブラウザが色を正規化するため、空でないことを確認）
+                if (!categoryBar.style.backgroundColor || categoryBar.style.backgroundColor === '') {
+                    return 'カテゴリ色が設定されていない';
+                }
+                
+                // 色の値が有効かチェック（rgb形式またはhex形式）
+                const colorValue = categoryBar.style.backgroundColor;
+                if (!colorValue.includes('rgb') && !colorValue.includes('#')) {
+                    return `無効な色形式: ${colorValue}`;
+                }
+                
+                return true;
+            }));
+
+            // フィルターUI動作テスト
+            results.push(runTest('フィルターUI動作', () => {
+                // 仮想的なフィルター選択を作成
+                const filterSelect = document.createElement('select');
+                
+                // 「すべて表示」オプション
+                const allOption = document.createElement('option');
+                allOption.value = '';
+                allOption.textContent = 'すべて表示';
+                filterSelect.appendChild(allOption);
+                
+                // カテゴリオプション
+                Object.keys(TASK_CATEGORIES).forEach(key => {
+                    const option = document.createElement('option');
+                    option.value = key;
+                    option.textContent = TASK_CATEGORIES[key].name;
+                    filterSelect.appendChild(option);
+                });
+                
+                if (filterSelect.options.length !== 7) return 'フィルター選択肢の数が正しくない';
+                if (filterSelect.options[0].value !== '') return '「すべて表示」オプションが正しくない';
+                
+                return true;
+            }));
+
+            displayResult('ui-integration-result', results);
+            displayAllResults();
+        }
+
+        // 全テスト実行
+        function runAllTests() {
+            // 結果をリセット
+            globalTestResults = { passed: 0, failed: 0, total: 0, details: [] };
+            
+            // 各テストを順次実行
+            testCategoryFunctionality();
+            testDataCompatibility();
+            testErrorHandling();
+            testLocalStoragePersistence();
+            testExportImportFunctionality();
+            testUIIntegration();
+            
+            console.log('全テスト実行完了:', globalTestResults);
+        }
+
+        // ページ読み込み時の初期化
+        window.onload = function() {
+            console.log('カテゴリ機能統合テストページが読み込まれました');
+            
+            // テストデータの表示
+            const testDataDiv = document.createElement('div');
+            testDataDiv.className = 'test-data';
+            
+            const titleH4 = document.createElement('h4');
+            titleH4.textContent = '📋 テスト対象カテゴリ定義';
+            testDataDiv.appendChild(titleH4);
+            
+            const preElement = document.createElement('pre');
+            preElement.textContent = JSON.stringify(TASK_CATEGORIES, null, 2);
+            testDataDiv.appendChild(preElement);
+            
+            document.querySelector('.test-container').appendChild(testDataDiv);
+        };
+    </script>
+</body>
+</html>

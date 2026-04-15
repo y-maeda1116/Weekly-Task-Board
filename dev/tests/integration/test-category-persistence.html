@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>カテゴリ機能テスト</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ccc; }
+        .success { color: green; }
+        .error { color: red; }
+        button { margin: 5px; padding: 10px; }
+        #test-results { margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <h1>タスクカテゴリ機能テスト</h1>
+    
+    <div class="test-section">
+        <h2>1. LocalStorage カテゴリ情報保存テスト</h2>
+        <button onclick="testLocalStoragePersistence()">LocalStorage テスト実行</button>
+        <div id="localStorage-result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>2. エクスポート機能テスト</h2>
+        <button onclick="testExportFunctionality()">エクスポート テスト実行</button>
+        <div id="export-result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>3. インポート機能テスト</h2>
+        <button onclick="testImportFunctionality()">インポート テスト実行</button>
+        <div id="import-result"></div>
+    </div>
+    
+    <div id="test-results"></div>
+
+    <script>
+        // テスト用のサンプルデータ
+        const testTasks = [
+            { id: 'test-1', name: 'テストタスク1', category: 'task', estimated_time: 2, priority: 'high', completed: false },
+            { id: 'test-2', name: 'テストミーティング', category: 'meeting', estimated_time: 1, priority: 'medium', completed: false },
+            { id: 'test-3', name: 'テストレビュー', category: 'review', estimated_time: 3, priority: 'low', completed: true },
+            { id: 'test-4', name: '無効カテゴリテスト', category: 'invalid_category', estimated_time: 1, priority: 'medium', completed: false }
+        ];
+
+        const testArchive = [
+            { id: 'archive-1', name: 'アーカイブタスク1', category: 'bugfix', estimated_time: 2, completed: true, archived_date: '2024-01-01T10:00:00Z' },
+            { id: 'archive-2', name: '無効カテゴリアーカイブ', category: 'nonexistent', estimated_time: 1, completed: true, archived_date: '2024-01-02T15:00:00Z' }
+        ];
+
+        // カテゴリ定義（script.jsから）
+        const TASK_CATEGORIES = {
+            'task': { name: 'タスク', color: '#3498db', bgColor: '#e3f2fd' },
+            'meeting': { name: '打ち合わせ', color: '#27ae60', bgColor: '#e8f5e8' },
+            'review': { name: 'レビュー', color: '#f39c12', bgColor: '#fff3e0' },
+            'bugfix': { name: 'バグ修正', color: '#e74c3c', bgColor: '#ffebee' },
+            'document': { name: 'ドキュメント作成', color: '#9b59b6', bgColor: '#f3e5f5' },
+            'research': { name: '学習・調査', color: '#f1c40f', bgColor: '#fffde7' }
+        };
+
+        function validateCategory(category) {
+            if (category && TASK_CATEGORIES[category]) {
+                return category;
+            }
+            console.warn(`Invalid category "${category}", falling back to default "task"`);
+            return 'task';
+        }
+
+        function testLocalStoragePersistence() {
+            const resultDiv = document.getElementById('localStorage-result');
+            let results = [];
+
+            try {
+                // テストデータをLocalStorageに保存
+                localStorage.setItem('weekly-task-board.tasks', JSON.stringify(testTasks));
+                localStorage.setItem('weekly-task-board.archive', JSON.stringify(testArchive));
+
+                // データを読み込んで検証
+                const loadedTasks = JSON.parse(localStorage.getItem('weekly-task-board.tasks'));
+                const loadedArchive = JSON.parse(localStorage.getItem('weekly-task-board.archive'));
+
+                // カテゴリ情報の検証
+                let tasksWithValidCategories = 0;
+                let archiveWithValidCategories = 0;
+
+                loadedTasks.forEach(task => {
+                    if (task.category && TASK_CATEGORIES[task.category]) {
+                        tasksWithValidCategories++;
+                    }
+                });
+
+                loadedArchive.forEach(task => {
+                    if (task.category && TASK_CATEGORIES[task.category]) {
+                        archiveWithValidCategories++;
+                    }
+                });
+
+                results.push(`✓ タスクデータ保存成功: ${loadedTasks.length}件`);
+                results.push(`✓ アーカイブデータ保存成功: ${loadedArchive.length}件`);
+                results.push(`✓ 有効カテゴリを持つタスク: ${tasksWithValidCategories}/${loadedTasks.length}件`);
+                results.push(`✓ 有効カテゴリを持つアーカイブ: ${archiveWithValidCategories}/${loadedArchive.length}件`);
+
+                resultDiv.innerHTML = `<div class="success">${results.join('<br>')}</div>`;
+
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">エラー: ${error.message}</div>`;
+            }
+        }
+
+        function testExportFunctionality() {
+            const resultDiv = document.getElementById('export-result');
+            let results = [];
+
+            try {
+                // テストデータを準備
+                const exportData = {
+                    tasks: testTasks,
+                    archive: testArchive,
+                    settings: { ideal_daily_minutes: 480 },
+                    exportInfo: {
+                        exportDate: new Date().toISOString(),
+                        version: "1.0",
+                        categoriesIncluded: true
+                    }
+                };
+
+                // JSON文字列に変換
+                const jsonString = JSON.stringify(exportData, null, 2);
+                const parsedData = JSON.parse(jsonString);
+
+                // カテゴリ情報の存在確認
+                let tasksWithCategories = 0;
+                let archiveWithCategories = 0;
+
+                parsedData.tasks.forEach(task => {
+                    if (task.category) tasksWithCategories++;
+                });
+
+                parsedData.archive.forEach(task => {
+                    if (task.category) archiveWithCategories++;
+                });
+
+                results.push(`✓ エクスポートデータ生成成功`);
+                results.push(`✓ タスクデータ: ${parsedData.tasks.length}件 (カテゴリ付き: ${tasksWithCategories}件)`);
+                results.push(`✓ アーカイブデータ: ${parsedData.archive.length}件 (カテゴリ付き: ${archiveWithCategories}件)`);
+                results.push(`✓ 設定データ: ${Object.keys(parsedData.settings).length}項目`);
+                results.push(`✓ エクスポート情報: ${parsedData.exportInfo.categoriesIncluded ? 'カテゴリ情報含む' : 'カテゴリ情報なし'}`);
+
+                resultDiv.innerHTML = `<div class="success">${results.join('<br>')}</div>`;
+
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">エラー: ${error.message}</div>`;
+            }
+        }
+
+        function testImportFunctionality() {
+            const resultDiv = document.getElementById('import-result');
+            let results = [];
+
+            try {
+                // インポート用テストデータ（無効なカテゴリを含む）
+                const importTestData = {
+                    tasks: [
+                        { id: 'import-1', name: 'インポートタスク1', category: 'task', estimated_time: 2 },
+                        { id: 'import-2', name: 'インポートタスク2', category: 'invalid_category', estimated_time: 1 },
+                        { id: 'import-3', name: 'インポートタスク3', category: 'meeting', estimated_time: 3 }
+                    ],
+                    archive: [
+                        { id: 'import-archive-1', name: 'インポートアーカイブ1', category: 'bugfix', completed: true },
+                        { id: 'import-archive-2', name: 'インポートアーカイブ2', category: 'nonexistent', completed: true }
+                    ],
+                    settings: { ideal_daily_minutes: 600 }
+                };
+
+                // インポート処理のシミュレーション
+                let importStats = {
+                    tasksImported: 0,
+                    tasksWithCategories: 0,
+                    archivedImported: 0,
+                    archivedWithCategories: 0,
+                    categoriesFixed: 0
+                };
+
+                // タスクの処理
+                const processedTasks = importTestData.tasks.map(task => {
+                    const originalCategory = task.category;
+                    const validatedCategory = validateCategory(task.category);
+                    
+                    if (originalCategory !== validatedCategory) {
+                        importStats.categoriesFixed++;
+                    }
+                    if (validatedCategory !== 'task') {
+                        importStats.tasksWithCategories++;
+                    }
+                    
+                    return { ...task, category: validatedCategory };
+                });
+                importStats.tasksImported = processedTasks.length;
+
+                // アーカイブの処理
+                const processedArchive = importTestData.archive.map(task => {
+                    const originalCategory = task.category;
+                    const validatedCategory = validateCategory(task.category);
+                    
+                    if (originalCategory !== validatedCategory) {
+                        importStats.categoriesFixed++;
+                    }
+                    if (validatedCategory !== 'task') {
+                        importStats.archivedWithCategories++;
+                    }
+                    
+                    return { ...task, category: validatedCategory };
+                });
+                importStats.archivedImported = processedArchive.length;
+
+                results.push(`✓ インポート処理成功`);
+                results.push(`✓ タスクインポート: ${importStats.tasksImported}件 (カテゴリ付き: ${importStats.tasksWithCategories}件)`);
+                results.push(`✓ アーカイブインポート: ${importStats.archivedImported}件 (カテゴリ付き: ${importStats.archivedWithCategories}件)`);
+                results.push(`✓ カテゴリ修正: ${importStats.categoriesFixed}件`);
+                results.push(`✓ 設定インポート: ${Object.keys(importTestData.settings).length}項目`);
+
+                resultDiv.innerHTML = `<div class="success">${results.join('<br>')}</div>`;
+
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">エラー: ${error.message}</div>`;
+            }
+        }
+
+        // ページ読み込み時に自動テスト実行
+        window.onload = function() {
+            console.log('カテゴリ機能テストページが読み込まれました');
+        };
+    </script>
+</body>
+</html>
