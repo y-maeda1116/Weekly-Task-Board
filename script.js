@@ -2069,8 +2069,8 @@ let isRendering = false;
 let selectedDate = null;
 
 // アプリケーションバージョン（キャッシュ対策）
-const APP_VERSION = '1.5.0';
-const BUILD_DATE = '2026-04-14';
+const APP_VERSION = '1.5.1';
+const BUILD_DATE = '2026-04-15';
 
 // バージョン情報をログ出力（キャッシュ確認用）
 console.log(`%c🚀 アプリケーション読み込み (v${APP_VERSION}, ${BUILD_DATE})`, 'font-size: 12px; color: #666;');
