@@ -2070,7 +2070,7 @@ let selectedDate = null;
 let migrationNotified = false;
 
 // アプリケーションバージョン（キャッシュ対策）
-const APP_VERSION = '1.5.1';
+const APP_VERSION = '1.5.2';
 const BUILD_DATE = '2026-04-15';
 
 // バージョン情報をログ出力（キャッシュ確認用）
@@ -5297,14 +5297,22 @@ document.addEventListener('DOMContentLoaded', () => {
     initPWA();
 
     // ハイブリッドモジュール初期化（deferスクリプト読み込み後に実行）
+    if (window.HybridJournalManager) {
+        window.HybridJournalManager.initialize();
+    }
+    if (window.HybridJournalUI) {
+        if (window.HybridJournalUI.initTimelineControls) {
+            window.HybridJournalUI.initTimelineControls();
+        }
+        if (window.HybridJournalUI.injectStartButtons) {
+            window.HybridJournalUI.injectStartButtons();
+        }
+    }
     if (window.HybridWeeklyReviewUI) {
         window.HybridWeeklyReviewUI.initialize();
     }
     if (window.HybridMorningPagesUI) {
         window.HybridMorningPagesUI.initialize();
-    }
-    if (window.HybridJournalUI && window.HybridJournalUI.initTimelineControls) {
-        window.HybridJournalUI.initTimelineControls();
     }
 
     console.log(`%c✨ 初期化完了 (v${APP_VERSION}, ${BUILD_DATE})`, 'font-size: 12px; color: #4a90e2; font-weight: bold;');
