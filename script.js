@@ -2070,7 +2070,7 @@ let selectedDate = null;
 let migrationNotified = false;
 
 // アプリケーションバージョン（キャッシュ対策）
-const APP_VERSION = '1.5.2';
+const APP_VERSION = '1.5.3';
 const BUILD_DATE = '2026-04-15';
 
 // バージョン情報をログ出力（キャッシュ確認用）
@@ -2151,10 +2151,7 @@ initializeTemplatePanel();
 if (window.HybridJournalManager) {
     window.HybridJournalManager.initialize();
 }
-// JournalUIの初期化はDOMContentLoaded内で行う（ハイブリッドモジュール読み込み後）
-
-// マイグレーション機能の初期化
-initializeMigrationModal();
+// JournalUI・マイグレーションの初期化はDOMContentLoaded内で行う（ハイブリッドモジュール読み込み後）
 
 // --- Modal Logic ---
 addTaskBtn.addEventListener('click', () => {
@@ -5308,6 +5305,10 @@ document.addEventListener('DOMContentLoaded', () => {
             window.HybridJournalUI.injectStartButtons();
         }
     }
+    // ジャーナルトグル初期化（DOMContentLoaded内で実行）
+    initializeJournalToggle();
+    // タスク移行モーダル初期化
+    initializeMigrationModal();
     if (window.HybridWeeklyReviewUI) {
         window.HybridWeeklyReviewUI.initialize();
     }
