@@ -13,7 +13,12 @@
       "Bash(chmod +x:*)",
       "Bash(./compile-hybrid-DOMInitialization.sh:*)",
       "Bash(git:*)",
-      "Bash(npm run:*)"
+      "Bash(npm run:*)",
+      "Bash(gh auth:*)",
+      "Bash(kill %1)",
+      "Bash(python3 *)",
+      "mcp__plugin_playwright_playwright__browser_navigate",
+      "Bash(gh run *)"
     ]
   }
 }
