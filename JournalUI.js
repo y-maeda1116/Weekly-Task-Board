@@ -76,10 +76,9 @@ function handleStartClick(taskId, taskEl) {
         return;
     const activeEntry = manager.getActiveEntry();
     if (activeEntry && activeEntry.taskId === taskId) {
-        if (confirm('\u3053\u306E\u30BF\u30B9\u30AF\u306E\u30B8\u30E3\u30FC\u30CA\u30EB\u3092\u505C\u6B62\u3057\u307E\u3059\u304B\uFF1F')) {
-            manager.completeEntry(activeEntry.id, '');
+        showNextStepModal(activeEntry, function() {
             injectStartButtons();
-        }
+        });
         return;
     }
     if (activeEntry) {

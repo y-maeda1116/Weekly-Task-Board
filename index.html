@@ -268,19 +268,23 @@
             <button id="close-review" class="close-btn">&times;</button>
         </div>
         <div class="dashboard-content">
+            <p class="review-description">その週のタスク完了状況とジャーナル作業時間を振り返り、週報をMarkdownで出力できます。</p>
+            <h3>📊 サマリー</h3>
             <div id="review-stats" class="review-stats-grid"></div>
+            <h3>⏱ ジャーナル作業時間</h3>
+            <p class="review-hint">ジャーナルの開始/完了から計算した実際の作業時間です</p>
             <div id="review-journal-time" class="review-section"></div>
             <div class="review-section review-achievements">
                 <h3>🏆 トップ3実績</h3>
-                <p class="review-hint">完了タスクから3つ選択してください</p>
+                <p class="review-hint">完了タスクからベスト3を選択 → Markdown週報に含まれます</p>
                 <div id="review-achievement-list"></div>
             </div>
             <div class="review-section">
-                <h3>⏱ タスク別時間</h3>
+                <h3>📋 タスク別時間</h3>
                 <div id="review-task-time-table"></div>
             </div>
             <div class="review-export">
-                <button id="review-export-btn" class="review-export-btn">Markdownでコピー</button>
+                <button id="review-export-btn" class="review-export-btn">📋 Markdownでコピー</button>
             </div>
         </div>
     </div>

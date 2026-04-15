@@ -2150,20 +2150,10 @@ initializeTemplatePanel();
 if (window.HybridJournalManager) {
     window.HybridJournalManager.initialize();
 }
-initializeJournalToggle();
+// JournalUIの初期化はDOMContentLoaded内で行う（ハイブリッドモジュール読み込み後）
 
 // マイグレーション機能の初期化
 initializeMigrationModal();
-
-// 週次レビュー機能の初期化
-if (window.HybridWeeklyReviewUI) {
-    window.HybridWeeklyReviewUI.initialize();
-}
-
-// モーニングページ機能の初期化
-if (window.HybridMorningPagesUI) {
-    window.HybridMorningPagesUI.initialize();
-}
 
 // --- Modal Logic ---
 addTaskBtn.addEventListener('click', () => {
@@ -2708,25 +2698,29 @@ function initializeTemplatePanel() {
         const taskNameDiv = document.createElement('div');
         taskNameDiv.className = 'task-name';
 
-        // Bullet Journal Signifier
-        const SIGNIFIER_MAP = { task: '\u30FB', note: '\uFF0D', important: '\uFF01', consider: '\uFF1F', idea: '\u2601' };
-        const SIGNIFIER_ORDER = [null, 'task', 'note', 'important', 'consider', 'idea'];
+        // Bullet Journal Signifier - always show clickable icon
+        const sigSpan = document.createElement('span');
+        sigSpan.className = 'task-signifier';
+        sigSpan.dataset.signifier = task.signifier || '';
 
         if (task.signifier) {
-            const sigSpan = document.createElement('span');
-            sigSpan.className = 'task-signifier';
             sigSpan.textContent = SIGNIFIER_MAP[task.signifier] + ' ';
-            sigSpan.dataset.signifier = task.signifier;
-            sigSpan.addEventListener('click', (e) => {
-                e.stopPropagation();
-                e.preventDefault();
-                const cur = SIGNIFIER_ORDER.indexOf(task.signifier);
-                task.signifier = SIGNIFIER_ORDER[(cur + 1) % SIGNIFIER_ORDER.length];
-                saveTasks();
-                renderWeek();
-            });
-            taskNameDiv.appendChild(sigSpan);
+            sigSpan.title = SIGNIFIER_LABELS[task.signifier] + ' (\u30AF\u30EA\u30C3\u30AF\u3067\u5909\u66F4)';
+        } else {
+            sigSpan.textContent = '\u25CB ';
+            sigSpan.title = '\u30AF\u30EA\u30C3\u30AF\u3067\u8A18\u53F7\u3092\u8A2D\u5B9A';
+            sigSpan.classList.add('task-signifier-empty');
         }
+
+        sigSpan.addEventListener('click', (e) => {
+            e.stopPropagation();
+            e.preventDefault();
+            const cur = SIGNIFIER_ORDER.indexOf(task.signifier);
+            task.signifier = SIGNIFIER_ORDER[(cur + 1) % SIGNIFIER_ORDER.length];
+            saveTasks();
+            renderWeek();
+        });
+        taskNameDiv.appendChild(sigSpan);
         taskNameDiv.appendChild(document.createTextNode(task.name));
         
         const prioritySpan = document.createElement('span');
@@ -3073,9 +3067,36 @@ function initializeTemplatePanel() {
             window.HybridJournalUI.injectStartButtons();
         }
 
+        // 前週の未完了タスクがあればマイグレーション通知
+        checkIncompleteFromPreviousWeek(monday);
+
         isRendering = false;
     }
     document.body.renderWeek = renderWeek;
+
+    let migrationNotified = false;
+    function checkIncompleteFromPreviousWeek(currentMonday) {
+        if (migrationNotified) return;
+        if (!window.HybridTaskMigration) return;
+
+        const prevMonday = new Date(currentMonday);
+        prevMonday.setDate(prevMonday.getDate() - 7);
+        const prevEnd = new Date(prevMonday);
+        prevEnd.setDate(prevEnd.getDate() + 6);
+
+        const prevStartStr = formatDate(prevMonday);
+        const prevEndStr = formatDate(prevEnd);
+
+        const incomplete = window.HybridTaskMigration.getIncompleteTasksForWeek(prevStartStr, prevEndStr);
+        if (incomplete.length > 0) {
+            migrationNotified = true;
+            const btn = document.getElementById('migration-toggle');
+            if (btn) {
+                btn.classList.add('migration-alert');
+                btn.title = '\u26A0 \u524D\u9031\u306B' + incomplete.length + '\u4EF6\u306E\u672A\u5B8C\u4E86\u30BF\u30B9\u30AF\u304C\u3042\u308A\u307E\u3059';
+            }
+        }
+    }
 
 
     // --- Navigation Event Listeners ---
@@ -5271,6 +5292,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // PWA を初期化
     initPWA();
+
+    // ハイブリッドモジュール初期化（deferスクリプト読み込み後に実行）
+    if (window.HybridWeeklyReviewUI) {
+        window.HybridWeeklyReviewUI.initialize();
+    }
+    if (window.HybridMorningPagesUI) {
+        window.HybridMorningPagesUI.initialize();
+    }
+    if (window.HybridJournalUI && window.HybridJournalUI.initTimelineControls) {
+        window.HybridJournalUI.initTimelineControls();
+    }
 
     console.log(`%c✨ 初期化完了 (v${APP_VERSION}, ${BUILD_DATE})`, 'font-size: 12px; color: #4a90e2; font-weight: bold;');
 });
