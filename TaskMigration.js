@@ -117,14 +117,7 @@
       var task = tasks[i];
 
       if (idSet[task.id] && !task.completed) {
-        // Mark original as migrated
-        var migrated = Object.assign({}, task, {
-          name: '> ' + task.name,
-          completed: true
-        });
-        updatedTasks.push(migrated);
-
-        // Create copy in unassigned
+        // Create copy in unassigned (original is removed)
         var copy = Object.assign({}, task, {
           id: generateId(),
           name: task.name.replace(/^>\s*/, ''),

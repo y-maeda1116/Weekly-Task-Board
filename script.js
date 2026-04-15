@@ -2070,7 +2070,7 @@ let selectedDate = null;
 let migrationNotified = false;
 
 // アプリケーションバージョン（キャッシュ対策）
-const APP_VERSION = '1.5.4';
+const APP_VERSION = '1.5.5';
 const BUILD_DATE = '2026-04-15';
 
 // バージョン情報をログ出力（キャッシュ確認用）
@@ -4435,11 +4435,6 @@ function initializeMigrationModal() {
             for (var i = 0; i < rawTasks.length; i++) {
                 var task = rawTasks[i];
                 if (idSet[task.id] && !task.completed) {
-                    updatedTasks.push(Object.assign({}, task, {
-                        name: '> ' + task.name,
-                        completed: true
-                    }));
-
                     var srcDate = task.assigned_date || task.date;
                     var d = new Date(srcDate + 'T00:00:00');
                     d.setDate(d.getDate() + dayOffset);
