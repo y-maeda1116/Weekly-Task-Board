@@ -1398,6 +1398,35 @@ button:hover {
     transform: scale(0.9);
     opacity: 0;
     transition: all 0.3s ease;
+    position: relative;
+}
+
+/* モーダルの閉じるボタン */
+.modal .close-btn {
+    color: #aaa;
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+    line-height: 1;
+}
+
+.modal .close-btn:hover,
+.modal .close-btn:focus {
+    color: #333;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+[data-theme="dark"] .modal .close-btn {
+    color: #888;
+}
+
+[data-theme="dark"] .modal .close-btn:hover,
+[data-theme="dark"] .modal .close-btn:focus {
+    color: #ccc;
 }
 
 /* モーダル表示時のアニメーション */
