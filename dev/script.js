@@ -4323,7 +4323,11 @@ function initializeJournalToggle() {
     if (!journalToggleBtn) return;
 
     journalToggleBtn.addEventListener('click', () => {
-        if (window.HybridJournalUI) {
+        if (!window.HybridJournalUI) return;
+        const panel = document.getElementById('journal-timeline-panel');
+        if (panel && panel.style.display !== 'none') {
+            window.HybridJournalUI.closeTimeline();
+        } else {
             window.HybridJournalUI.openTimeline();
         }
     });
