@@ -2070,7 +2070,7 @@ let selectedDate = null;
 let migrationNotified = false;
 
 // アプリケーションバージョン（キャッシュ対策）
-const APP_VERSION = '1.5.5';
+const APP_VERSION = '1.5.6';
 const BUILD_DATE = '2026-04-15';
 
 // バージョン情報をログ出力（キャッシュ確認用）
