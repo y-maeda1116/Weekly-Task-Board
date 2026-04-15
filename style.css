@@ -404,12 +404,10 @@ main#task-board.weekdays-1 {
     user-select: none;
     transition: transform 0.2s ease;
     display: inline-block;
-    font-size: 1.3em;
     margin-right: 2px;
 }
 .task-signifier-empty {
     opacity: 0.3;
-    font-size: 1em;
 }
 .task-signifier-empty:hover {
     opacity: 0.7;
