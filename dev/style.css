@@ -405,6 +405,7 @@ main#task-board.weekdays-1 {
     transition: transform 0.2s ease;
     display: inline-block;
     margin-right: 2px;
+    font-size: 1.4em;
 }
 .task-signifier-empty {
     opacity: 0.3;
