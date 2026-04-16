@@ -2072,11 +2072,11 @@ let migrationNotified = false;
 // Bullet Journal Signifiers
 const SIGNIFIER_ORDER = [null, 'task', 'note', 'important', 'consider', 'idea'];
 const SIGNIFIER_MAP = {
-    task: '\u30FB',
-    note: '\uFF0D',
-    important: '\uFF01',
-    consider: '\uFF1F',
-    idea: '\u2605'
+    task: '✅',
+    note: '📝',
+    important: '❗',
+    consider: '🤔',
+    idea: '💡'
 };
 const SIGNIFIER_LABELS = {
     task: '\u30BF\u30B9\u30AF',
@@ -2087,7 +2087,7 @@ const SIGNIFIER_LABELS = {
 };
 
 // アプリケーションバージョン（キャッシュ対策）
-const APP_VERSION = '1.6.0';
+const APP_VERSION = '1.6.1';
 const BUILD_DATE = '2026-04-15';
 
 // バージョン情報をログ出力（キャッシュ確認用）
@@ -2725,7 +2725,7 @@ function initializeTemplatePanel() {
             sigSpan.textContent = SIGNIFIER_MAP[task.signifier] + ' ';
             sigSpan.title = SIGNIFIER_LABELS[task.signifier] + ' (\u30AF\u30EA\u30C3\u30AF\u3067\u5909\u66F4)';
         } else {
-            sigSpan.textContent = '\u25CB ';
+            sigSpan.textContent = '☐ ';
             sigSpan.title = '\u30AF\u30EA\u30C3\u30AF\u3067\u8A18\u53F7\u3092\u8A2D\u5B9A';
             sigSpan.classList.add('task-signifier-empty');
         }
