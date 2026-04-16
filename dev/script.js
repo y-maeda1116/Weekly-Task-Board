@@ -2087,7 +2087,7 @@ const SIGNIFIER_LABELS = {
 };
 
 // アプリケーションバージョン（キャッシュ対策）
-const APP_VERSION = '1.5.8';
+const APP_VERSION = '1.5.9';
 const BUILD_DATE = '2026-04-15';
 
 // バージョン情報をログ出力（キャッシュ確認用）
@@ -5334,6 +5334,31 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     if (window.HybridMorningPagesUI) {
         window.HybridMorningPagesUI.initialize();
+    }
+
+    // 記号の意味モーダル
+    const signifierHelpBtn = document.getElementById('signifier-help-btn');
+    const signifierHelpModal = document.getElementById('signifier-help-modal');
+    const closeSignifierHelp = document.getElementById('close-signifier-help');
+    if (signifierHelpBtn && signifierHelpModal) {
+        signifierHelpBtn.addEventListener('click', () => {
+            signifierHelpModal.style.display = 'block';
+            signifierHelpModal.classList.add('show');
+        });
+    }
+    if (closeSignifierHelp && signifierHelpModal) {
+        closeSignifierHelp.addEventListener('click', () => {
+            signifierHelpModal.classList.remove('show');
+            setTimeout(() => { signifierHelpModal.style.display = 'none'; }, 300);
+        });
+    }
+    if (signifierHelpModal) {
+        signifierHelpModal.addEventListener('click', (e) => {
+            if (e.target === signifierHelpModal) {
+                signifierHelpModal.classList.remove('show');
+                setTimeout(() => { signifierHelpModal.style.display = 'none'; }, 300);
+            }
+        });
     }
 
     console.log(`%c✨ 初期化完了 (v${APP_VERSION}, ${BUILD_DATE})`, 'font-size: 12px; color: #4a90e2; font-weight: bold;');
