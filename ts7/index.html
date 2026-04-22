@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ウィークリータスクボード — TS7</title>
+
+    <link rel="icon" type="image/svg+xml" href="../favicon.svg">
+    <meta name="theme-color" content="#4a90e2">
+    <meta name="description" content="Weekly Task Board — TypeScript 7.0 Beta">
+    <link rel="stylesheet" href="../style.css">
+    <style>
+      /* TS7-specific overrides */
+      .ts7-badge {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-size: 0.7em;
+        font-weight: 600;
+        background: #00add8;
+        color: white;
+        vertical-align: middle;
+        margin-left: 6px;
+      }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>ウィークリータスクボード <span class="ts7-badge">TS7</span></h1>
+        <div id="header-controls">
+            <div id="header-group-main">
+                <button id="add-task-btn">タスクを追加</button>
+            </div>
+            <div id="header-group-filters">
+                <div id="category-filter">
+                    <select id="filter-category">
+                        <option value="">すべて表示</option>
+                        <option value="task">タスク</option>
+                        <option value="meeting">打ち合わせ</option>
+                        <option value="review">レビュー</option>
+                        <option value="bugfix">バグ修正</option>
+                        <option value="document">ドキュメント作成</option>
+                        <option value="research">学習・調査</option>
+                    </select>
+                </div>
+            </div>
+            <div id="header-group-navigation">
+                <button id="prev-week">前週</button>
+                <button id="today">今週</button>
+                <button id="next-week">次週</button>
+                <div id="date-picker-wrapper">
+                    <input type="date" id="date-picker" readonly>
+                </div>
+            </div>
+            <div id="header-group-utility">
+                <button id="signifier-help-btn" title="記号の意味">❓</button>
+            </div>
+        </div>
+        <h2 id="week-title"></h2>
+    </header>
+
+    <div id="app-container">
+        <main id="task-board">
+            <div class="day-column" id="monday">
+                <h3>月曜日 <span class="daily-total-time"></span></h3>
+                <div class="day-column-hint">クリックでタスク作成</div>
+            </div>
+            <div class="day-column" id="tuesday">
+                <h3>火曜日 <span class="daily-total-time"></span></h3>
+                <div class="day-column-hint">クリックでタスク作成</div>
+            </div>
+            <div class="day-column" id="wednesday">
+                <h3>水曜日 <span class="daily-total-time"></span></h3>
+                <div class="day-column-hint">クリックでタスク作成</div>
+            </div>
+            <div class="day-column" id="thursday">
+                <h3>木曜日 <span class="daily-total-time"></span></h3>
+                <div class="day-column-hint">クリックでタスク作成</div>
+            </div>
+            <div class="day-column" id="friday">
+                <h3>金曜日 <span class="daily-total-time"></span></h3>
+                <div class="day-column-hint">クリックでタスク作成</div>
+            </div>
+            <div class="day-column" id="saturday">
+                <h3>土曜日 <span class="daily-total-time"></span></h3>
+                <div class="day-column-hint">クリックでタスク作成</div>
+            </div>
+            <div class="day-column" id="sunday">
+                <h3>日曜日 <span class="daily-total-time"></span></h3>
+                <div class="day-column-hint">クリックでタスク作成</div>
+            </div>
+        </main>
+        <aside id="sidebar">
+            <div id="unassigned-tasks" class="day-column">
+                <h3>未割り当て</h3>
+                <div id="unassigned-list" class="task-list"></div>
+            </div>
+        </aside>
+    </div>
+
+    <!-- Signifier Help Modal -->
+    <div id="signifier-help-modal" class="modal" style="display:none;">
+        <div class="modal-content" style="max-width:400px;">
+            <span class="close-btn" id="close-signifier-help">&times;</span>
+            <h2 style="margin-top:0;">記号の意味</h2>
+            <p style="color:#666;font-size:0.9em;">タスク名の左の記号をクリックすると切り替わります</p>
+            <div id="signifier-legend" style="display:flex;flex-direction:column;gap:10px;"></div>
+        </div>
+    </div>
+
+    <!-- Add Task Modal -->
+    <div id="add-task-modal" class="modal" style="display:none;">
+        <div class="modal-content">
+            <span class="close-btn" id="close-add-task">&times;</span>
+            <h2 style="margin-top:0;">タスクを追加</h2>
+            <form id="add-task-form">
+                <div class="form-group">
+                    <label for="task-name">タスク名</label>
+                    <input type="text" id="task-name" required placeholder="タスク名を入力">
+                </div>
+                <div class="form-group">
+                    <label for="task-estimated-time">見積時間（分）</label>
+                    <input type="number" id="task-estimated-time" value="30" min="0" step="15">
+                </div>
+                <div class="form-group">
+                    <label for="task-priority">優先度</label>
+                    <select id="task-priority">
+                        <option value="low">低</option>
+                        <option value="medium" selected>中</option>
+                        <option value="high">高</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="task-category">カテゴリ</label>
+                    <select id="task-category">
+                        <option value="task">タスク</option>
+                        <option value="meeting">打ち合わせ</option>
+                        <option value="review">レビュー</option>
+                        <option value="bugfix">バグ修正</option>
+                        <option value="document">ドキュメント作成</option>
+                        <option value="research">学習・調査</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="task-date">日付</label>
+                    <input type="date" id="task-date">
+                </div>
+                <div class="form-group">
+                    <label for="task-details">詳細</label>
+                    <textarea id="task-details" rows="3" placeholder="詳細があれば入力"></textarea>
+                </div>
+                <button type="submit" id="submit-task">追加</button>
+            </form>
+        </div>
+    </div>
+
+    <script type="module" src="/src/main.ts"></script>
+</body>
+</html>

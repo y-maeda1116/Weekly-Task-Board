@@ -2069,8 +2069,25 @@ let isRendering = false;
 let selectedDate = null;
 let migrationNotified = false;
 
+// Bullet Journal Signifiers
+const SIGNIFIER_ORDER = [null, 'task', 'note', 'important', 'consider', 'idea'];
+const SIGNIFIER_MAP = {
+    task: '✅',
+    note: '📝',
+    important: '❗',
+    consider: '🤔',
+    idea: '💡'
+};
+const SIGNIFIER_LABELS = {
+    task: '\u30BF\u30B9\u30AF',
+    note: '\u30E1\u30E2',
+    important: '\u91CD\u8981',
+    consider: '\u691C\u8A0E',
+    idea: '\u30A2\u30A4\u30C7\u30A2'
+};
+
 // アプリケーションバージョン（キャッシュ対策）
-const APP_VERSION = '1.5.6';
+const APP_VERSION = '1.6.5';
 const BUILD_DATE = '2026-04-15';
 
 // バージョン情報をログ出力（キャッシュ確認用）
@@ -2708,7 +2725,7 @@ function initializeTemplatePanel() {
             sigSpan.textContent = SIGNIFIER_MAP[task.signifier] + ' ';
             sigSpan.title = SIGNIFIER_LABELS[task.signifier] + ' (\u30AF\u30EA\u30C3\u30AF\u3067\u5909\u66F4)';
         } else {
-            sigSpan.textContent = '\u25CB ';
+            sigSpan.textContent = '⬜ ';
             sigSpan.title = '\u30AF\u30EA\u30C3\u30AF\u3067\u8A18\u53F7\u3092\u8A2D\u5B9A';
             sigSpan.classList.add('task-signifier-empty');
         }
@@ -5317,6 +5334,31 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     if (window.HybridMorningPagesUI) {
         window.HybridMorningPagesUI.initialize();
+    }
+
+    // 記号の意味モーダル
+    const signifierHelpBtn = document.getElementById('signifier-help-btn');
+    const signifierHelpModal = document.getElementById('signifier-help-modal');
+    const closeSignifierHelp = document.getElementById('close-signifier-help');
+    if (signifierHelpBtn && signifierHelpModal) {
+        signifierHelpBtn.addEventListener('click', () => {
+            signifierHelpModal.style.display = 'block';
+            signifierHelpModal.classList.add('show');
+        });
+    }
+    if (closeSignifierHelp && signifierHelpModal) {
+        closeSignifierHelp.addEventListener('click', () => {
+            signifierHelpModal.classList.remove('show');
+            setTimeout(() => { signifierHelpModal.style.display = 'none'; }, 300);
+        });
+    }
+    if (signifierHelpModal) {
+        signifierHelpModal.addEventListener('click', (e) => {
+            if (e.target === signifierHelpModal) {
+                signifierHelpModal.classList.remove('show');
+                setTimeout(() => { signifierHelpModal.style.display = 'none'; }, 300);
+            }
+        });
     }
 
     console.log(`%c✨ 初期化完了 (v${APP_VERSION}, ${BUILD_DATE})`, 'font-size: 12px; color: #4a90e2; font-weight: bold;');
