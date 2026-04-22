@@ -423,44 +423,44 @@
         document.head.appendChild(configScript);
     </script>
 
-    <!-- メインスクリプト（deferでDOM解析完了後に実行） -->
-    <script src="script.js?v=1.7.1" defer></script>
+    <!-- Extracted Modules (script.jsより先に読み込む) -->
+    <script src="StatisticsEngine.js?v=1.7.2" defer></script>
+    <script src="BulkOperations.js?v=1.7.2" defer></script>
+    <script src="RecurrenceEngine.js?v=1.7.2" defer></script>
+    <script src="ArchiveManager.js?v=1.7.2" defer></script>
+    <script src="TemplateManager.js?v=1.7.2" defer></script>
+    <script src="DashboardManager.js?v=1.7.2" defer></script>
+    <script src="ThemeManager.js?v=1.7.2" defer></script>
+    <script src="ContextManager.js?v=1.7.2" defer></script>
+    <script src="CalendarManager.js?v=1.7.2" defer></script>
+    <script src="PWASetup.js?v=1.7.2" defer></script>
+    <script src="ExportImport.js?v=1.7.2" defer></script>
 
-    <!-- Extracted Modules (Phase 1-3) -->
-    <script src="StatisticsEngine.js?v=1.7.1" defer></script>
-    <script src="BulkOperations.js?v=1.7.1" defer></script>
-    <script src="RecurrenceEngine.js?v=1.7.1" defer></script>
-    <script src="ArchiveManager.js?v=1.7.1" defer></script>
-    <script src="TemplateManager.js?v=1.7.1" defer></script>
-    <script src="DashboardManager.js?v=1.7.1" defer></script>
-    <script src="ThemeManager.js?v=1.7.1" defer></script>
-    <script src="ContextManager.js?v=1.7.1" defer></script>
-    <script src="CalendarManager.js?v=1.7.1" defer></script>
-    <script src="PWASetup.js?v=1.7.1" defer></script>
-    <script src="ExportImport.js?v=1.7.1" defer></script>
+    <!-- メインスクリプト（deferで上記モジュールの後に実行） -->
+    <script src="script.js?v=1.7.2" defer></script>
 
     <!-- TypeScript Hybrid Modules (gradual migration - standalone) -->
-    <script src="DOMInitialization.js?v=1.7.1" defer></script>
-    <script src="WeekNavigation.js?v=1.7.1" defer></script>
-    <script src="TaskOperations.js?v=1.7.1" defer></script>
-    <script src="TaskModal.js?v=1.7.1" defer></script>
-    <script src="TaskFiltering.js?v=1.7.1" defer></script>
-    <script src="TaskRendering.js?v=1.7.1" defer></script>
-    <script src="JournalManager.js?v=1.7.1" defer></script>
-    <script src="JournalUI.js?v=1.7.1" defer></script>
-    <script src="SignifierManager.js?v=1.7.1" defer></script>
-    <script src="TaskMigration.js?v=1.7.1" defer></script>
-    <script src="WeeklyReview.js?v=1.7.1" defer></script>
-    <script src="WeeklyReviewUI.js?v=1.7.1" defer></script>
-    <script src="MorningPages.js?v=1.7.1" defer></script>
-    <script src="MorningPagesUI.js?v=1.7.1" defer></script>
+    <script src="DOMInitialization.js?v=1.7.2" defer></script>
+    <script src="WeekNavigation.js?v=1.7.2" defer></script>
+    <script src="TaskOperations.js?v=1.7.2" defer></script>
+    <script src="TaskModal.js?v=1.7.2" defer></script>
+    <script src="TaskFiltering.js?v=1.7.2" defer></script>
+    <script src="TaskRendering.js?v=1.7.2" defer></script>
+    <script src="JournalManager.js?v=1.7.2" defer></script>
+    <script src="JournalUI.js?v=1.7.2" defer></script>
+    <script src="SignifierManager.js?v=1.7.2" defer></script>
+    <script src="TaskMigration.js?v=1.7.2" defer></script>
+    <script src="WeeklyReview.js?v=1.7.2" defer></script>
+    <script src="WeeklyReviewUI.js?v=1.7.2" defer></script>
+    <script src="MorningPages.js?v=1.7.2" defer></script>
+    <script src="MorningPagesUI.js?v=1.7.2" defer></script>
 
     <!-- バージョン情報（デバッグ用） -->
 
     <!-- バージョン情報（デバッグ用） -->
     <script>
         // アプリバージョンをグローバルに設定（キャッシュ確認用）
-        window.APP_VERSION = '1.7.1';
+        window.APP_VERSION = '1.7.2';
         window.BUILD_DATE = '2026-04-23';
         console.log(`%c📋 ウィークリータスクボード v${window.APP_VERSION} (${window.BUILD_DATE})`, 'font-size: 14px; color: #4a90e2; font-weight: bold;');
     </script>
