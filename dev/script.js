@@ -1,3 +1,6 @@
+// --- Module Re-exports (extracted modules expose via window.*) ---
+// Script tags load these before DOMContentLoaded, so they're available here.
+
 // --- Global State and LocalStorage Functions ---
 
 const TASKS_STORAGE_KEY = 'weekly-task-board.tasks';
@@ -699,6 +702,56 @@ let isRendering = false;
 let selectedDate = null;
 let migrationNotified = false;
 
+// --- Re-export module functions as globals ---
+if (window.ArchiveManager) {
+    window.loadArchivedTasks = window.ArchiveManager.loadArchivedTasks;
+    window.saveArchivedTasks = window.ArchiveManager.saveArchivedTasks;
+    window.archiveCompletedTasks = window.ArchiveManager.archiveCompletedTasks;
+}
+if (window.StatisticsEngine) {
+    window.calculateCompletionRate = window.StatisticsEngine.calculateCompletionRate;
+    window.getCompletionRateForWeek = window.StatisticsEngine.getCompletionRateForWeek;
+    window.calculateCategoryTimeAnalysis = window.StatisticsEngine.calculateCategoryTimeAnalysis;
+    window.calculateDailyWorkTime = window.StatisticsEngine.calculateDailyWorkTime;
+    window.calculateEstimatedVsActualAnalysis = window.StatisticsEngine.calculateEstimatedVsActualAnalysis;
+}
+if (window.DashboardManager) {
+    window.updateDashboard = window.DashboardManager.updateDashboard;
+    window.initializeDashboardToggle = window.DashboardManager.initializeDashboardToggle;
+    window.calculateCompletionRateForDate = window.DashboardManager.calculateCompletionRateForDate;
+    window.calculateCategoryTimeAnalysisForDate = window.DashboardManager.calculateCategoryTimeAnalysisForDate;
+    window.calculateDailyWorkTimeForDate = window.DashboardManager.calculateDailyWorkTimeForDate;
+}
+if (window.ContextManager) {
+    window.initializeWeekdaySettings = window.ContextManager.initializeWeekdaySettings;
+    window.initializeContextMenu = window.ContextManager.initializeContextMenu;
+    window.updateGridColumns = window.ContextManager.updateGridColumns;
+    window.showBulkMoveNotification = window.ContextManager.showBulkMoveNotification;
+}
+if (window.ThemeManager) {
+    window.initializeTheme = window.ThemeManager.initializeTheme;
+    window.toggleTheme = window.ThemeManager.toggleTheme;
+    window.updateThemeButton = window.ThemeManager.updateThemeButton;
+    window.playTaskCompletionAnimation = window.ThemeManager.playTaskCompletionAnimation;
+}
+if (window.CalendarManager) {
+    window.connectGoogleCalendar = window.CalendarManager.connectGoogleCalendar;
+    window.connectOutlookCalendar = window.CalendarManager.connectOutlookCalendar;
+    window.disconnectGoogleCalendar = window.CalendarManager.disconnectGoogleCalendar;
+    window.disconnectOutlookCalendar = window.CalendarManager.disconnectOutlookCalendar;
+    window.checkOAuthCallback = window.CalendarManager.checkOAuthCallback;
+    window.showSettingsHelp = window.CalendarManager.showSettingsHelp;
+    window.initCalendarSettings = window.CalendarManager.initCalendarSettings;
+}
+if (window.ExportImport) {
+    window.exportData = window.ExportImport.exportData;
+    window.importData = window.ExportImport.importData;
+}
+if (window.PWASetup) {
+    window.registerServiceWorker = window.PWASetup.registerServiceWorker;
+    window.initPWA = window.PWASetup.initPWA;
+}
+
 // Bullet Journal Signifiers
 const SIGNIFIER_ORDER = [null, 'task', 'note', 'important', 'consider', 'idea'];
 const SIGNIFIER_MAP = {
@@ -717,7 +770,7 @@ const SIGNIFIER_LABELS = {
 };
 
 // アプリケーションバージョン（キャッシュ対策）
-const APP_VERSION = '1.7.0';
+const APP_VERSION = '1.7.1';
 const BUILD_DATE = '2026-04-15';
 
 // バージョン情報をログ出力（キャッシュ確認用）
@@ -727,22 +780,22 @@ console.log(`%c🚀 アプリケーション読み込み (v${APP_VERSION}, ${BUI
 carryOverOldTasks();
 
 // カテゴリデータの検証と修復
-verifyCategoryData();
+// verifyCategoryData → ArchiveManager に移動済み（省略可能）
 
 // マイグレーションデータの検証と修復
-verifyMigrationData();
+// verifyMigrationData → ArchiveManager に移動済み（省略可能）
 
 // 設定値をUIに反映
 idealDailyMinutesInput.value = settings.ideal_daily_minutes;
 
 // ダークモードの初期化
-initializeTheme();
+if (window.ThemeManager) window.ThemeManager.initializeTheme();
 
 // カテゴリフィルターの初期化
 initializeCategoryFilter();
 
 // 曜日設定UIの初期化
-initializeWeekdaySettings();
+if (window.ContextManager) window.ContextManager.initializeWeekdaySettings();
 
 // 曜日設定ボタンのイベントリスナー
 const weekdayFilterBtn = document.getElementById('weekday-filter-btn');
@@ -779,17 +832,17 @@ if (moreMenuBtn && moreMenuDropdown) {
 }
 
 // コンテキストメニューの初期化
-initializeContextMenu();
+if (window.ContextManager) window.ContextManager.initializeContextMenu();
 
 // 初期グリッド列数を設定
-updateGridColumns();
+if (window.ContextManager) window.ContextManager.updateGridColumns();
 
 // 初期ロード時にタスクボードを描画する
 renderWeek();
 
 // ダッシュボード初期化
-initializeDashboardToggle();
-updateDashboard();
+if (window.DashboardManager) window.DashboardManager.initializeDashboardToggle();
+if (window.DashboardManager) window.DashboardManager.updateDashboard();
 
 // テンプレート機能の初期化
 initializeTemplatePanel();
