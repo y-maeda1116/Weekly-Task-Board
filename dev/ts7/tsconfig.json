@@ -14,7 +14,33 @@
     "noUnusedLocals": false,
     "noUnusedParameters": false,
     "noImplicitReturns": true,
-    "noFallthroughCasesInSwitch": true
+    "noFallthroughCasesInSwitch": true,
+    "paths": {
+      "@hybrid/*": ["../src/hybrid/*"],
+      "@core/*": ["../src/core/*"],
+      "@types/*": ["../src/types/*"],
+      "@utils/*": ["../src/utils/*"],
+      "@models/*": ["../src/models/*"],
+      "@components/*": ["../src/components/*"],
+      "@constants/*": ["../src/constants/*"]
+    }
   },
-  "include": ["src"]
+  "include": [
+    "src",
+    "../src/hybrid",
+    "../src/core",
+    "../src/types",
+    "../src/utils",
+    "../src/constants",
+    "../src/models"
+  ],
+  "exclude": [
+    "node_modules",
+    "../node_modules",
+    "dist",
+    "../src/utils/batchProcessor.ts",
+    "../src/utils/envConfig.ts",
+    "../src/utils/requestThrottler.ts",
+    "../src/utils/pkceOAuth.ts"
+  ]
 }

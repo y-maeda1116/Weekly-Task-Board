@@ -1,16 +1,28 @@
 /**
- * TS7 Minimal Entry Point
- * TypeScript 7.0 Beta (Go-based) で動作確認するための最小エントリ
+ * TS7 Entry Point
+ * TypeScript 7.0 Beta — Existing hybrid modules integrated
  */
 
-interface Task {
+// ── Standalone hybrid modules (no core deps) ──
+import '../../src/hybrid/TaskOperations';
+import '../../src/hybrid/TaskFiltering';
+import '../../src/hybrid/WeekNavigation';
+import '../../src/hybrid/SignifierManager';
+import '../../src/hybrid/JournalManager';
+import '../../src/hybrid/JournalUI';
+import '../../src/hybrid/TaskModal';
+import '../../src/hybrid/TaskRendering';
+import '../../src/hybrid/DOMInitialization';
+
+// ── Demo app ──
+type SignifierType = 'none' | 'task' | 'note' | 'important' | 'consider' | 'idea';
+
+interface DemoTask {
   id: string;
   name: string;
   completed: boolean;
   signifier: SignifierType;
 }
-
-type SignifierType = 'none' | 'task' | 'note' | 'important' | 'consider' | 'idea';
 
 const SIGNIFIER_SYMBOLS: Record<SignifierType, string> = {
   none: '\u2B1C',
@@ -34,7 +46,7 @@ const SIGNIFIER_ORDER: SignifierType[] = [
   'none', 'task', 'note', 'important', 'consider', 'idea'
 ];
 
-function createTask(name: string): Task {
+function createDemoTask(name: string): DemoTask {
   return {
     id: `task-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
     name,
@@ -43,36 +55,22 @@ function createTask(name: string): Task {
   };
 }
 
-function cycleSignifier(task: Task): Task {
-  const currentIndex = SIGNIFIER_ORDER.indexOf(task.signifier);
-  const nextIndex = (currentIndex + 1) % SIGNIFIER_ORDER.length;
-  return {
-    ...task,
-    signifier: SIGNIFIER_ORDER[nextIndex]
-  };
+function cycleSignifier(task: DemoTask): DemoTask {
+  const idx = SIGNIFIER_ORDER.indexOf(task.signifier);
+  return { ...task, signifier: SIGNIFIER_ORDER[(idx + 1) % SIGNIFIER_ORDER.length] };
 }
 
-function toggleComplete(task: Task): Task {
-  return {
-    ...task,
-    completed: !task.completed
-  };
+function toggleComplete(task: DemoTask): DemoTask {
+  return { ...task, completed: !task.completed };
 }
 
-function escapeHtml(text: string): string {
-  const div = document.createElement('div');
-  div.textContent = text;
-  return div.innerHTML;
-}
-
-// State
-const state: Task[] = [
-  createTask('TS 7.0 Beta \u306E\u52D5\u4F5C\u78BA\u8A8D'),
-  createTask('Vite \u30D3\u30EB\u30C9\u306E\u78BA\u8A8D'),
-  createTask('tsgo \u578B\u30C1\u30A7\u30C3\u30AF\u306E\u78BA\u8A8D')
+const state: DemoTask[] = [
+  createDemoTask('TS 7.0 Beta \u306E\u52D5\u4F5C\u78BA\u8A8D'),
+  createDemoTask('Vite \u30D3\u30EB\u30C9\u306E\u78BA\u8A8D'),
+  createDemoTask('tsgo \u578B\u30C1\u30A7\u30C3\u30AF\u306E\u78BA\u8A8D')
 ];
 
-function createTaskElement(task: Task, index: number): HTMLElement {
+function createTaskElement(task: DemoTask, index: number): HTMLElement {
   const row = document.createElement('div');
   row.className = 'task-item';
   if (task.completed) {
@@ -91,22 +89,21 @@ function createTaskElement(task: Task, index: number): HTMLElement {
     render();
   });
 
-  const name = document.createElement('span');
-  name.className = 'task-name';
-  name.textContent = task.name;
-  name.style.cursor = 'pointer';
-  name.style.flex = '1';
-  name.addEventListener('click', () => {
+  const nameEl = document.createElement('span');
+  nameEl.className = 'task-name';
+  nameEl.textContent = task.name;
+  nameEl.style.cursor = 'pointer';
+  nameEl.style.flex = '1';
+  nameEl.addEventListener('click', () => {
     state[index] = toggleComplete(state[index]);
     render();
   });
 
   row.appendChild(symbol);
-  row.appendChild(name);
+  row.appendChild(nameEl);
   return row;
 }
 
-// Render
 function render(): void {
   const app = document.getElementById('app');
   if (!app) return;
@@ -131,7 +128,7 @@ function render(): void {
   const addTask = (): void => {
     const taskName = input.value.trim();
     if (taskName) {
-      state.push(createTask(taskName));
+      state.push(createDemoTask(taskName));
       render();
     }
   };
@@ -146,9 +143,7 @@ function render(): void {
 
   const list = document.createElement('div');
   list.id = 'task-list';
-  state.forEach((task, index) => {
-    list.appendChild(createTaskElement(task, index));
-  });
+  state.forEach((task, i) => list.appendChild(createTaskElement(task, i)));
 
   const hint = document.createElement('p');
   hint.style.color = '#888';
@@ -161,8 +156,24 @@ function render(): void {
   app.appendChild(hint);
 }
 
-// Boot
 document.addEventListener('DOMContentLoaded', () => {
-  console.log('[TS7] Weekly Task Board \u2014 TypeScript 7.0 Beta scaffold loaded');
+  const loaded = [
+    'HybridTaskOperations',
+    'HybridTaskFiltering',
+    'HybridWeekNavigation',
+    'HybridSignifierManager',
+    'HybridJournalManager',
+    'HybridJournalUI',
+    'HybridTaskModal',
+    'HybridTaskRendering',
+    'HybridDOMInitialization',
+  ] as const;
+
+  const status = loaded.map((name) => {
+    const ok = typeof (window as any)[name] !== 'undefined';
+    return `${ok ? '\u2705' : '\u274C'} ${name}`;
+  });
+
+  console.log(`[TS7] Hybrid modules loaded:\n${status.join('\n')}`);
   render();
 });
