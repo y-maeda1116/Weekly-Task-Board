@@ -689,6 +689,15 @@ const idealDailyMinutesInput = document.getElementById('ideal-daily-minutes');
 const exportDataBtn = document.getElementById('export-data-btn');
 const importDataBtn = document.getElementById('import-data-btn');
 const importFileInput = document.getElementById('import-file-input');
+
+// エクスポート/インポート ボタンイベント
+if (exportDataBtn) exportDataBtn.addEventListener('click', () => window.exportData?.());
+if (importDataBtn) importDataBtn.addEventListener('click', () => importFileInput?.click());
+if (importFileInput) importFileInput.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (file) window.importData?.(file);
+    e.target.value = '';
+});
 const themeToggleBtn = document.getElementById('theme-toggle');
 const archiveToggleBtn = document.getElementById('archive-toggle');
 const archiveView = document.getElementById('archive-view');
@@ -770,7 +779,7 @@ const SIGNIFIER_LABELS = {
 };
 
 // アプリケーションバージョン（キャッシュ対策）
-const APP_VERSION = '1.7.2';
+const APP_VERSION = '1.7.3';
 const BUILD_DATE = '2026-04-15';
 
 // バージョン情報をログ出力（キャッシュ確認用）
@@ -840,6 +849,38 @@ if (window.ContextManager) window.ContextManager.updateGridColumns();
 // 初期ロード時にタスクボードを描画する
 renderWeek();
 
+// テーマボタンのイベントリスナー
+if (window.ThemeManager) window.ThemeManager.initThemeEventListeners();
+
+// アーカイブボタンのイベントリスナー
+if (window.ArchiveManager) window.ArchiveManager.initArchiveEventListeners();
+
+// カレンダー設定の初期化
+if (window.CalendarManager) window.CalendarManager.initCalendarSettings();
+
+// OAuth コールバック確認
+if (window.CalendarManager) window.CalendarManager.checkOAuthCallback();
+
+// PWA 初期化
+if (window.PWASetup) window.PWASetup.initPWA();
+
+// WeeklyReview UI 初期化
+if (window.HybridWeeklyReviewUI) window.HybridWeeklyReviewUI.initialize();
+
+// MorningPages UI 初期化
+if (window.HybridMorningPagesUI) window.HybridMorningPagesUI.initialize();
+
+// Migration トグル
+const migrationToggleBtn = document.getElementById('migration-toggle');
+if (migrationToggleBtn && window.HybridTaskMigration) {
+    migrationToggleBtn.addEventListener('click', () => {
+        const modal = document.getElementById('migration-modal');
+        if (modal) {
+            modal.style.display = modal.style.display === 'none' ? 'block' : 'none';
+        }
+    });
+}
+
 // ダッシュボード初期化
 if (window.DashboardManager) window.DashboardManager.initializeDashboardToggle();
 if (window.DashboardManager) window.DashboardManager.updateDashboard();
@@ -851,7 +892,19 @@ initializeTemplatePanel();
 if (window.HybridJournalManager) {
     window.HybridJournalManager.initialize();
 }
-// JournalUI・マイグレーションの初期化はDOMContentLoaded内で行う（ハイブリッドモジュール読み込み後）
+// ジャーナルトグルボタン
+const journalToggleBtn = document.getElementById('journal-toggle');
+if (journalToggleBtn) {
+    journalToggleBtn.addEventListener('click', () => {
+        if (!window.HybridJournalUI) return;
+        const panel = document.getElementById('journal-timeline-panel');
+        if (panel && panel.style.display !== 'none') {
+            window.HybridJournalUI.closeTimeline();
+        } else {
+            window.HybridJournalUI.openTimeline();
+        }
+    });
+}
 
 // --- Modal Logic ---
 addTaskBtn.addEventListener('click', () => {
