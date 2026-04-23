@@ -779,14 +779,14 @@ const SIGNIFIER_LABELS = {
 };
 
 // アプリケーションバージョン（キャッシュ対策）
-const APP_VERSION = '1.7.3';
-const BUILD_DATE = '2026-04-15';
+const APP_VERSION = '1.7.4';
+const BUILD_DATE = '2026-04-22';
 
 // バージョン情報をログ出力（キャッシュ確認用）
 console.log(`%c🚀 アプリケーション読み込み (v${APP_VERSION}, ${BUILD_DATE})`, 'font-size: 12px; color: #666;');
 
 // --- Initial Load ---
-carryOverOldTasks();
+try { carryOverOldTasks(); } catch(e) { console.error('[Init] carryOverOldTasks failed:', e); }
 
 // カテゴリデータの検証と修復
 // verifyCategoryData → ArchiveManager に移動済み（省略可能）
@@ -795,16 +795,16 @@ carryOverOldTasks();
 // verifyMigrationData → ArchiveManager に移動済み（省略可能）
 
 // 設定値をUIに反映
-idealDailyMinutesInput.value = settings.ideal_daily_minutes;
+try { idealDailyMinutesInput.value = settings.ideal_daily_minutes; } catch(e) { console.error('[Init] settings reflect failed:', e); }
 
 // ダークモードの初期化
-if (window.ThemeManager) window.ThemeManager.initializeTheme();
+try { if (window.ThemeManager) window.ThemeManager.initializeTheme(); } catch(e) { console.error('[Init] ThemeManager init failed:', e); }
 
 // カテゴリフィルターの初期化
-initializeCategoryFilter();
+try { initializeCategoryFilter(); } catch(e) { console.error('[Init] CategoryFilter failed:', e); }
 
 // 曜日設定UIの初期化
-if (window.ContextManager) window.ContextManager.initializeWeekdaySettings();
+try { if (window.ContextManager) window.ContextManager.initializeWeekdaySettings(); } catch(e) { console.error('[Init] ContextManager weekdaySettings failed:', e); }
 
 // 曜日設定ボタンのイベントリスナー
 const weekdayFilterBtn = document.getElementById('weekday-filter-btn');
@@ -841,34 +841,34 @@ if (moreMenuBtn && moreMenuDropdown) {
 }
 
 // コンテキストメニューの初期化
-if (window.ContextManager) window.ContextManager.initializeContextMenu();
+try { if (window.ContextManager) window.ContextManager.initializeContextMenu(); } catch(e) { console.error('[Init] ContextMenu failed:', e); }
 
 // 初期グリッド列数を設定
-if (window.ContextManager) window.ContextManager.updateGridColumns();
+try { if (window.ContextManager) window.ContextManager.updateGridColumns(); } catch(e) { console.error('[Init] GridColumns failed:', e); }
 
 // 初期ロード時にタスクボードを描画する
-renderWeek();
+try { renderWeek(); } catch(e) { console.error('[Init] renderWeek failed:', e); }
 
 // テーマボタンのイベントリスナー
-if (window.ThemeManager) window.ThemeManager.initThemeEventListeners();
+try { if (window.ThemeManager) window.ThemeManager.initThemeEventListeners(); } catch(e) { console.error('[Init] ThemeManager failed:', e); }
 
 // アーカイブボタンのイベントリスナー
-if (window.ArchiveManager) window.ArchiveManager.initArchiveEventListeners();
+try { if (window.ArchiveManager) window.ArchiveManager.initArchiveEventListeners(); } catch(e) { console.error('[Init] ArchiveManager failed:', e); }
 
 // カレンダー設定の初期化
-if (window.CalendarManager) window.CalendarManager.initCalendarSettings();
+try { if (window.CalendarManager) window.CalendarManager.initCalendarSettings(); } catch(e) { console.error('[Init] CalendarManager init failed:', e); }
 
 // OAuth コールバック確認
-if (window.CalendarManager) window.CalendarManager.checkOAuthCallback();
+try { if (window.CalendarManager) window.CalendarManager.checkOAuthCallback(); } catch(e) { console.error('[Init] CalendarManager OAuth failed:', e); }
 
 // PWA 初期化
-if (window.PWASetup) window.PWASetup.initPWA();
+try { if (window.PWASetup) window.PWASetup.initPWA(); } catch(e) { console.error('[Init] PWASetup failed:', e); }
 
-// WeeklyReview UI 初期化
-if (window.HybridWeeklyReviewUI) window.HybridWeeklyReviewUI.initialize();
+// WeeklyReview UI 初期化（hybrid モジュールは後でロードされる場合あり）
+try { if (window.HybridWeeklyReviewUI) window.HybridWeeklyReviewUI.initialize(); } catch(e) { console.error('[Init] WeeklyReviewUI failed:', e); }
 
-// MorningPages UI 初期化
-if (window.HybridMorningPagesUI) window.HybridMorningPagesUI.initialize();
+// MorningPages UI 初期化（hybrid モジュールは後でロードされる場合あり）
+try { if (window.HybridMorningPagesUI) window.HybridMorningPagesUI.initialize(); } catch(e) { console.error('[Init] MorningPagesUI failed:', e); }
 
 // Migration トグル
 const migrationToggleBtn = document.getElementById('migration-toggle');
@@ -882,16 +882,15 @@ if (migrationToggleBtn) {
 }
 
 // ダッシュボード初期化
-if (window.DashboardManager) window.DashboardManager.initializeDashboardToggle();
-if (window.DashboardManager) window.DashboardManager.updateDashboard();
+try { if (window.DashboardManager) window.DashboardManager.initializeDashboardToggle(); } catch(e) { console.error('[Init] DashboardToggle failed:', e); }
+try { if (window.DashboardManager) window.DashboardManager.updateDashboard(); } catch(e) { console.error('[Init] DashboardUpdate failed:', e); }
 
 // テンプレート機能の初期化
-initializeTemplatePanel();
+try { initializeTemplatePanel(); } catch(e) { console.error('[Init] TemplatePanel failed:', e); }
 
 // ジャーナル機能の初期化
-if (window.HybridJournalManager) {
-    window.HybridJournalManager.initialize();
-}
+try { if (window.HybridJournalManager) window.HybridJournalManager.initialize(); } catch(e) { console.error('[Init] JournalManager failed:', e); }
+
 // ジャーナルトグルボタン
 const journalToggleBtn = document.getElementById('journal-toggle');
 if (journalToggleBtn) {
