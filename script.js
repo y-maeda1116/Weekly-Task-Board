@@ -872,7 +872,7 @@ if (window.HybridMorningPagesUI) window.HybridMorningPagesUI.initialize();
 
 // Migration トグル
 const migrationToggleBtn = document.getElementById('migration-toggle');
-if (migrationToggleBtn && window.HybridTaskMigration) {
+if (migrationToggleBtn) {
     migrationToggleBtn.addEventListener('click', () => {
         const modal = document.getElementById('migration-modal');
         if (modal) {
