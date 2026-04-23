@@ -779,8 +779,8 @@ const SIGNIFIER_LABELS = {
 };
 
 // アプリケーションバージョン（キャッシュ対策）
-const APP_VERSION = '1.7.4';
-const BUILD_DATE = '2026-04-22';
+const APP_VERSION = '1.7.5';
+const BUILD_DATE = '2026-04-23';
 
 // バージョン情報をログ出力（キャッシュ確認用）
 console.log(`%c🚀 アプリケーション読み込み (v${APP_VERSION}, ${BUILD_DATE})`, 'font-size: 12px; color: #666;');
@@ -872,13 +872,124 @@ try { if (window.HybridMorningPagesUI) window.HybridMorningPagesUI.initialize();
 
 // Migration トグル
 const migrationToggleBtn = document.getElementById('migration-toggle');
+const migrationModal = document.getElementById('migration-modal');
+const closeMigrationModalBtn = document.getElementById('close-migration-modal');
+const migrationTaskListEl = document.getElementById('migration-task-list');
+const migrateNextWeekBtn = document.getElementById('migrate-next-week-btn');
+const migrateNextDayBtn = document.getElementById('migrate-next-day-btn');
+const migrateUnassignedBtn = document.getElementById('migrate-unassigned-btn');
+
+function populateMigrationList() {
+    if (!migrationTaskListEl) return;
+    while (migrationTaskListEl.firstChild) {
+        migrationTaskListEl.removeChild(migrationTaskListEl.firstChild);
+    }
+
+    const monday = getMonday(currentDate);
+    const weekEnd = new Date(monday);
+    weekEnd.setDate(weekEnd.getDate() + 6);
+    const startStr = formatDate(monday);
+    const endStr = formatDate(weekEnd);
+
+    const incomplete = tasks.filter(t =>
+        !t.completed && t.assigned_date && t.assigned_date >= startStr && t.assigned_date <= endStr
+    );
+
+    if (incomplete.length === 0) {
+        const msg = document.createElement('p');
+        msg.style.cssText = 'color:#888;text-align:center;padding:20px;';
+        msg.textContent = '未完了のタスクはありません';
+        migrationTaskListEl.appendChild(msg);
+        return;
+    }
+
+    incomplete.forEach(task => {
+        const label = document.createElement('label');
+        label.style.cssText = 'display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border-color);';
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.value = task.id;
+        checkbox.checked = true;
+        checkbox.style.cursor = 'pointer';
+        const nameSpan = document.createElement('span');
+        nameSpan.textContent = task.name;
+        const dateSpan = document.createElement('span');
+        dateSpan.textContent = task.assigned_date;
+        dateSpan.style.cssText = 'font-size:0.8em;color:#888;margin-left:auto;';
+        label.appendChild(checkbox);
+        label.appendChild(nameSpan);
+        label.appendChild(dateSpan);
+        migrationTaskListEl.appendChild(label);
+    });
+}
+
+function getSelectedMigrationIds() {
+    if (!migrationTaskListEl) return [];
+    return Array.from(migrationTaskListEl.querySelectorAll('input[type="checkbox"]:checked'))
+        .map(cb => cb.value);
+}
+
+function closeMigrationModal() {
+    if (migrationModal) migrationModal.style.display = 'none';
+}
+
+function handleMigrate(direction) {
+    const ids = getSelectedMigrationIds();
+    if (ids.length === 0) return;
+
+    if (window.HybridTaskMigration) {
+        let count = 0;
+        if (direction === 'nextWeek') {
+            count = window.HybridTaskMigration.migrateTasksToNextWeek(ids);
+        } else if (direction === 'nextDay') {
+            count = window.HybridTaskMigration.migrateTasksToNextDay(ids);
+        } else if (direction === 'unassigned') {
+            count = window.HybridTaskMigration.migrateTasksToUnassigned(ids);
+        }
+
+        // Reload tasks from localStorage (TaskMigration saves directly)
+        tasks = loadTasks();
+        renderWeek();
+        try { if (window.updateDashboard) window.updateDashboard(); } catch(e) {}
+        closeMigrationModal();
+
+        if (count > 0) {
+            showNotification(count + '件のタスクを移行しました', 'success');
+        }
+    } else {
+        showNotification('移行モジュールが読み込まれていません', 'error');
+    }
+}
+
 if (migrationToggleBtn) {
     migrationToggleBtn.addEventListener('click', () => {
-        const modal = document.getElementById('migration-modal');
-        if (modal) {
-            modal.style.display = modal.style.display === 'none' ? 'block' : 'none';
+        if (migrationModal) {
+            populateMigrationList();
+            migrationModal.style.display = 'block';
         }
     });
+}
+
+if (closeMigrationModalBtn) {
+    closeMigrationModalBtn.addEventListener('click', closeMigrationModal);
+}
+
+if (migrationModal) {
+    migrationModal.addEventListener('click', (e) => {
+        if (e.target === migrationModal) closeMigrationModal();
+    });
+}
+
+if (migrateNextWeekBtn) {
+    migrateNextWeekBtn.addEventListener('click', () => handleMigrate('nextWeek'));
+}
+
+if (migrateNextDayBtn) {
+    migrateNextDayBtn.addEventListener('click', () => handleMigrate('nextDay'));
+}
+
+if (migrateUnassignedBtn) {
+    migrateUnassignedBtn.addEventListener('click', () => handleMigrate('unassigned'));
 }
 
 // ダッシュボード初期化
