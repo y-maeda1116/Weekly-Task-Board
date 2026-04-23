@@ -304,5 +304,8 @@
     initialize: initialize
   };
 
+  // Self-initialize: this module loads after script.js via defer
+  initialize();
+
   console.log('Hybrid weekly review UI module loaded');
 })();

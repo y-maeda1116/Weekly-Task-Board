@@ -292,5 +292,8 @@
     initialize: initialize
   };
 
+  // Self-initialize: this module loads after script.js via defer
+  initialize();
+
   console.log('Hybrid morning pages UI module loaded');
 })();
