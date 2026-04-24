@@ -779,14 +779,35 @@ const SIGNIFIER_LABELS = {
 };
 
 // アプリケーションバージョン（キャッシュ対策）
-const APP_VERSION = '1.7.4';
-const BUILD_DATE = '2026-04-22';
+const APP_VERSION = '1.7.5';
+const BUILD_DATE = '2026-04-24';
 
 // バージョン情報をログ出力（キャッシュ確認用）
 console.log(`%c🚀 アプリケーション読み込み (v${APP_VERSION}, ${BUILD_DATE})`, 'font-size: 12px; color: #666;');
 
 // --- Initial Load ---
 try { carryOverOldTasks(); } catch(e) { console.error('[Init] carryOverOldTasks failed:', e); }
+
+// 複数タブ間のlocalStorage同期
+window.addEventListener('storage', (e) => {
+    if (e.key === TASKS_STORAGE_KEY) {
+        try {
+            tasks = JSON.parse(e.newValue) || [];
+            if (typeof renderWeek === 'function') renderWeek();
+            if (typeof updateDashboard === 'function') updateDashboard();
+        } catch (err) {
+            console.error('[Storage] Failed to sync tasks from another tab:', err);
+        }
+    }
+    if (e.key === SETTINGS_STORAGE_KEY) {
+        try {
+            settings = JSON.parse(e.newValue) || loadSettings();
+            idealDailyMinutesInput.value = settings.ideal_daily_minutes;
+        } catch (err) {
+            console.error('[Storage] Failed to sync settings from another tab:', err);
+        }
+    }
+});
 
 // カテゴリデータの検証と修復
 // verifyCategoryData → ArchiveManager に移動済み（省略可能）
@@ -1570,7 +1591,10 @@ function initializeTemplatePanel() {
         return taskElement;
     }
 
+    let dndListenersInitialized = false;
     function addDragAndDropListeners() {
+        if (dndListenersInitialized) return;
+        dndListenersInitialized = true;
         const allColumns = document.querySelectorAll('.day-column');
         allColumns.forEach(col => {
             col.addEventListener('dragover', handleDragOver);
@@ -1578,8 +1602,11 @@ function initializeTemplatePanel() {
             col.addEventListener('drop', handleDrop);
         });
     }
-    
+
+    let dateClickListenersInitialized = false;
     function addDateClickListeners() {
+        if (dateClickListenersInitialized) return;
+        dateClickListenersInitialized = true;
         // 未割り当てエリア以外の日付列にクリックリスナーを追加
         dayColumns.forEach(col => {
             col.addEventListener('click', (e) => {
@@ -1587,12 +1614,12 @@ function initializeTemplatePanel() {
                 if (e.target.closest('.task')) {
                     return;
                 }
-                
+
                 // ドラッグ&ドロップ中は無視
                 if (e.target.closest('.dragging')) {
                     return;
                 }
-                
+
                 const dateStr = col.dataset.date;
                 if (dateStr && dateStr !== 'null') {
                     openTaskModal(dateStr);
@@ -1982,48 +2009,105 @@ function filterAndRenderTemplates(searchTerm = '', sortBy = 'recent') {
     }
     
     if (templates.length === 0) {
-        templateList.innerHTML = '';
+        while (templateList.firstChild) templateList.removeChild(templateList.firstChild);
         templateEmpty.style.display = 'block';
         return;
     }
-    
+
     templateEmpty.style.display = 'none';
-    templateList.innerHTML = '';
+    while (templateList.firstChild) templateList.removeChild(templateList.firstChild);
     
     templates.forEach(template => {
         const templateItem = document.createElement('div');
         templateItem.className = 'template-item';
-        
+
         const categoryInfo = getCategoryInfo(template.base_task.category);
-        
-        templateItem.innerHTML = `
-            <div class="template-item-header">
-                <div class="template-item-title">${template.name}</div>
-                <div class="template-item-actions">
-                    <button class="template-use-btn" data-template-id="${template.id}" title="このテンプレートから新規タスクを作成" aria-label="テンプレートを使用">使用</button>
-                    <button class="template-duplicate-btn" data-template-id="${template.id}" title="このテンプレートを複製" aria-label="テンプレートを複製">複製</button>
-                    <button class="template-delete-btn" data-template-id="${template.id}" title="このテンプレートを削除" aria-label="テンプレートを削除">削除</button>
-                </div>
-            </div>
-            <div class="template-item-content">
-                <div class="template-item-task-name">${template.base_task.name}</div>
-                <div class="template-item-meta">
-                    <span class="template-item-category" style="background-color: ${categoryInfo.bgColor}; color: ${categoryInfo.color};">
-                        ${categoryInfo.name}
-                    </span>
-                    <span class="template-item-time">見積: ${template.base_task.estimated_time}h</span>
-                    <span class="template-item-priority priority-${template.base_task.priority}">
-                        優先度: ${['high', 'medium', 'low'].includes(template.base_task.priority) ? (['高', '中', '低'][['high', 'medium', 'low'].indexOf(template.base_task.priority)]) : '中'}
-                    </span>
-                </div>
-                ${template.base_task.details ? `<div class="template-item-description">${template.base_task.details}</div>` : ''}
-                <div class="template-item-footer">
-                    <span class="template-item-created">作成: ${template.created_date}</span>
-                    <span class="template-item-usage">使用回数: ${template.usage_count}</span>
-                </div>
-            </div>
-        `;
-        
+        const priorityLabels = { high: '高', medium: '中', low: '低' };
+
+        const header = document.createElement('div');
+        header.className = 'template-item-header';
+
+        const title = document.createElement('div');
+        title.className = 'template-item-title';
+        title.textContent = template.name;
+
+        const actions = document.createElement('div');
+        actions.className = 'template-item-actions';
+
+        const useBtn = document.createElement('button');
+        useBtn.className = 'template-use-btn';
+        useBtn.dataset.templateId = template.id;
+        useBtn.title = 'このテンプレートから新規タスクを作成';
+        useBtn.setAttribute('aria-label', 'テンプレートを使用');
+        useBtn.textContent = '使用';
+
+        const dupBtn = document.createElement('button');
+        dupBtn.className = 'template-duplicate-btn';
+        dupBtn.dataset.templateId = template.id;
+        dupBtn.title = 'このテンプレートを複製';
+        dupBtn.setAttribute('aria-label', 'テンプレートを複製');
+        dupBtn.textContent = '複製';
+
+        const delBtn = document.createElement('button');
+        delBtn.className = 'template-delete-btn';
+        delBtn.dataset.templateId = template.id;
+        delBtn.title = 'このテンプレートを削除';
+        delBtn.setAttribute('aria-label', 'テンプレートを削除');
+        delBtn.textContent = '削除';
+
+        actions.append(useBtn, dupBtn, delBtn);
+        header.append(title, actions);
+
+        const content = document.createElement('div');
+        content.className = 'template-item-content';
+
+        const taskName = document.createElement('div');
+        taskName.className = 'template-item-task-name';
+        taskName.textContent = template.base_task.name;
+
+        const meta = document.createElement('div');
+        meta.className = 'template-item-meta';
+
+        const catSpan = document.createElement('span');
+        catSpan.className = 'template-item-category';
+        catSpan.style.backgroundColor = categoryInfo.bgColor;
+        catSpan.style.color = categoryInfo.color;
+        catSpan.textContent = categoryInfo.name;
+
+        const timeSpan = document.createElement('span');
+        timeSpan.className = 'template-item-time';
+        timeSpan.textContent = `見積: ${template.base_task.estimated_time}h`;
+
+        const prioSpan = document.createElement('span');
+        prioSpan.className = `template-item-priority priority-${template.base_task.priority}`;
+        prioSpan.textContent = `優先度: ${priorityLabels[template.base_task.priority] || '中'}`;
+
+        meta.append(catSpan, timeSpan, prioSpan);
+
+        content.append(taskName, meta);
+
+        if (template.base_task.details) {
+            const desc = document.createElement('div');
+            desc.className = 'template-item-description';
+            desc.textContent = template.base_task.details;
+            content.appendChild(desc);
+        }
+
+        const footer = document.createElement('div');
+        footer.className = 'template-item-footer';
+
+        const created = document.createElement('span');
+        created.className = 'template-item-created';
+        created.textContent = `作成: ${template.created_date}`;
+
+        const usage = document.createElement('span');
+        usage.className = 'template-item-usage';
+        usage.textContent = `使用回数: ${template.usage_count}`;
+
+        footer.append(created, usage);
+        content.appendChild(footer);
+        templateItem.append(header, content);
+
         templateList.appendChild(templateItem);
     });
     
