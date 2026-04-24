@@ -3,7 +3,7 @@
  * オフライン対応とキャッシュ機能を提供
  */
 
-const CACHE_NAME = 'taskboard-v1.7.5';
+const CACHE_NAME = 'taskboard-v1.7.6';
 const RUNTIME_CACHE = 'taskboard-runtime-v1';
 
 // キャッシュするアセット
