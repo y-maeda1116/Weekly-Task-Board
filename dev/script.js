@@ -215,13 +215,13 @@ function migrateTasksAddRecurringFields(tasksData) {
 function executeMigrations(tasksData) {
     const history = getMigrationHistory();
     let migratedData = tasksData;
-    
+    const currentVer = parseFloat(history.version) || 0;
+
     // Version 0.0 -> 1.0: Add actual_time field
-    if (history.version < '1.0') {
+    if (currentVer < 1.0) {
         console.log('マイグレーション実行: v0.0 -> v1.0 (actual_timeフィールド追加)');
         migratedData = migrateTasksAddActualTime(migratedData);
-        
-        // マイグレーション履歴を更新
+
         history.migrations.push({
             version: '1.0',
             date: new Date().toISOString(),
@@ -231,13 +231,12 @@ function executeMigrations(tasksData) {
         history.lastMigrationDate = new Date().toISOString();
         saveMigrationHistory(history);
     }
-    
+
     // Version 1.0 -> 1.1: Add recurring task fields
-    if (history.version < '1.1') {
+    if (currentVer < 1.1) {
         console.log('マイグレーション実行: v1.0 -> v1.1 (繰り返しタスクフィールド追加)');
         migratedData = migrateTasksAddRecurringFields(migratedData);
-        
-        // マイグレーション履歴を更新
+
         history.migrations.push({
             version: '1.1',
             date: new Date().toISOString(),
@@ -247,7 +246,7 @@ function executeMigrations(tasksData) {
         history.lastMigrationDate = new Date().toISOString();
         saveMigrationHistory(history);
     }
-    
+
     return migratedData;
 }
 
@@ -893,12 +892,151 @@ try { if (window.HybridMorningPagesUI) window.HybridMorningPagesUI.initialize();
 
 // Migration トグル
 const migrationToggleBtn = document.getElementById('migration-toggle');
+const migrationModal = document.getElementById('migration-modal');
+const closeMigrationModalBtn = document.getElementById('close-migration-modal');
+const migrationTaskListEl = document.getElementById('migration-task-list');
+const migrateNextWeekBtn = document.getElementById('migrate-next-week-btn');
+const migrateNextDayBtn = document.getElementById('migrate-next-day-btn');
+const migrateUnassignedBtn = document.getElementById('migrate-unassigned-btn');
+
+function getSelectedMigrationTaskIds() {
+    if (!migrationTaskListEl) return [];
+    const checkboxes = migrationTaskListEl.querySelectorAll('input[type="checkbox"]:checked');
+    return Array.from(checkboxes).map(cb => cb.value);
+}
+
+function renderMigrationTaskList() {
+    if (!migrationTaskListEl) return;
+
+    while (migrationTaskListEl.firstChild) {
+        migrationTaskListEl.removeChild(migrationTaskListEl.firstChild);
+    }
+
+    const prevMonday = new Date(getMonday(currentDate));
+    prevMonday.setDate(prevMonday.getDate() - 7);
+    const prevEnd = new Date(prevMonday);
+    prevEnd.setDate(prevEnd.getDate() + 6);
+    const prevStartStr = formatDate(prevMonday);
+    const prevEndStr = formatDate(prevEnd);
+
+    const incomplete = tasks.filter(t =>
+        !t.completed && t.assigned_date &&
+        t.assigned_date >= prevStartStr &&
+        t.assigned_date <= prevEndStr
+    );
+
+    if (incomplete.length === 0) {
+        const msg = document.createElement('p');
+        msg.textContent = '移行対象の未完了タスクはありません。';
+        msg.style.color = '#888';
+        migrationTaskListEl.appendChild(msg);
+        return;
+    }
+
+    const selectAllLabel = document.createElement('label');
+    selectAllLabel.style.cssText = 'display:block;margin-bottom:8px;font-weight:bold;cursor:pointer;';
+    const selectAllCb = document.createElement('input');
+    selectAllCb.type = 'checkbox';
+    selectAllCb.checked = true;
+    selectAllCb.addEventListener('change', () => {
+        migrationTaskListEl.querySelectorAll('.migration-task-cb').forEach(cb => {
+            cb.checked = selectAllCb.checked;
+        });
+    });
+    selectAllLabel.appendChild(selectAllCb);
+    selectAllLabel.appendChild(document.createTextNode(' 全て選択'));
+    migrationTaskListEl.appendChild(selectAllLabel);
+
+    incomplete.forEach(task => {
+        const label = document.createElement('label');
+        label.style.cssText = 'display:block;padding:4px 0;cursor:pointer;';
+        const cb = document.createElement('input');
+        cb.type = 'checkbox';
+        cb.className = 'migration-task-cb';
+        cb.value = task.id;
+        cb.checked = true;
+        const categoryInfo = getCategoryInfo(task.category);
+        const catBadge = document.createElement('span');
+        catBadge.textContent = ` [${categoryInfo.name}]`;
+        catBadge.style.color = categoryInfo.color;
+        label.appendChild(cb);
+        label.appendChild(document.createTextNode(` ${task.name}`));
+        label.appendChild(catBadge);
+        label.appendChild(document.createTextNode(` (${task.estimated_time}h)`));
+        migrationTaskListEl.appendChild(label);
+    });
+}
+
+function closeMigrationModal() {
+    if (migrationModal) {
+        migrationModal.style.display = 'none';
+    }
+}
+
+function executeMigrationAndRefresh(migrationFn) {
+    const taskIds = getSelectedMigrationTaskIds();
+    if (taskIds.length === 0) {
+        alert('移行するタスクを選択してください。');
+        return;
+    }
+    const count = migrationFn(taskIds);
+    if (count > 0) {
+        tasks = loadTasks();
+        renderWeek();
+        updateDashboard();
+        closeMigrationModal();
+        showNotification(`${count}件のタスクを移行しました`, 'success');
+    }
+}
+
+let migrationListenersAttached = false;
+function attachMigrationButtonListeners() {
+    if (migrationListenersAttached) return;
+    migrationListenersAttached = true;
+
+    if (migrateNextWeekBtn) {
+        migrateNextWeekBtn.addEventListener('click', () => {
+            if (window.HybridTaskMigration) {
+                executeMigrationAndRefresh(window.HybridTaskMigration.migrateTasksToNextWeek);
+            }
+        });
+    }
+    if (migrateNextDayBtn) {
+        migrateNextDayBtn.addEventListener('click', () => {
+            if (window.HybridTaskMigration) {
+                executeMigrationAndRefresh(window.HybridTaskMigration.migrateTasksToNextDay);
+            }
+        });
+    }
+    if (migrateUnassignedBtn) {
+        migrateUnassignedBtn.addEventListener('click', () => {
+            if (window.HybridTaskMigration) {
+                executeMigrationAndRefresh(window.HybridTaskMigration.migrateTasksToUnassigned);
+            }
+        });
+    }
+}
+
 if (migrationToggleBtn) {
     migrationToggleBtn.addEventListener('click', () => {
-        const modal = document.getElementById('migration-modal');
-        if (modal) {
-            modal.style.display = modal.style.display === 'none' ? 'block' : 'none';
+        if (!migrationModal) return;
+        if (migrationModal.style.display === 'none' || migrationModal.style.display === '') {
+            migrationModal.style.display = 'block';
+            renderMigrationTaskList();
+            attachMigrationButtonListeners();
+        } else {
+            closeMigrationModal();
         }
+    });
+}
+
+if (closeMigrationModalBtn) {
+    closeMigrationModalBtn.addEventListener('click', closeMigrationModal);
+}
+
+if (migrationModal) {
+    migrationModal.addEventListener('click', (e) => {
+        if (e.target === migrationModal) closeMigrationModal();
     });
 }
 
