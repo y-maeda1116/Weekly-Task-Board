@@ -1,6 +1,6 @@
 {
   "name": "weekly-task-board",
-  "version": "1.0.0",
+  "version": "1.7.6",
   "description": "効率的なタスク管理のためのウィークリータスクボード",
   "main": "script.js",
   "scripts": {
