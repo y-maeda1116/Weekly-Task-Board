@@ -9,6 +9,9 @@
   var STORAGE_KEY = 'weekly-task-board.tasks';
 
   function generateId() {
+    if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+      return 'task-' + crypto.randomUUID();
+    }
     return 'task-' + Date.now() + '-' + Math.random().toString(36).substring(2, 11);
   }
 
@@ -39,6 +42,11 @@
     return y + '-' + m + '-' + day;
   }
 
+  function deepClone(obj) {
+    if (typeof structuredClone === 'function') return structuredClone(obj);
+    return JSON.parse(JSON.stringify(obj));
+  }
+
   function getIncompleteTasksForWeek(weekStart, weekEnd) {
     var tasks = loadTasks();
     return tasks.filter(function(t) {
@@ -56,33 +64,29 @@
     var idSet = {};
     taskIds.forEach(function(id) { idSet[id] = true; });
     var migratedCount = 0;
-
     var updatedTasks = [];
 
     for (var i = 0; i < tasks.length; i++) {
       var task = tasks[i];
 
       if (idSet[task.id] && !task.completed) {
-        // Mark original as migrated
-        var migrated = Object.assign({}, task, {
-          name: '> ' + task.name,
-          completed: true
-        });
+        var migrated = deepClone(task);
+        var originalName = migrated.name.replace(/^>\s*/, '');
+        migrated.name = '> ' + originalName;
+        migrated.completed = true;
         updatedTasks.push(migrated);
 
-        // Create copy at destination
         var newDate = dayOffset !== null
           ? addDays(task.assigned_date || task.date, dayOffset)
           : null;
 
-        var copy = Object.assign({}, task, {
-          id: generateId(),
-          name: task.name.replace(/^>\s*/, ''),
-          assigned_date: newDate,
-          date: newDate || task.date,
-          completed: false,
-          actual_time: 0
-        });
+        var copy = deepClone(task);
+        copy.id = generateId();
+        copy.name = originalName;
+        copy.assigned_date = newDate;
+        copy.date = newDate || task.date;
+        copy.completed = false;
+        copy.actual_time = 0;
         updatedTasks.push(copy);
         migratedCount++;
       } else {
@@ -110,21 +114,18 @@
     var idSet = {};
     taskIds.forEach(function(id) { idSet[id] = true; });
     var migratedCount = 0;
-
     var updatedTasks = [];
 
     for (var i = 0; i < tasks.length; i++) {
       var task = tasks[i];
 
       if (idSet[task.id] && !task.completed) {
-        // Create copy in unassigned (original is removed)
-        var copy = Object.assign({}, task, {
-          id: generateId(),
-          name: task.name.replace(/^>\s*/, ''),
-          assigned_date: null,
-          completed: false,
-          actual_time: 0
-        });
+        var copy = deepClone(task);
+        copy.id = generateId();
+        copy.name = task.name.replace(/^>\s*/, '');
+        copy.assigned_date = null;
+        copy.completed = false;
+        copy.actual_time = 0;
         updatedTasks.push(copy);
         migratedCount++;
       } else {
