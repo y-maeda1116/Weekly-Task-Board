@@ -219,7 +219,9 @@ function executeMigrations(tasksData) {
 
     // Version 0.0 -> 1.0: Add actual_time field
     if (currentVer < 1.0) {
-        console.log('マイグレーション実行: v0.0 -> v1.0 (actual_timeフィールド追加)');
+        if (process.env.NODE_ENV !== 'production') {
+            console.log('マイグレーション実行: v0.0 -> v1.0 (actual_timeフィールド追加)');
+        }
         migratedData = migrateTasksAddActualTime(migratedData);
 
         history.migrations.push({
@@ -234,7 +236,9 @@ function executeMigrations(tasksData) {
 
     // Version 1.0 -> 1.1: Add recurring task fields
     if (currentVer < 1.1) {
-        console.log('マイグレーション実行: v1.0 -> v1.1 (繰り返しタスクフィールド追加)');
+        if (process.env.NODE_ENV !== 'production') {
+            console.log('マイグレーション実行: v1.0 -> v1.1 (繰り返しタスクフィールド追加)');
+        }
         migratedData = migrateTasksAddRecurringFields(migratedData);
 
         history.migrations.push({
@@ -595,7 +599,9 @@ function carryOverOldTasks() {
     });
 
     if (tasksModified) {
-        console.log("Carried over incomplete tasks from previous weeks.");
+        if (process.env.NODE_ENV !== 'production') {
+            console.log("Carried over incomplete tasks from previous weeks.");
+        }
         saveTasks();
     }
 }
@@ -778,11 +784,13 @@ const SIGNIFIER_LABELS = {
 };
 
 // アプリケーションバージョン（キャッシュ対策）
-const APP_VERSION = '1.7.5';
+const APP_VERSION = '1.7.6';
 const BUILD_DATE = '2026-04-24';
 
 // バージョン情報をログ出力（キャッシュ確認用）
-console.log(`%c🚀 アプリケーション読み込み (v${APP_VERSION}, ${BUILD_DATE})`, 'font-size: 12px; color: #666;');
+if (process.env.NODE_ENV !== 'production') {
+    console.log(`%c🚀 アプリケーション読み込み (v${APP_VERSION}, ${BUILD_DATE})`, 'font-size: 12px; color: #666;');
+}
 
 // --- Initial Load ---
 try { carryOverOldTasks(); } catch(e) { console.error('[Init] carryOverOldTasks failed:', e); }
