@@ -1049,6 +1049,7 @@ try { initializeTemplatePanel(); } catch(e) { console.error('[Init] TemplatePane
 
 // ジャーナル機能の初期化
 try { if (window.HybridJournalManager) window.HybridJournalManager.initialize(); } catch(e) { console.error('[Init] JournalManager failed:', e); }
+try { if (window.HybridJournalUI) window.HybridJournalUI.initTimelineControls(); } catch(e) { console.error('[Init] JournalUI timeline controls failed:', e); }
 
 // ジャーナルトグルボタン
 const journalToggleBtn = document.getElementById('journal-toggle');
