@@ -780,7 +780,7 @@ const SIGNIFIER_LABELS = {
 };
 
 // アプリケーションバージョン（キャッシュ対策）
-const APP_VERSION = '1.7.7';
+const APP_VERSION = '1.7.8';
 const BUILD_DATE = '2026-05-06';
 
 // バージョン情報をログ出力（キャッシュ確認用）
