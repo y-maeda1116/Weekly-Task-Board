@@ -57,7 +57,7 @@
     });
   }
 
-  function migrateTasks(taskIds, dayOffset) {
+  function migrateTasks(taskIds, dayOffset, baseDate) {
     if (!taskIds || taskIds.length === 0) return 0;
 
     var tasks = loadTasks();
@@ -76,8 +76,9 @@
         migrated.completed = true;
         updatedTasks.push(migrated);
 
+        var sourceDate = task.assigned_date || baseDate || task.date;
         var newDate = dayOffset !== null
-          ? addDays(task.assigned_date || task.date, dayOffset)
+          ? addDays(sourceDate, dayOffset)
           : null;
 
         var copy = deepClone(task);
@@ -99,12 +100,12 @@
     return migratedCount;
   }
 
-  function migrateTasksToNextWeek(taskIds) {
-    return migrateTasks(taskIds, 7);
+  function migrateTasksToNextWeek(taskIds, baseDate) {
+    return migrateTasks(taskIds, 7, baseDate);
   }
 
-  function migrateTasksToNextDay(taskIds) {
-    return migrateTasks(taskIds, 1);
+  function migrateTasksToNextDay(taskIds, baseDate) {
+    return migrateTasks(taskIds, 1, baseDate);
   }
 
   function migrateTasksToUnassigned(taskIds) {
