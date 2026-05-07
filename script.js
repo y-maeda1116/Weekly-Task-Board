@@ -780,7 +780,7 @@ const SIGNIFIER_LABELS = {
 };
 
 // アプリケーションバージョン（キャッシュ対策）
-const APP_VERSION = '1.7.9';
+const APP_VERSION = '1.8.0';
 const BUILD_DATE = '2026-05-06';
 
 // バージョン情報をログ出力（キャッシュ確認用）
@@ -967,7 +967,11 @@ function renderMigrationTaskList() {
 
 function closeMigrationModal() {
     if (migrationModal) {
-        migrationModal.style.display = 'none';
+        migrationModal.classList.remove('show');
+        document.body.classList.remove('modal-open');
+        setTimeout(() => {
+            migrationModal.style.display = 'none';
+        }, 300);
     }
 }
 
@@ -1021,6 +1025,10 @@ if (migrationToggleBtn) {
         if (!migrationModal) return;
         if (migrationModal.style.display === 'none' || migrationModal.style.display === '') {
             migrationModal.style.display = 'block';
+            document.body.classList.add('modal-open');
+            setTimeout(() => {
+                migrationModal.classList.add('show');
+            }, 10);
             renderMigrationTaskList();
             attachMigrationButtonListeners();
         } else {
