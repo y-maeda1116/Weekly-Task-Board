@@ -780,7 +780,7 @@ const SIGNIFIER_LABELS = {
 };
 
 // アプリケーションバージョン（キャッシュ対策）
-const APP_VERSION = '1.7.8';
+const APP_VERSION = '1.7.9';
 const BUILD_DATE = '2026-05-06';
 
 // バージョン情報をログ出力（キャッシュ確認用）
@@ -914,17 +914,13 @@ function renderMigrationTaskList() {
         migrationTaskListEl.removeChild(migrationTaskListEl.firstChild);
     }
 
-    const prevMonday = new Date(getMonday(currentDate));
-    prevMonday.setDate(prevMonday.getDate() - 7);
-    const prevEnd = new Date(prevMonday);
-    prevEnd.setDate(prevEnd.getDate() + 6);
-    const prevStartStr = formatDate(prevMonday);
-    const prevEndStr = formatDate(prevEnd);
+    const currentMonday = getMonday(currentDate);
+    const currentMondayStr = formatDate(currentMonday);
 
+    // carryOverOldTasks が前週の未完了タスクを未割り当てに移動済みなので、
+    // 未割り当ての未完了タスクを移行対象として表示する
     const incomplete = tasks.filter(t =>
-        !t.completed && t.assigned_date &&
-        t.assigned_date >= prevStartStr &&
-        t.assigned_date <= prevEndStr
+        !t.completed && !t.assigned_date
     );
 
     if (incomplete.length === 0) {
@@ -981,7 +977,8 @@ function executeMigrationAndRefresh(migrationFn) {
         alert('移行するタスクを選択してください。');
         return;
     }
-    const count = migrationFn(taskIds);
+    const currentMondayStr = formatDate(getMonday(currentDate));
+    const count = migrationFn(taskIds, currentMondayStr);
     if (count > 0) {
         tasks = loadTasks();
         renderWeek();
