@@ -780,8 +780,8 @@ const SIGNIFIER_LABELS = {
 };
 
 // アプリケーションバージョン（キャッシュ対策）
-const APP_VERSION = '1.8.0';
-const BUILD_DATE = '2026-05-06';
+const APP_VERSION = '1.8.1';
+const BUILD_DATE = '2026-05-19';
 
 // バージョン情報をログ出力（キャッシュ確認用）
 console.log(`%c🚀 アプリケーション読み込み (v${APP_VERSION}, ${BUILD_DATE})`, 'font-size: 12px; color: #666;');
