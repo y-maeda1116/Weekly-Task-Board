@@ -271,6 +271,7 @@ function getFormData() {
  */
 function validateFormData(formData) {
     const errors = [];
+    const warnings = [];
     if (!formData.name || formData.name.trim().length === 0) {
         errors.push('タスク名を入力してください');
     }
@@ -281,7 +282,7 @@ function validateFormData(formData) {
         errors.push('実績時間は0以上の値を入力してください');
     }
     if (formData.estimated_time < formData.actual_time) {
-        errors.push('実績時間は見積もり時間を超えることはできません');
+        warnings.push('実績時間が見積もり時間を超えています。よろしいですか？');
     }
     // Validate recurrence settings
     if (formData.is_recurring && !formData.recurrence_pattern) {
@@ -289,7 +290,8 @@ function validateFormData(formData) {
     }
     return {
         isValid: errors.length === 0,
-        errors
+        errors,
+        warnings
     };
 }
 /**
@@ -303,6 +305,11 @@ function handleFormSubmit(event) {
         logger.warn('Form validation failed:', validation.errors);
         alert(validation.errors.join('\n'));
         return;
+    }
+    if (validation.warnings && validation.warnings.length > 0) {
+        if (!confirm(validation.warnings.join('\n'))) {
+            return;
+        }
     }
     if (modalState.mode === 'create') {
         createNewTask(formData);

@@ -300,15 +300,7 @@ function initializeWeekdayListeners() {
         const isVisible = refs.weekdaySettings?.style?.display === 'none';
         refs.weekdaySettings.style.display = isVisible ? 'block' : 'none';
     });
-    // Close handler - click outside closes
-    document.addEventListener('click', (e) => {
-        if (refs.weekdaySettings && refs.weekdaySettings.contains(e.target)) {
-            return;
-        }
-        if (refs.weekdaySettings && !refs.weekdaySettings.contains(e.target)) {
-            refs.weekdaySettings.style.display = 'none';
-        }
-    });
+    // Close handler - delegated to single global click listener below
     return true;
 }
 /**
@@ -356,12 +348,7 @@ function initializeMoreMenuListeners() {
         e.stopPropagation();
         toggleMoreMenu();
     });
-    // Close handler - click outside closes
-    document.addEventListener('click', (e) => {
-        if (refs.moreMenuDropdown && !refs.moreMenuDropdown.contains(e.target)) {
-            refs.moreMenuDropdown.style.display = 'none';
-        }
-    });
+    // Close handler - delegated to single global click listener below
     return true;
 }
 /**
@@ -693,6 +680,20 @@ function formatDate(date) {
 function getRef(key) {
     return refs[key];
 }
+// --- Single global click listener for outside-click dismissals ---
+document.addEventListener('click', (e) => {
+    // Close weekday settings when clicking outside
+    if (refs.weekdaySettings && refs.weekdayFilterBtn &&
+        !refs.weekdaySettings.contains(e.target) && !refs.weekdayFilterBtn.contains(e.target)) {
+        refs.weekdaySettings.style.display = 'none';
+    }
+    // Close more menu when clicking outside
+    if (refs.moreMenuDropdown && refs.moreMenuBtn &&
+        !refs.moreMenuDropdown.contains(e.target) && !refs.moreMenuBtn.contains(e.target)) {
+        refs.moreMenuDropdown.style.display = 'none';
+    }
+});
+
 // Expose to window for use by existing script.js
 window.HybridDOMInitialization = {
     initializeDOMElements,

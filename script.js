@@ -27,6 +27,8 @@ let datePicker; // DOM要素もグローバルでアクセスできるように�
 let currentCategoryFilter = ''; // カテゴリフィルターの状態
 let weekdayManager; // 曜日管理インスタンス
 let taskBulkMover; // タスク一括移動インスタンス
+let dndListenersInitialized = false;
+let dateClickListenersInitialized = false;
 
 /**
  * Load settings from localStorage, providing defaults if empty.
@@ -215,13 +217,13 @@ function migrateTasksAddRecurringFields(tasksData) {
 function executeMigrations(tasksData) {
     const history = getMigrationHistory();
     let migratedData = tasksData;
-    
+    const currentVer = parseFloat(history.version) || 0;
+
     // Version 0.0 -> 1.0: Add actual_time field
-    if (history.version < '1.0') {
+    if (currentVer < 1.0) {
         console.log('マイグレーション実行: v0.0 -> v1.0 (actual_timeフィールド追加)');
         migratedData = migrateTasksAddActualTime(migratedData);
-        
-        // マイグレーション履歴を更新
+
         history.migrations.push({
             version: '1.0',
             date: new Date().toISOString(),
@@ -231,13 +233,12 @@ function executeMigrations(tasksData) {
         history.lastMigrationDate = new Date().toISOString();
         saveMigrationHistory(history);
     }
-    
+
     // Version 1.0 -> 1.1: Add recurring task fields
-    if (history.version < '1.1') {
+    if (currentVer < 1.1) {
         console.log('マイグレーション実行: v1.0 -> v1.1 (繰り返しタスクフィールド追加)');
         migratedData = migrateTasksAddRecurringFields(migratedData);
-        
-        // マイグレーション履歴を更新
+
         history.migrations.push({
             version: '1.1',
             date: new Date().toISOString(),
@@ -247,7 +248,7 @@ function executeMigrations(tasksData) {
         history.lastMigrationDate = new Date().toISOString();
         saveMigrationHistory(history);
     }
-    
+
     return migratedData;
 }
 
@@ -779,14 +780,35 @@ const SIGNIFIER_LABELS = {
 };
 
 // アプリケーションバージョン（キャッシュ対策）
-const APP_VERSION = '1.7.5';
-const BUILD_DATE = '2026-04-23';
+const APP_VERSION = '1.8.1';
+const BUILD_DATE = '2026-05-19';
 
 // バージョン情報をログ出力（キャッシュ確認用）
 console.log(`%c🚀 アプリケーション読み込み (v${APP_VERSION}, ${BUILD_DATE})`, 'font-size: 12px; color: #666;');
 
 // --- Initial Load ---
 try { carryOverOldTasks(); } catch(e) { console.error('[Init] carryOverOldTasks failed:', e); }
+
+// 複数タブ間のlocalStorage同期
+window.addEventListener('storage', (e) => {
+    if (e.key === TASKS_STORAGE_KEY) {
+        try {
+            tasks = JSON.parse(e.newValue) || [];
+            if (typeof renderWeek === 'function') renderWeek();
+            if (typeof updateDashboard === 'function') updateDashboard();
+        } catch (err) {
+            console.error('[Storage] Failed to sync tasks from another tab:', err);
+        }
+    }
+    if (e.key === SETTINGS_STORAGE_KEY) {
+        try {
+            settings = JSON.parse(e.newValue) || loadSettings();
+            idealDailyMinutesInput.value = settings.ideal_daily_minutes;
+        } catch (err) {
+            console.error('[Storage] Failed to sync settings from another tab:', err);
+        }
+    }
+});
 
 // カテゴリデータの検証と修復
 // verifyCategoryData → ArchiveManager に移動済み（省略可能）
@@ -879,93 +901,138 @@ const migrateNextWeekBtn = document.getElementById('migrate-next-week-btn');
 const migrateNextDayBtn = document.getElementById('migrate-next-day-btn');
 const migrateUnassignedBtn = document.getElementById('migrate-unassigned-btn');
 
-function populateMigrationList() {
+function getSelectedMigrationTaskIds() {
+    if (!migrationTaskListEl) return [];
+    const checkboxes = migrationTaskListEl.querySelectorAll('input[type="checkbox"]:checked');
+    return Array.from(checkboxes).map(cb => cb.value);
+}
+
+function renderMigrationTaskList() {
     if (!migrationTaskListEl) return;
+
     while (migrationTaskListEl.firstChild) {
         migrationTaskListEl.removeChild(migrationTaskListEl.firstChild);
     }
 
-    const monday = getMonday(currentDate);
-    const weekEnd = new Date(monday);
-    weekEnd.setDate(weekEnd.getDate() + 6);
-    const startStr = formatDate(monday);
-    const endStr = formatDate(weekEnd);
+    const currentMonday = getMonday(currentDate);
+    const currentMondayStr = formatDate(currentMonday);
 
+    // carryOverOldTasks が前週の未完了タスクを未割り当てに移動済みなので、
+    // 未割り当ての未完了タスクを移行対象として表示する
     const incomplete = tasks.filter(t =>
-        !t.completed && t.assigned_date && t.assigned_date >= startStr && t.assigned_date <= endStr
+        !t.completed && !t.assigned_date
     );
 
     if (incomplete.length === 0) {
         const msg = document.createElement('p');
-        msg.style.cssText = 'color:#888;text-align:center;padding:20px;';
-        msg.textContent = '未完了のタスクはありません';
+        msg.textContent = '移行対象の未完了タスクはありません。';
+        msg.style.color = '#888';
         migrationTaskListEl.appendChild(msg);
         return;
     }
 
+    const selectAllLabel = document.createElement('label');
+    selectAllLabel.style.cssText = 'display:block;margin-bottom:8px;font-weight:bold;cursor:pointer;';
+    const selectAllCb = document.createElement('input');
+    selectAllCb.type = 'checkbox';
+    selectAllCb.checked = true;
+    selectAllCb.addEventListener('change', () => {
+        migrationTaskListEl.querySelectorAll('.migration-task-cb').forEach(cb => {
+            cb.checked = selectAllCb.checked;
+        });
+    });
+    selectAllLabel.appendChild(selectAllCb);
+    selectAllLabel.appendChild(document.createTextNode(' 全て選択'));
+    migrationTaskListEl.appendChild(selectAllLabel);
+
     incomplete.forEach(task => {
         const label = document.createElement('label');
-        label.style.cssText = 'display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border-color);';
-        const checkbox = document.createElement('input');
-        checkbox.type = 'checkbox';
-        checkbox.value = task.id;
-        checkbox.checked = true;
-        checkbox.style.cursor = 'pointer';
-        const nameSpan = document.createElement('span');
-        nameSpan.textContent = task.name;
-        const dateSpan = document.createElement('span');
-        dateSpan.textContent = task.assigned_date;
-        dateSpan.style.cssText = 'font-size:0.8em;color:#888;margin-left:auto;';
-        label.appendChild(checkbox);
-        label.appendChild(nameSpan);
-        label.appendChild(dateSpan);
+        label.style.cssText = 'display:block;padding:4px 0;cursor:pointer;';
+        const cb = document.createElement('input');
+        cb.type = 'checkbox';
+        cb.className = 'migration-task-cb';
+        cb.value = task.id;
+        cb.checked = true;
+        const categoryInfo = getCategoryInfo(task.category);
+        const catBadge = document.createElement('span');
+        catBadge.textContent = ` [${categoryInfo.name}]`;
+        catBadge.style.color = categoryInfo.color;
+        label.appendChild(cb);
+        label.appendChild(document.createTextNode(` ${task.name}`));
+        label.appendChild(catBadge);
+        label.appendChild(document.createTextNode(` (${task.estimated_time}h)`));
         migrationTaskListEl.appendChild(label);
     });
 }
 
-function getSelectedMigrationIds() {
-    if (!migrationTaskListEl) return [];
-    return Array.from(migrationTaskListEl.querySelectorAll('input[type="checkbox"]:checked'))
-        .map(cb => cb.value);
-}
-
 function closeMigrationModal() {
-    if (migrationModal) migrationModal.style.display = 'none';
+    if (migrationModal) {
+        migrationModal.classList.remove('show');
+        document.body.classList.remove('modal-open');
+        setTimeout(() => {
+            migrationModal.style.display = 'none';
+        }, 300);
+    }
 }
 
-function handleMigrate(direction) {
-    const ids = getSelectedMigrationIds();
-    if (ids.length === 0) return;
-
-    if (window.HybridTaskMigration) {
-        let count = 0;
-        if (direction === 'nextWeek') {
-            count = window.HybridTaskMigration.migrateTasksToNextWeek(ids);
-        } else if (direction === 'nextDay') {
-            count = window.HybridTaskMigration.migrateTasksToNextDay(ids);
-        } else if (direction === 'unassigned') {
-            count = window.HybridTaskMigration.migrateTasksToUnassigned(ids);
-        }
-
-        // Reload tasks from localStorage (TaskMigration saves directly)
+function executeMigrationAndRefresh(migrationFn) {
+    const taskIds = getSelectedMigrationTaskIds();
+    if (taskIds.length === 0) {
+        alert('移行するタスクを選択してください。');
+        return;
+    }
+    const currentMondayStr = formatDate(getMonday(currentDate));
+    const count = migrationFn(taskIds, currentMondayStr);
+    if (count > 0) {
         tasks = loadTasks();
         renderWeek();
-        try { if (window.updateDashboard) window.updateDashboard(); } catch(e) {}
+        updateDashboard();
         closeMigrationModal();
+        showNotification(`${count}件のタスクを移行しました`, 'success');
+    }
+}
 
-        if (count > 0) {
-            showNotification(count + '件のタスクを移行しました', 'success');
-        }
-    } else {
-        showNotification('移行モジュールが読み込まれていません', 'error');
+let migrationListenersAttached = false;
+function attachMigrationButtonListeners() {
+    if (migrationListenersAttached) return;
+    migrationListenersAttached = true;
+
+    if (migrateNextWeekBtn) {
+        migrateNextWeekBtn.addEventListener('click', () => {
+            if (window.HybridTaskMigration) {
+                executeMigrationAndRefresh(window.HybridTaskMigration.migrateTasksToNextWeek);
+            }
+        });
+    }
+    if (migrateNextDayBtn) {
+        migrateNextDayBtn.addEventListener('click', () => {
+            if (window.HybridTaskMigration) {
+                executeMigrationAndRefresh(window.HybridTaskMigration.migrateTasksToNextDay);
+            }
+        });
+    }
+    if (migrateUnassignedBtn) {
+        migrateUnassignedBtn.addEventListener('click', () => {
+            if (window.HybridTaskMigration) {
+                executeMigrationAndRefresh(window.HybridTaskMigration.migrateTasksToUnassigned);
+            }
+        });
     }
 }
 
 if (migrationToggleBtn) {
     migrationToggleBtn.addEventListener('click', () => {
-        if (migrationModal) {
-            populateMigrationList();
+        if (!migrationModal) return;
+        if (migrationModal.style.display === 'none' || migrationModal.style.display === '') {
             migrationModal.style.display = 'block';
+            document.body.classList.add('modal-open');
+            setTimeout(() => {
+                migrationModal.classList.add('show');
+            }, 10);
+            renderMigrationTaskList();
+            attachMigrationButtonListeners();
+        } else {
+            closeMigrationModal();
         }
     });
 }
@@ -980,18 +1047,6 @@ if (migrationModal) {
     });
 }
 
-if (migrateNextWeekBtn) {
-    migrateNextWeekBtn.addEventListener('click', () => handleMigrate('nextWeek'));
-}
-
-if (migrateNextDayBtn) {
-    migrateNextDayBtn.addEventListener('click', () => handleMigrate('nextDay'));
-}
-
-if (migrateUnassignedBtn) {
-    migrateUnassignedBtn.addEventListener('click', () => handleMigrate('unassigned'));
-}
-
 // ダッシュボード初期化
 try { if (window.DashboardManager) window.DashboardManager.initializeDashboardToggle(); } catch(e) { console.error('[Init] DashboardToggle failed:', e); }
 try { if (window.DashboardManager) window.DashboardManager.updateDashboard(); } catch(e) { console.error('[Init] DashboardUpdate failed:', e); }
@@ -1001,6 +1056,7 @@ try { initializeTemplatePanel(); } catch(e) { console.error('[Init] TemplatePane
 
 // ジャーナル機能の初期化
 try { if (window.HybridJournalManager) window.HybridJournalManager.initialize(); } catch(e) { console.error('[Init] JournalManager failed:', e); }
+try { if (window.HybridJournalUI) window.HybridJournalUI.initTimelineControls(); } catch(e) { console.error('[Init] JournalUI timeline controls failed:', e); }
 
 // ジャーナルトグルボタン
 const journalToggleBtn = document.getElementById('journal-toggle');
@@ -1682,6 +1738,8 @@ function initializeTemplatePanel() {
     }
 
     function addDragAndDropListeners() {
+        if (dndListenersInitialized) return;
+        dndListenersInitialized = true;
         const allColumns = document.querySelectorAll('.day-column');
         allColumns.forEach(col => {
             col.addEventListener('dragover', handleDragOver);
@@ -1689,8 +1747,10 @@ function initializeTemplatePanel() {
             col.addEventListener('drop', handleDrop);
         });
     }
-    
+
     function addDateClickListeners() {
+        if (dateClickListenersInitialized) return;
+        dateClickListenersInitialized = true;
         // 未割り当てエリア以外の日付列にクリックリスナーを追加
         dayColumns.forEach(col => {
             col.addEventListener('click', (e) => {
@@ -1698,12 +1758,12 @@ function initializeTemplatePanel() {
                 if (e.target.closest('.task')) {
                     return;
                 }
-                
+
                 // ドラッグ&ドロップ中は無視
                 if (e.target.closest('.dragging')) {
                     return;
                 }
-                
+
                 const dateStr = col.dataset.date;
                 if (dateStr && dateStr !== 'null') {
                     openTaskModal(dateStr);
@@ -2093,48 +2153,105 @@ function filterAndRenderTemplates(searchTerm = '', sortBy = 'recent') {
     }
     
     if (templates.length === 0) {
-        templateList.innerHTML = '';
+        while (templateList.firstChild) templateList.removeChild(templateList.firstChild);
         templateEmpty.style.display = 'block';
         return;
     }
-    
+
     templateEmpty.style.display = 'none';
-    templateList.innerHTML = '';
+    while (templateList.firstChild) templateList.removeChild(templateList.firstChild);
     
     templates.forEach(template => {
         const templateItem = document.createElement('div');
         templateItem.className = 'template-item';
-        
+
         const categoryInfo = getCategoryInfo(template.base_task.category);
-        
-        templateItem.innerHTML = `
-            <div class="template-item-header">
-                <div class="template-item-title">${template.name}</div>
-                <div class="template-item-actions">
-                    <button class="template-use-btn" data-template-id="${template.id}" title="このテンプレートから新規タスクを作成" aria-label="テンプレートを使用">使用</button>
-                    <button class="template-duplicate-btn" data-template-id="${template.id}" title="このテンプレートを複製" aria-label="テンプレートを複製">複製</button>
-                    <button class="template-delete-btn" data-template-id="${template.id}" title="このテンプレートを削除" aria-label="テンプレートを削除">削除</button>
-                </div>
-            </div>
-            <div class="template-item-content">
-                <div class="template-item-task-name">${template.base_task.name}</div>
-                <div class="template-item-meta">
-                    <span class="template-item-category" style="background-color: ${categoryInfo.bgColor}; color: ${categoryInfo.color};">
-                        ${categoryInfo.name}
-                    </span>
-                    <span class="template-item-time">見積: ${template.base_task.estimated_time}h</span>
-                    <span class="template-item-priority priority-${template.base_task.priority}">
-                        優先度: ${['high', 'medium', 'low'].includes(template.base_task.priority) ? (['高', '中', '低'][['high', 'medium', 'low'].indexOf(template.base_task.priority)]) : '中'}
-                    </span>
-                </div>
-                ${template.base_task.details ? `<div class="template-item-description">${template.base_task.details}</div>` : ''}
-                <div class="template-item-footer">
-                    <span class="template-item-created">作成: ${template.created_date}</span>
-                    <span class="template-item-usage">使用回数: ${template.usage_count}</span>
-                </div>
-            </div>
-        `;
-        
+        const priorityLabels = { high: '高', medium: '中', low: '低' };
+
+        const header = document.createElement('div');
+        header.className = 'template-item-header';
+
+        const title = document.createElement('div');
+        title.className = 'template-item-title';
+        title.textContent = template.name;
+
+        const actions = document.createElement('div');
+        actions.className = 'template-item-actions';
+
+        const useBtn = document.createElement('button');
+        useBtn.className = 'template-use-btn';
+        useBtn.dataset.templateId = template.id;
+        useBtn.title = 'このテンプレートから新規タスクを作成';
+        useBtn.setAttribute('aria-label', 'テンプレートを使用');
+        useBtn.textContent = '使用';
+
+        const dupBtn = document.createElement('button');
+        dupBtn.className = 'template-duplicate-btn';
+        dupBtn.dataset.templateId = template.id;
+        dupBtn.title = 'このテンプレートを複製';
+        dupBtn.setAttribute('aria-label', 'テンプレートを複製');
+        dupBtn.textContent = '複製';
+
+        const delBtn = document.createElement('button');
+        delBtn.className = 'template-delete-btn';
+        delBtn.dataset.templateId = template.id;
+        delBtn.title = 'このテンプレートを削除';
+        delBtn.setAttribute('aria-label', 'テンプレートを削除');
+        delBtn.textContent = '削除';
+
+        actions.append(useBtn, dupBtn, delBtn);
+        header.append(title, actions);
+
+        const content = document.createElement('div');
+        content.className = 'template-item-content';
+
+        const taskName = document.createElement('div');
+        taskName.className = 'template-item-task-name';
+        taskName.textContent = template.base_task.name;
+
+        const meta = document.createElement('div');
+        meta.className = 'template-item-meta';
+
+        const catSpan = document.createElement('span');
+        catSpan.className = 'template-item-category';
+        catSpan.style.backgroundColor = categoryInfo.bgColor;
+        catSpan.style.color = categoryInfo.color;
+        catSpan.textContent = categoryInfo.name;
+
+        const timeSpan = document.createElement('span');
+        timeSpan.className = 'template-item-time';
+        timeSpan.textContent = `見積: ${template.base_task.estimated_time}h`;
+
+        const prioSpan = document.createElement('span');
+        prioSpan.className = `template-item-priority priority-${template.base_task.priority}`;
+        prioSpan.textContent = `優先度: ${priorityLabels[template.base_task.priority] || '中'}`;
+
+        meta.append(catSpan, timeSpan, prioSpan);
+
+        content.append(taskName, meta);
+
+        if (template.base_task.details) {
+            const desc = document.createElement('div');
+            desc.className = 'template-item-description';
+            desc.textContent = template.base_task.details;
+            content.appendChild(desc);
+        }
+
+        const footer = document.createElement('div');
+        footer.className = 'template-item-footer';
+
+        const created = document.createElement('span');
+        created.className = 'template-item-created';
+        created.textContent = `作成: ${template.created_date}`;
+
+        const usage = document.createElement('span');
+        usage.className = 'template-item-usage';
+        usage.textContent = `使用回数: ${template.usage_count}`;
+
+        footer.append(created, usage);
+        content.appendChild(footer);
+        templateItem.append(header, content);
+
         templateList.appendChild(templateItem);
     });
     

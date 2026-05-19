@@ -29,26 +29,45 @@ const STORAGE_KEYS = {
     TEMPLATES: 'weekly_task_templates',
     SETTINGS: 'weekly_settings'
 };
+
+let tasksCache = null;
+let archivedCache = null;
+let templatesCache = null;
+
+function invalidateCache() {
+    tasksCache = null;
+}
+
+function invalidateArchivedCache() {
+    archivedCache = null;
+}
+
+function invalidateTemplatesCache() {
+    templatesCache = null;
+}
+
 /**
- * Get tasks from localStorage
+ * Get tasks from localStorage (with cache)
  */
 function getTasks() {
+    if (tasksCache !== null) return tasksCache;
     try {
         const data = localStorage.getItem(STORAGE_KEYS.TASKS);
-        if (!data)
-            return [];
-        return JSON.parse(data);
+        tasksCache = data ? JSON.parse(data) : [];
+        return tasksCache;
     }
     catch (error) {
         logger.error('Failed to load tasks:', error);
-        return [];
+        tasksCache = [];
+        return tasksCache;
     }
 }
 /**
- * Save tasks to localStorage
+ * Save tasks to localStorage (with cache)
  */
 function saveTasks(tasks) {
     try {
+        tasksCache = tasks;
         localStorage.setItem(STORAGE_KEYS.TASKS, JSON.stringify(tasks));
     }
     catch (error) {
@@ -56,25 +75,27 @@ function saveTasks(tasks) {
     }
 }
 /**
- * Get archived tasks from localStorage
+ * Get archived tasks from localStorage (with cache)
  */
 function getArchivedTasks() {
+    if (archivedCache !== null) return archivedCache;
     try {
         const data = localStorage.getItem(STORAGE_KEYS.ARCHIVED_TASKS);
-        if (!data)
-            return [];
-        return JSON.parse(data);
+        archivedCache = data ? JSON.parse(data) : [];
+        return archivedCache;
     }
     catch (error) {
         logger.error('Failed to load archived tasks:', error);
-        return [];
+        archivedCache = [];
+        return archivedCache;
     }
 }
 /**
- * Save archived tasks to localStorage
+ * Save archived tasks to localStorage (with cache)
  */
 function saveArchivedTasks(tasks) {
     try {
+        archivedCache = tasks;
         localStorage.setItem(STORAGE_KEYS.ARCHIVED_TASKS, JSON.stringify(tasks));
     }
     catch (error) {
@@ -322,22 +343,24 @@ function duplicateTask(taskId, newDate) {
  * Get templates from localStorage
  */
 function getTemplates() {
+    if (templatesCache !== null) return templatesCache;
     try {
         const data = localStorage.getItem(STORAGE_KEYS.TEMPLATES);
-        if (!data)
-            return [];
-        return JSON.parse(data);
+        templatesCache = data ? JSON.parse(data) : [];
+        return templatesCache;
     }
     catch (error) {
         logger.error('Failed to load templates:', error);
-        return [];
+        templatesCache = [];
+        return templatesCache;
     }
 }
 /**
- * Save templates to localStorage
+ * Save templates to localStorage (with cache)
  */
 function saveTemplates(templates) {
     try {
+        templatesCache = templates;
         localStorage.setItem(STORAGE_KEYS.TEMPLATES, JSON.stringify(templates));
     }
     catch (error) {
