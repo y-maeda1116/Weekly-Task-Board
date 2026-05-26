@@ -13,12 +13,20 @@ jobs:
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - run: npm ci
+
+      - run: npm run build:vite
+
       - name: Deploy (main -> root)
         if: github.ref_name == 'main'
         uses: peaceiris/actions-gh-pages@4f9cc6602d3f66b9c108549d475ec49e8ef4d45e # v4.0.0
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./
+          publish_dir: ./dist
           publish_branch: gh-pages
           keep_files: true
           user_name: 'github-actions[bot]'
@@ -29,7 +37,7 @@ jobs:
         uses: peaceiris/actions-gh-pages@4f9cc6602d3f66b9c108549d475ec49e8ef4d45e # v4.0.0
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./
+          publish_dir: ./dist
           publish_branch: gh-pages
           destination_dir: dev
           keep_files: true
