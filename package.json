@@ -29,7 +29,11 @@
     "rebuild": "npm run clean && npm run build",
     "test:e2e": "npx playwright test",
     "test:e2e:ui": "npx playwright test --ui",
-    "test:e2e:headed": "npx playwright test --headed"
+    "test:e2e:headed": "npx playwright test --headed",
+    "dev": "vite",
+    "build:vite": "vite build",
+    "preview": "vite preview",
+    "build:tsc": "tsc"
   },
   "keywords": [
     "task",
@@ -54,6 +58,7 @@
     "jest": "^29.5.0",
     "ts-jest": "^29.1.0",
     "typescript": "^5.9.3",
+    "vite": "^8.0.14",
     "vitest": "^0.34.0"
   }
 }
