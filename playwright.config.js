@@ -11,7 +11,7 @@ module.exports = defineConfig({
     trace: 'on-first-retry',
   },
   webServer: {
-    command: 'python3 -m http.server 8765',
+    command: 'python3 -m http.server 8765 --directory dist',
     port: 8765,
     reuseExistingServer: true,
   },
