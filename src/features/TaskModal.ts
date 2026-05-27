@@ -309,7 +309,9 @@ function createNewTask(formData: FormDataType): void {
     ops.addTask(newTask);
     hideModal();
     logInfo('Task created successfully');
-    if ((window as any).renderWeek) (window as any).renderWeek();
+    const w = window as any;
+    if (w.loadTasks) { w.tasks = w.loadTasks(); }
+    if (w.renderWeek) w.renderWeek();
   } else {
     logInfo('Delegating task creation to existing script.js');
     hideModal();
@@ -322,7 +324,9 @@ function updateExistingTask(taskId: string, formData: FormDataType): void {
     ops.updateTask(taskId, formData);
     hideModal();
     logInfo(`Task updated successfully: ${taskId}`);
-    if ((window as any).renderWeek) (window as any).renderWeek();
+    const w = window as any;
+    if (w.loadTasks) { w.tasks = w.loadTasks(); }
+    if (w.renderWeek) w.renderWeek();
   } else {
     logInfo('Delegating task update to existing script.js');
     hideModal();
