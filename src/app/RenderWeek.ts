@@ -79,6 +79,7 @@ export function createRenderWeek(deps: RenderWeekDeps) {
     if (deps.isRendering) return;
     deps.setIsRendering(true);
 
+    try {
     const monday = getMonday(deps.currentDate);
 
     // Recurring tasks
@@ -253,7 +254,9 @@ export function createRenderWeek(deps: RenderWeekDeps) {
       }
     }
 
-    deps.setIsRendering(false);
+    } finally {
+      deps.setIsRendering(false);
+    }
   }
 
   return { renderWeek, addDateClickListeners };

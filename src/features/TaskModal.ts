@@ -127,12 +127,14 @@ function initializeElements(): boolean {
 function showModal(): void {
   if (elements.modal) {
     elements.modal.style.display = 'block';
+    elements.modal.classList.add('show');
     modalState.isOpen = true;
   }
 }
 
 function hideModal(): void {
   if (elements.modal) {
+    elements.modal.classList.remove('show');
     elements.modal.style.display = 'none';
     modalState.isOpen = false;
     modalState.currentTaskId = null;
