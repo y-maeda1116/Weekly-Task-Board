@@ -127,12 +127,14 @@ function initializeElements(): boolean {
 function showModal(): void {
   if (elements.modal) {
     elements.modal.style.display = 'block';
+    elements.modal.classList.add('show');
     modalState.isOpen = true;
   }
 }
 
 function hideModal(): void {
   if (elements.modal) {
+    elements.modal.classList.remove('show');
     elements.modal.style.display = 'none';
     modalState.isOpen = false;
     modalState.currentTaskId = null;
@@ -307,7 +309,9 @@ function createNewTask(formData: FormDataType): void {
     ops.addTask(newTask);
     hideModal();
     logInfo('Task created successfully');
-    if ((window as any).renderWeek) (window as any).renderWeek();
+    const w = window as any;
+    if (w.loadTasks) { w.tasks = w.loadTasks(); }
+    if (w.renderWeek) w.renderWeek();
   } else {
     logInfo('Delegating task creation to existing script.js');
     hideModal();
@@ -320,7 +324,9 @@ function updateExistingTask(taskId: string, formData: FormDataType): void {
     ops.updateTask(taskId, formData);
     hideModal();
     logInfo(`Task updated successfully: ${taskId}`);
-    if ((window as any).renderWeek) (window as any).renderWeek();
+    const w = window as any;
+    if (w.loadTasks) { w.tasks = w.loadTasks(); }
+    if (w.renderWeek) w.renderWeek();
   } else {
     logInfo('Delegating task update to existing script.js');
     hideModal();
