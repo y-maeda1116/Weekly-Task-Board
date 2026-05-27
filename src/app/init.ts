@@ -286,7 +286,32 @@ export function initializeApp(): void {
   try { w.CalendarManager?.checkOAuthCallback?.(); } catch (e) { console.error('[Init] OAuth failed:', e); }
   try { w.PWASetup?.initPWA?.(); } catch (e) { console.error('[Init] PWA failed:', e); }
   try { w.HybridWeeklyReviewUI?.initialize?.(); } catch (e) { console.error('[Init] WeeklyReviewUI failed:', e); }
-  try { w.HybridMorningPagesUI?.initialize?.(); } catch (e) { console.error('[Init] MorningPagesUI failed:', e); }
+  try { w.HybridMorningPagesUI?.initializeMorningPagesUI?.(); } catch (e) { console.error('[Init] MorningPagesUI failed:', e); }
+
+  // 15. Panel toggles
+  try { w.DashboardManager?.initializeDashboardToggle?.(); } catch (e) { console.error('[Init] DashboardToggle failed:', e); }
+  try { w.TemplateManager?.initializeTemplatePanel?.(); } catch (e) { console.error('[Init] TemplatePanel failed:', e); }
+  try { w.HybridJournalUI?.initTimelineControls?.(); } catch (e) { console.error('[Init] JournalControls failed:', e); }
+
+  // Journal toggle button
+  const journalToggleBtn = document.getElementById('journal-toggle');
+  if (journalToggleBtn) {
+    journalToggleBtn.addEventListener('click', () => {
+      try { w.HybridJournalUI?.openTimeline?.(); } catch (e) { console.error('[Init] Journal open failed:', e); }
+    });
+  }
+
+  // 16. Task modal
+  try { w.HybridTaskModal?.initializeModal?.(); } catch (e) { console.error('[Init] TaskModal failed:', e); }
+  const addTaskBtn = document.getElementById('add-task-btn');
+  if (addTaskBtn) {
+    addTaskBtn.addEventListener('click', () => {
+      try { w.HybridTaskModal?.openCreateModal?.(); } catch (e) { console.error('[Init] AddTask failed:', e); }
+    });
+  }
+  w.openEditModal = (task: any) => w.HybridTaskModal?.openEditModal?.(task);
+  w.openCreateModal = () => w.HybridTaskModal?.openCreateModal?.();
+  w.closeTaskModal = () => w.HybridTaskModal?.closeModal?.();
 
   // Version info
   const APP_VERSION = '1.9.0';
