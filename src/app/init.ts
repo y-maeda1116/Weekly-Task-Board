@@ -314,8 +314,8 @@ export function initializeApp(): void {
   w.closeTaskModal = () => w.HybridTaskModal?.closeModal?.();
 
   // Version info
-  const APP_VERSION = '1.9.0';
-  const BUILD_DATE = '2026-05-27';
+  const APP_VERSION = '1.9.1';
+  const BUILD_DATE = '2026-05-28';
   w.APP_VERSION = APP_VERSION;
   w.BUILD_DATE = BUILD_DATE;
   console.log(`%c🚀 ウィークリータスクボード v${APP_VERSION} (Vite + TypeScript)`, 'font-size: 14px; color: #4a90e2; font-weight: bold;');

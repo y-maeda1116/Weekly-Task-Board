@@ -8,6 +8,9 @@
  * @returns The Monday of that week, set to 00:00:00 local time
  */
 export function getMonday(d: Date): Date {
+  if (!(d instanceof Date) || isNaN(d.getTime())) {
+    d = new Date();
+  }
   const date = new Date(d);
   date.setHours(0, 0, 0, 0);
   const day = date.getDay();
@@ -23,6 +26,11 @@ export function getMonday(d: Date): Date {
  * @returns The formatted date string
  */
 export function formatDate(date: Date): string {
+  if (!(date instanceof Date) || isNaN(date.getTime())) {
+    const now = new Date();
+    now.setHours(0, 0, 0, 0);
+    date = now;
+  }
   const y = date.getFullYear();
   const m = String(date.getMonth() + 1).padStart(2, '0');
   const d = String(date.getDate()).padStart(2, '0');

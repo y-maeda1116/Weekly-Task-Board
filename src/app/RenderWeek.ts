@@ -80,7 +80,8 @@ export function createRenderWeek(deps: RenderWeekDeps) {
     deps.setIsRendering(true);
 
     try {
-    const monday = getMonday(deps.currentDate);
+    const currentDate = deps.currentDate instanceof Date ? deps.currentDate : new Date();
+    let monday = getMonday(currentDate);
 
     // Recurring tasks
     const recurringStart = new Date(monday);
@@ -102,7 +103,7 @@ export function createRenderWeek(deps: RenderWeekDeps) {
     }
 
     // DOM refs
-    const dayColumns = Array.from(document.querySelectorAll('.day-column')) as HTMLElement[];
+    const dayColumns = Array.from(document.querySelectorAll('.day-column:not(#unassigned-tasks)')) as HTMLElement[];
     const unassignedColumn = document.getElementById('unassigned-tasks');
     const unassignedList = unassignedColumn?.querySelector('#unassigned-list');
     const weekTitle = document.getElementById('week-title');
@@ -121,6 +122,10 @@ export function createRenderWeek(deps: RenderWeekDeps) {
     const weekDates: Date[] = [];
     const dailyTotals: Record<string, number> = {};
     const dailyCompletedTotals: Record<string, number> = {};
+
+    if (isNaN(monday.getTime())) {
+      monday = getMonday(new Date());
+    }
 
     for (let i = 0; i < 7; i++) {
       const date = new Date(monday);
@@ -230,7 +235,7 @@ export function createRenderWeek(deps: RenderWeekDeps) {
     if (unassignedColumn) unassignedColumn.dataset.date = 'null';
     addDragAndDropListeners();
 
-    if (datePicker) datePicker.value = formatDate(deps.currentDate);
+    if (datePicker) datePicker.value = formatDate(currentDate);
 
     const w2 = window as any;
     w2.updateGridColumns?.();

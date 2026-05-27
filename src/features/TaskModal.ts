@@ -305,15 +305,22 @@ function handleFormSubmit(event: Event): void {
 function createNewTask(formData: FormDataType): void {
   const ops = (window as any).HybridTaskOperations;
   if (ops?.createTask && ops.addTask) {
-    const newTask = ops.createTask(formData);
+    const newTask = ops.createTask({
+      name: formData.name,
+      estimated_time: formData.estimated_time,
+      priority: formData.priority,
+      category: formData.category,
+      date: formData.date,
+      details: formData.details,
+    });
     ops.addTask(newTask);
     hideModal();
     logInfo('Task created successfully');
     const w = window as any;
     if (w.loadTasks) { w.tasks = w.loadTasks(); }
-    if (w.renderWeek) w.renderWeek();
+    try { w.renderWeek?.(); } catch (e) { logWarn('renderWeek failed after create:', e); }
   } else {
-    logInfo('Delegating task creation to existing script.js');
+    logWarn('HybridTaskOperations not available');
     hideModal();
   }
 }
@@ -321,14 +328,28 @@ function createNewTask(formData: FormDataType): void {
 function updateExistingTask(taskId: string, formData: FormDataType): void {
   const ops = (window as any).HybridTaskOperations;
   if (ops?.updateTask) {
-    ops.updateTask(taskId, formData);
+    ops.updateTask(taskId, {
+      name: formData.name,
+      estimated_time: formData.estimated_time,
+      actual_time: formData.actual_time,
+      priority: formData.priority,
+      category: formData.category,
+      date: formData.date,
+      due_date: formData.due_date,
+      due_time_period: formData.due_time_period,
+      due_hour: formData.due_hour,
+      details: formData.details,
+      is_recurring: formData.is_recurring,
+      recurrence_pattern: formData.recurrence_pattern,
+      recurrence_end_date: formData.recurrence_end_date,
+    });
     hideModal();
     logInfo(`Task updated successfully: ${taskId}`);
     const w = window as any;
     if (w.loadTasks) { w.tasks = w.loadTasks(); }
-    if (w.renderWeek) w.renderWeek();
+    try { w.renderWeek?.(); } catch (e) { logWarn('renderWeek failed after update:', e); }
   } else {
-    logInfo('Delegating task update to existing script.js');
+    logWarn('HybridTaskOperations.updateTask not available');
     hideModal();
   }
 }

@@ -11,11 +11,16 @@ export function loadSettings(): Settings {
   }
   try {
     const loaded = JSON.parse(settingsJson);
+    if (typeof loaded !== 'object' || loaded === null) {
+      localStorage.removeItem(StorageKeys.SETTINGS);
+      return { ...DEFAULT_SETTINGS };
+    }
     if (!loaded.weekday_visibility) {
       loaded.weekday_visibility = DEFAULT_SETTINGS.weekday_visibility;
     }
     return loaded;
   } catch {
+    localStorage.removeItem(StorageKeys.SETTINGS);
     return { ...DEFAULT_SETTINGS };
   }
 }
