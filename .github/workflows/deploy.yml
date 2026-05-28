@@ -19,7 +19,15 @@ jobs:
 
       - run: npm install
 
-      - run: npm run build:vite
+      - name: Build (main)
+        if: github.ref_name == 'main'
+        run: npm run build:vite
+
+      - name: Build (dev)
+        if: github.ref_name == 'dev'
+        env:
+          VITE_BASE: /dev/
+        run: npm run build:vite
 
       - name: Deploy (main -> root)
         if: github.ref_name == 'main'
