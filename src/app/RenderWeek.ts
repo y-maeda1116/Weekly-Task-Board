@@ -238,7 +238,13 @@ export function createRenderWeek(deps: RenderWeekDeps) {
     if (datePicker) datePicker.value = formatDate(currentDate);
 
     const w2 = window as any;
-    w2.updateGridColumns?.();
+    try { w2.updateGridColumns?.(deps.weekdayManager ? {
+      weekdayManager: deps.weekdayManager,
+      taskBulkMover: w2.taskBulkMover,
+      getTasks: () => deps.tasks,
+      saveTasks: deps.saveTasks,
+      renderWeek: () => renderWeek(),
+    } : undefined); } catch {}
     w2.updateDashboard?.();
     w2.HybridJournalUI?.injectStartButtons?.();
 

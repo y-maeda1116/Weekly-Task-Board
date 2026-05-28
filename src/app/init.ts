@@ -143,7 +143,14 @@ export function initializeApp(): void {
   initializeCategoryFilter();
 
   // 8. Weekday settings
-  try { w.ContextManager?.initializeWeekdaySettings(weekdayManager, taskBulkMover); } catch (e) { console.error('[Init] WeekdaySettings failed:', e); }
+  const contextDeps = {
+    weekdayManager,
+    taskBulkMover,
+    getTasks: () => appContext.tasks,
+    saveTasks: () => { saveTasksValidated(appContext.tasks); w.tasks = appContext.tasks; },
+    renderWeek: () => renderWeekFn?.(),
+  };
+  try { w.ContextManager?.initializeWeekdaySettings(contextDeps); } catch (e) { console.error('[Init] WeekdaySettings failed:', e); }
 
   // Weekday filter dropdown
   const weekdayFilterBtn = document.getElementById('weekday-filter-btn');
@@ -176,8 +183,8 @@ export function initializeApp(): void {
   }
 
   // 9. Context menu
-  try { w.ContextManager?.initializeContextMenu(weekdayManager, taskBulkMover); } catch (e) { console.error('[Init] ContextMenu failed:', e); }
-  try { w.ContextManager?.updateGridColumns(); } catch (e) { console.error('[Init] GridColumns failed:', e); }
+  try { w.ContextManager?.initializeContextMenu(contextDeps); } catch (e) { console.error('[Init] ContextMenu failed:', e); }
+  try { w.ContextManager?.updateGridColumns(contextDeps); } catch (e) { console.error('[Init] GridColumns failed:', e); }
 
   // 10. Multi-tab sync
   window.addEventListener('storage', (e) => {
