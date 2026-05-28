@@ -69,7 +69,7 @@ initializeApp();
 // --- Wire up renderWeek ---
 let _isRendering = false;
 
-const { renderWeek } = createRenderWeek({
+const { renderWeek, addDateClickListeners } = createRenderWeek({
   get tasks() { return appContext.tasks; },
   set tasks(v: any[]) { appContext.tasks = v; },
   setTasks: (t) => { appContext.tasks = t; w.tasks = t; },
@@ -99,3 +99,7 @@ w.renderWeek = renderWeek;
 
 // Initial render
 try { renderWeek(); } catch (e) { console.error('[Init] renderWeek failed:', e); }
+
+// Day column click listeners
+const dayColumns = Array.from(document.querySelectorAll('.day-column:not(#unassigned-tasks)')) as HTMLElement[];
+addDateClickListeners(dayColumns, (date?: string) => w.openCreateModal?.(date));

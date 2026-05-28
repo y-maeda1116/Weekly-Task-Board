@@ -216,6 +216,7 @@ export namespace SettingsStorage {
       return settings;
     } catch (error) {
       console.error('Error parsing settings from localStorage:', error);
+      StorageService.removeItem(StorageKeys.SETTINGS);
       return {
         ideal_daily_minutes: 480,
         weekday_visibility: {

@@ -321,7 +321,7 @@ export function initializeApp(): void {
   w.closeTaskModal = () => w.HybridTaskModal?.closeModal?.();
 
   // Version info
-  const APP_VERSION = '1.9.1';
+  const APP_VERSION = '1.9.2';
   const BUILD_DATE = '2026-05-28';
   w.APP_VERSION = APP_VERSION;
   w.BUILD_DATE = BUILD_DATE;
