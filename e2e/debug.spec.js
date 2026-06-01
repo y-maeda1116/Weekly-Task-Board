@@ -1,4 +1,4 @@
-const { test, expect } = require('@playwright/test');
+import { test, expect } from '@playwright/test';
 
 test('debug task creation', async ({ browser }) => {
   const context = await browser.newContext();
