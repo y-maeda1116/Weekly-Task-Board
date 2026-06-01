@@ -317,7 +317,7 @@ export function initializeApp(): void {
     });
   }
   w.openEditModal = (task: any) => w.HybridTaskModal?.openEditModal?.(task);
-  w.openCreateModal = () => w.HybridTaskModal?.openCreateModal?.();
+  w.openCreateModal = (date?: string) => w.HybridTaskModal?.openCreateModal?.(date);
   w.closeTaskModal = () => w.HybridTaskModal?.closeModal?.();
 
   // Version info
