@@ -6,7 +6,6 @@
 const CACHE_NAME = 'weekly-task-board-v1';
 const RUNTIME_CACHE = 'weekly-task-board-runtime-v1';
 
-// インストール時は最小限のシェルのみキャッシュ
 const SHELL_URLS = [
   '/',
   '/index.html',
@@ -69,7 +68,7 @@ self.addEventListener('fetch', (event) => {
 });
 
 self.addEventListener('message', (event) => {
-  if (event.data?.type === 'SKIP_WAITING') {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
     self.skipWaiting();
   }
 });
