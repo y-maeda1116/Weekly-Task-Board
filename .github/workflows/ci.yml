@@ -12,7 +12,7 @@ permissions:
 jobs:
   test:
     runs-on: ubuntu-latest
-    
+
     strategy:
       matrix:
         node-version: [24.x, 25.x]
@@ -32,54 +32,28 @@ jobs:
       uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.2.4
       with:
         node-version: ${{ matrix.node-version }}
-    
+
     - name: Install dependencies
       run: npm install
 
+    - name: Type Check
+      run: npm run type-check
+
     - name: Run Unit Tests
+      run: npm test
+
+    - name: Check Build
       run: |
-        echo "Running unit tests..."
-        node tests/unit/test-time-validation.js
-        node tests/unit/test-time-persistence.js
-        node tests/unit/test-statistics-engine.js
-        node tests/unit/test-completion-rate.js
-        node tests/unit/test-recurrence-engine.js
-        node tests/unit/test-recurring-persistence.js
-        node tests/unit/test-template-functionality.js
-        node tests/unit/test-weekday-functionality.js
-        node tests/unit/test-category-functionality.js
-        node tests/unit/test-time-overrun-visual.js
-        node tests/unit/test-time-comparison.js
-        node tests/unit/test-export-import-time.js
-        node tests/unit/test-migration-functionality.js
-        node tests/unit/test-comprehensive-unit.js
-        node tests/unit/test-integration-task13.js
-    
-    - name: Run Performance Tests
-      run: |
-        echo "Running performance tests..."
-        node tests/performance/test-weekday-performance.js
-    
-    - name: Verify Implementation
-      run: |
-        echo "Verifying implementation..."
-        node verify-implementation.js
-    
-    - name: Check Code Quality
-      run: |
-        echo "Checking code quality..."
         npm run build:vite
         if [ ! -f "dist/index.html" ]; then
           echo "Error: dist/index.html not found after build"
           exit 1
         fi
-        echo "Code quality check passed!"
-    
+        echo "Build check passed!"
+
     - name: Generate Test Report
       if: always()
-      run: |
-        echo "Test execution completed"
-        echo "All tests have been executed"
+      run: echo "CI completed"
 
   e2e:
     runs-on: ubuntu-latest
