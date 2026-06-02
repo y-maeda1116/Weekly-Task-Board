@@ -183,52 +183,40 @@ export namespace SettingsStorage {
    * Load settings from localStorage with defaults
    */
   export function loadSettings(): Settings {
-    const settingsJson = StorageService.getItem<string>(StorageKeys.SETTINGS);
-    if (!settingsJson) {
-      return {
-        ideal_daily_minutes: 480,
-        weekday_visibility: {
-          monday: true,
-          tuesday: true,
-          wednesday: true,
-          thursday: true,
-          friday: true,
-          saturday: true,
-          sunday: true
-        }
-      };
+    const DEFAULT = {
+      ideal_daily_minutes: 480,
+      weekday_visibility: {
+        monday: true,
+        tuesday: true,
+        wednesday: true,
+        thursday: true,
+        friday: true,
+        saturday: true,
+        sunday: true
+      }
+    };
+
+    const raw = localStorage.getItem(StorageKeys.SETTINGS);
+    if (!raw) return { ...DEFAULT };
+
+    // Already an object (edge case from StorageService auto-parse)
+    if (typeof raw === 'object') {
+      return { ...DEFAULT, ...(raw as Record<string, unknown>) };
     }
 
     try {
-      const settings = JSON.parse(settingsJson) as Settings;
-      // Ensure weekday_visibility exists
-      if (!settings.weekday_visibility) {
-        settings.weekday_visibility = {
-          monday: true,
-          tuesday: true,
-          wednesday: true,
-          thursday: true,
-          friday: true,
-          saturday: true,
-          sunday: true
-        };
+      const parsed = JSON.parse(raw as string);
+      if (typeof parsed !== 'object' || parsed === null) {
+        localStorage.removeItem(StorageKeys.SETTINGS);
+        return { ...DEFAULT };
       }
-      return settings;
-    } catch (error) {
-      console.error('Error parsing settings from localStorage:', error);
-      StorageService.removeItem(StorageKeys.SETTINGS);
-      return {
-        ideal_daily_minutes: 480,
-        weekday_visibility: {
-          monday: true,
-          tuesday: true,
-          wednesday: true,
-          thursday: true,
-          friday: true,
-          saturday: true,
-          sunday: true
-        }
-      };
+      if (!parsed.weekday_visibility) {
+        parsed.weekday_visibility = DEFAULT.weekday_visibility;
+      }
+      return parsed;
+    } catch {
+      localStorage.removeItem(StorageKeys.SETTINGS);
+      return { ...DEFAULT };
     }
   }
 
