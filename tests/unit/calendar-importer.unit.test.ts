@@ -9,41 +9,41 @@ import { Event, RawEventData } from "../../src/types/index";
 
 describe("CalendarImporter - Unit Tests", () => {
   let importer: CalendarImporterImpl;
-  let mockOutlookConnector: jest.Mocked<OutlookConnector>;
-  let mockEventParser: jest.Mocked<EventParser>;
-  let mockEventSerializer: jest.Mocked<EventSerializer>;
-  let mockSyncEngine: jest.Mocked<SyncEngine>;
+  let mockOutlookConnector: vi.Mocked<OutlookConnector>;
+  let mockEventParser: vi.Mocked<EventParser>;
+  let mockEventSerializer: vi.Mocked<EventSerializer>;
+  let mockSyncEngine: vi.Mocked<SyncEngine>;
 
   beforeEach(() => {
     mockOutlookConnector = {
-      initiateOAuthFlow: jest.fn(),
-      handleOAuthCallback: jest.fn(),
-      disconnectAccount: jest.fn(),
-      isAuthenticated: jest.fn().mockReturnValue(true),
-      getAccessToken: jest.fn(),
-      refreshAccessToken: jest.fn(),
-      revokeAccessToken: jest.fn(),
-      getEvents: jest.fn(),
-      getEventDetails: jest.fn()
+      initiateOAuthFlow: vi.fn(),
+      handleOAuthCallback: vi.fn(),
+      disconnectAccount: vi.fn(),
+      isAuthenticated: vi.fn().mockReturnValue(true),
+      getAccessToken: vi.fn(),
+      refreshAccessToken: vi.fn(),
+      revokeAccessToken: vi.fn(),
+      getEvents: vi.fn(),
+      getEventDetails: vi.fn()
     } as any;
 
     mockEventParser = {
-      parseEvent: jest.fn(),
-      parseEvents: jest.fn(),
-      validateEventData: jest.fn()
+      parseEvent: vi.fn(),
+      parseEvents: vi.fn(),
+      validateEventData: vi.fn()
     } as any;
 
     mockEventSerializer = {
-      eventToTask: jest.fn(),
-      eventsToTasks: jest.fn(),
-      taskToEvent: jest.fn()
+      eventToTask: vi.fn(),
+      eventsToTasks: vi.fn(),
+      taskToEvent: vi.fn()
     } as any;
 
     mockSyncEngine = {
-      recordSync: jest.fn(),
-      getSyncMapping: jest.fn(),
-      detectDuplicates: jest.fn().mockResolvedValue([]),
-      retryWithBackoff: jest.fn()
+      recordSync: vi.fn(),
+      getSyncMapping: vi.fn(),
+      detectDuplicates: vi.fn().mockResolvedValue([]),
+      retryWithBackoff: vi.fn()
     } as any;
 
     importer = new CalendarImporterImpl(

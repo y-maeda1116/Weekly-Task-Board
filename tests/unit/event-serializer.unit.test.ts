@@ -11,12 +11,12 @@ describe("EventSerializer - Unit Tests", () => {
 
   beforeEach(() => {
     serializer = new EventSerializerImpl();
-    jest.useFakeTimers();
-    jest.setSystemTime(new Date("2024-01-15T12:00:00Z"));
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2024-01-15T12:00:00Z"));
   });
 
   afterEach(() => {
-    jest.useRealTimers();
+    vi.useRealTimers();
   });
 
   describe("Event to Task Conversion", () => {

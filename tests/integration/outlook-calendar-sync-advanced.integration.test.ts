@@ -32,7 +32,7 @@ describe("Outlook Calendar Sync - Advanced Integration Tests", () => {
     importer = new CalendarImporterImpl(connector, parser, syncEngine);
     ui = new CalendarSyncUIImpl(importer, syncEngine);
 
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   describe("Complex Workflow Scenarios", () => {
@@ -52,7 +52,7 @@ describe("Outlook Calendar Sync - Advanced Integration Tests", () => {
         lastModified: new Date()
       }));
 
-      jest.spyOn(importer, "fetchEvents").mockResolvedValue(largeEventSet);
+      vi.spyOn(importer, "fetchEvents").mockResolvedValue(largeEventSet);
 
       // Select all events
       largeEventSet.forEach(event => importer.selectEvent(event.id));
@@ -61,7 +61,7 @@ describe("Outlook Calendar Sync - Advanced Integration Tests", () => {
       expect(selected).toHaveLength(50);
 
       // Mock serializer
-      jest.spyOn(serializer, "eventToTask").mockImplementation((event: Event) => ({
+      vi.spyOn(serializer, "eventToTask").mockImplementation((event: Event) => ({
         id: `task-${event.id}`,
         title: event.title,
         description: event.description,
@@ -143,7 +143,7 @@ describe("Outlook Calendar Sync - Advanced Integration Tests", () => {
       ];
 
       let callCount = 0;
-      jest.spyOn(serializer, "eventToTask").mockImplementation((event: Event) => {
+      vi.spyOn(serializer, "eventToTask").mockImplementation((event: Event) => {
         callCount++;
         if (callCount === 1) {
           throw new Error("Serialization failed");
@@ -184,9 +184,9 @@ describe("Outlook Calendar Sync - Advanced Integration Tests", () => {
       const initialToken = "initial-token";
       const refreshedToken = "refreshed-token";
 
-      jest.spyOn(connector, "getAccessToken").mockReturnValueOnce(initialToken);
-      jest.spyOn(connector, "refreshAccessToken").mockResolvedValue(refreshedToken);
-      jest.spyOn(connector, "getAccessToken").mockReturnValueOnce(refreshedToken);
+      vi.spyOn(connector, "getAccessToken").mockReturnValueOnce(initialToken);
+      vi.spyOn(connector, "refreshAccessToken").mockResolvedValue(refreshedToken);
+      vi.spyOn(connector, "getAccessToken").mockReturnValueOnce(refreshedToken);
 
       const token1 = connector.getAccessToken();
       expect(token1).toBe(initialToken);
@@ -205,8 +205,8 @@ describe("Outlook Calendar Sync - Advanced Integration Tests", () => {
     it("should store tokens securely", async () => {
       const mockToken = "secure-token-xyz";
 
-      jest.spyOn(connector, "handleOAuthCallback").mockResolvedValue(undefined);
-      jest.spyOn(connector, "getAccessToken").mockReturnValue(mockToken);
+      vi.spyOn(connector, "handleOAuthCallback").mockResolvedValue(undefined);
+      vi.spyOn(connector, "getAccessToken").mockReturnValue(mockToken);
 
       await connector.handleOAuthCallback("auth-code");
 
@@ -223,15 +223,15 @@ describe("Outlook Calendar Sync - Advanced Integration Tests", () => {
      * Validates: Requirements 1
      */
     it("should revoke tokens on disconnect", async () => {
-      jest.spyOn(connector, "handleOAuthCallback").mockResolvedValue(undefined);
-      jest.spyOn(connector, "isAuthenticated").mockReturnValue(true);
+      vi.spyOn(connector, "handleOAuthCallback").mockResolvedValue(undefined);
+      vi.spyOn(connector, "isAuthenticated").mockReturnValue(true);
 
       await connector.handleOAuthCallback("auth-code");
       expect(connector.isAuthenticated()).toBe(true);
 
-      jest.spyOn(connector, "revokeAccessToken").mockResolvedValue(undefined);
-      jest.spyOn(connector, "disconnectAccount").mockResolvedValue(undefined);
-      jest.spyOn(connector, "isAuthenticated").mockReturnValue(false);
+      vi.spyOn(connector, "revokeAccessToken").mockResolvedValue(undefined);
+      vi.spyOn(connector, "disconnectAccount").mockResolvedValue(undefined);
+      vi.spyOn(connector, "isAuthenticated").mockReturnValue(false);
 
       await connector.revokeAccessToken();
       await connector.disconnectAccount();
@@ -346,7 +346,7 @@ describe("Outlook Calendar Sync - Advanced Integration Tests", () => {
         }
       ];
 
-      jest.spyOn(connector, "getEvents").mockResolvedValue(mockRawEvents);
+      vi.spyOn(connector, "getEvents").mockResolvedValue(mockRawEvents);
 
       const startDate = new Date("2024-01-15");
       const endDate = new Date("2024-01-21");
@@ -366,7 +366,7 @@ describe("Outlook Calendar Sync - Advanced Integration Tests", () => {
       const delays: number[] = [];
       let attemptCount = 0;
 
-      const mockOperation = jest.fn(async () => {
+      const mockOperation = vi.fn(async () => {
         attemptCount++;
         if (attemptCount < 3) {
           throw new Error("Temporary failure");
@@ -388,7 +388,7 @@ describe("Outlook Calendar Sync - Advanced Integration Tests", () => {
     it("should log errors with context", async () => {
       const errorMessage = "API Error: 500 Internal Server Error";
 
-      jest.spyOn(connector, "getEvents").mockRejectedValue(new Error(errorMessage));
+      vi.spyOn(connector, "getEvents").mockRejectedValue(new Error(errorMessage));
 
       const startDate = new Date("2024-01-15");
       const endDate = new Date("2024-01-21");
@@ -588,7 +588,7 @@ describe("Outlook Calendar Sync - Advanced Integration Tests", () => {
       expect(selected).toHaveLength(1);
 
       // Fetch new events (simulating refresh)
-      jest.spyOn(importer, "fetchEvents").mockResolvedValue(events);
+      vi.spyOn(importer, "fetchEvents").mockResolvedValue(events);
 
       // Selection should persist
       selected = importer.getSelectedEvents();
@@ -614,7 +614,7 @@ describe("Outlook Calendar Sync - Advanced Integration Tests", () => {
         lastModified: new Date()
       }));
 
-      jest.spyOn(importer, "fetchEvents").mockResolvedValue(largeEventSet);
+      vi.spyOn(importer, "fetchEvents").mockResolvedValue(largeEventSet);
 
       const startTime = Date.now();
       const events = await importer.fetchEvents();
@@ -647,7 +647,7 @@ describe("Outlook Calendar Sync - Advanced Integration Tests", () => {
       expect(selected).toHaveLength(50);
 
       // Convert all to tasks
-      jest.spyOn(serializer, "eventToTask").mockImplementation((event: Event) => ({
+      vi.spyOn(serializer, "eventToTask").mockImplementation((event: Event) => ({
         id: `task-${event.id}`,
         title: event.title,
         description: event.description,

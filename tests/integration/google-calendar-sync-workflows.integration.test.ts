@@ -30,7 +30,7 @@ describe("Google Calendar Sync - Workflow Integration Tests", () => {
       syncEngine
     );
 
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   describe("Workflow 1: First-Time User Authentication", () => {
@@ -61,7 +61,7 @@ describe("Google Calendar Sync - Workflow Integration Tests", () => {
 
         // Step 2: Mock user returning with authorization code
         const authCode = "4/0AeanE0b...";
-        global.fetch = jest.fn(() =>
+        global.fetch = vi.fn(() =>
           Promise.resolve({
             ok: true,
             json: () => Promise.resolve({
@@ -96,8 +96,8 @@ describe("Google Calendar Sync - Workflow Integration Tests", () => {
 
   describe("Workflow 2: Date Range Selection and Event Fetch", () => {
     beforeEach(async () => {
-      jest.spyOn(connector, "handleOAuthCallback").mockResolvedValue(undefined);
-      jest.spyOn(connector, "isAuthenticated").mockReturnValue(true);
+      vi.spyOn(connector, "handleOAuthCallback").mockResolvedValue(undefined);
+      vi.spyOn(connector, "isAuthenticated").mockReturnValue(true);
       await connector.handleOAuthCallback("auth-code");
     });
 
@@ -118,7 +118,7 @@ describe("Google Calendar Sync - Workflow Integration Tests", () => {
         }
       ];
 
-      jest.spyOn(connector, "getEvents").mockResolvedValue(mockEvents as any);
+      vi.spyOn(connector, "getEvents").mockResolvedValue(mockEvents as any);
 
       const events = await importer.fetchEvents();
 
@@ -146,8 +146,8 @@ describe("Google Calendar Sync - Workflow Integration Tests", () => {
 
   describe("Workflow 3: Event Selection and Preview", () => {
     beforeEach(async () => {
-      jest.spyOn(connector, "handleOAuthCallback").mockResolvedValue(undefined);
-      jest.spyOn(connector, "isAuthenticated").mockReturnValue(true);
+      vi.spyOn(connector, "handleOAuthCallback").mockResolvedValue(undefined);
+      vi.spyOn(connector, "isAuthenticated").mockReturnValue(true);
       await connector.handleOAuthCallback("auth-code");
 
       const mockEvents = [
@@ -174,7 +174,7 @@ describe("Google Calendar Sync - Workflow Integration Tests", () => {
         }
       ];
 
-      jest.spyOn(connector, "getEvents").mockResolvedValue(mockEvents as any);
+      vi.spyOn(connector, "getEvents").mockResolvedValue(mockEvents as any);
       await importer.fetchEvents();
     });
 
@@ -225,8 +225,8 @@ describe("Google Calendar Sync - Workflow Integration Tests", () => {
 
   describe("Workflow 4: Event Import and Task Creation", () => {
     beforeEach(async () => {
-      jest.spyOn(connector, "handleOAuthCallback").mockResolvedValue(undefined);
-      jest.spyOn(connector, "isAuthenticated").mockReturnValue(true);
+      vi.spyOn(connector, "handleOAuthCallback").mockResolvedValue(undefined);
+      vi.spyOn(connector, "isAuthenticated").mockReturnValue(true);
       await connector.handleOAuthCallback("auth-code");
 
       const mockEvents = [
@@ -240,12 +240,12 @@ describe("Google Calendar Sync - Workflow Integration Tests", () => {
         }
       ];
 
-      jest.spyOn(connector, "getEvents").mockResolvedValue(mockEvents as any);
+      vi.spyOn(connector, "getEvents").mockResolvedValue(mockEvents as any);
       await importer.fetchEvents();
 
       importer.selectEvent("event-1");
 
-      jest.spyOn(serializer, "eventToTask").mockImplementation((event: Event) => ({
+      vi.spyOn(serializer, "eventToTask").mockImplementation((event: Event) => ({
         id: `task-${event.id}`,
         title: event.title,
         description: event.description,
@@ -288,8 +288,8 @@ describe("Google Calendar Sync - Workflow Integration Tests", () => {
 
   describe("Workflow 5: Duplicate Detection and Handling", () => {
     beforeEach(async () => {
-      jest.spyOn(connector, "handleOAuthCallback").mockResolvedValue(undefined);
-      jest.spyOn(connector, "isAuthenticated").mockReturnValue(true);
+      vi.spyOn(connector, "handleOAuthCallback").mockResolvedValue(undefined);
+      vi.spyOn(connector, "isAuthenticated").mockReturnValue(true);
       await connector.handleOAuthCallback("auth-code");
 
       // Simulate previously imported event
@@ -312,7 +312,7 @@ describe("Google Calendar Sync - Workflow Integration Tests", () => {
         }
       ];
 
-      jest.spyOn(connector, "getEvents").mockResolvedValue(mockEvents as any);
+      vi.spyOn(connector, "getEvents").mockResolvedValue(mockEvents as any);
       await importer.fetchEvents();
     });
 
@@ -328,7 +328,7 @@ describe("Google Calendar Sync - Workflow Integration Tests", () => {
       importer.selectEvent("event-1");
       importer.selectEvent("event-2");
 
-      jest.spyOn(serializer, "eventToTask").mockImplementation((event: Event) => ({
+      vi.spyOn(serializer, "eventToTask").mockImplementation((event: Event) => ({
         id: `task-${event.id}`,
         title: event.title,
         description: event.description,
@@ -345,8 +345,8 @@ describe("Google Calendar Sync - Workflow Integration Tests", () => {
 
   describe("Workflow 6: Calendar Selection", () => {
     beforeEach(async () => {
-      jest.spyOn(connector, "handleOAuthCallback").mockResolvedValue(undefined);
-      jest.spyOn(connector, "isAuthenticated").mockReturnValue(true);
+      vi.spyOn(connector, "handleOAuthCallback").mockResolvedValue(undefined);
+      vi.spyOn(connector, "isAuthenticated").mockReturnValue(true);
       await connector.handleOAuthCallback("auth-code");
     });
 
@@ -370,7 +370,7 @@ describe("Google Calendar Sync - Workflow Integration Tests", () => {
         }
       ];
 
-      jest.spyOn(connector, "getCalendarList").mockResolvedValue(mockCalendars as any);
+      vi.spyOn(connector, "getCalendarList").mockResolvedValue(mockCalendars as any);
 
       const calendars = await connector.getCalendarList();
 
@@ -386,7 +386,7 @@ describe("Google Calendar Sync - Workflow Integration Tests", () => {
         }
       ];
 
-      jest.spyOn(connector, "getEvents").mockResolvedValue(workEvents as any);
+      vi.spyOn(connector, "getEvents").mockResolvedValue(workEvents as any);
 
       const events = await connector.getEvents(
         new Date("2024-01-15"),
@@ -402,13 +402,13 @@ describe("Google Calendar Sync - Workflow Integration Tests", () => {
   describe("Workflow 7: Error Recovery", () => {
     it("should handle authentication expiration gracefully", async () => {
       // Initial authentication
-      jest.spyOn(connector, "handleOAuthCallback").mockResolvedValue(undefined);
-      jest.spyOn(connector, "isAuthenticated").mockReturnValue(true);
+      vi.spyOn(connector, "handleOAuthCallback").mockResolvedValue(undefined);
+      vi.spyOn(connector, "isAuthenticated").mockReturnValue(true);
       await connector.handleOAuthCallback("auth-code");
 
       // Simulate expired token - API returns 401
       let callCount = 0;
-      jest.spyOn(connector, "getEvents").mockImplementation(async () => {
+      vi.spyOn(connector, "getEvents").mockImplementation(async () => {
         callCount++;
         if (callCount === 1) {
           const error: any = new Error("401 Unauthorized");
@@ -426,7 +426,7 @@ describe("Google Calendar Sync - Workflow Integration Tests", () => {
       });
 
       // Mock token refresh
-      jest.spyOn(connector, "refreshAccessToken").mockResolvedValue("new-token");
+      vi.spyOn(connector, "refreshAccessToken").mockResolvedValue("new-token");
 
       const startDate = new Date("2024-01-15");
       const endDate = new Date("2024-01-16");
@@ -442,7 +442,7 @@ describe("Google Calendar Sync - Workflow Integration Tests", () => {
       let attemptCount = 0;
       const maxAttempts = 3;
 
-      jest.spyOn(connector, "getEvents").mockImplementation(async () => {
+      vi.spyOn(connector, "getEvents").mockImplementation(async () => {
         attemptCount++;
         if (attemptCount < maxAttempts) {
           throw new Error("Network error");
@@ -467,12 +467,12 @@ describe("Google Calendar Sync - Workflow Integration Tests", () => {
   describe("Workflow 8: Re-authentication", () => {
     it("should prompt user to re-authenticate when refresh token expires", async () => {
       // Initial authentication with only access token (no refresh token)
-      jest.spyOn(connector, "handleOAuthCallback").mockResolvedValue(undefined);
-      jest.spyOn(connector, "isAuthenticated").mockReturnValue(true);
+      vi.spyOn(connector, "handleOAuthCallback").mockResolvedValue(undefined);
+      vi.spyOn(connector, "isAuthenticated").mockReturnValue(true);
       await connector.handleOAuthCallback("auth-code");
 
       // Mock token refresh failure (no refresh token available)
-      jest.spyOn(connector, "refreshAccessToken").mockRejectedValue(
+      vi.spyOn(connector, "refreshAccessToken").mockRejectedValue(
         new Error("No refresh token available")
       );
 
@@ -485,8 +485,8 @@ describe("Google Calendar Sync - Workflow Integration Tests", () => {
 
   describe("Workflow 9: All-Day Event Handling", () => {
     beforeEach(async () => {
-      jest.spyOn(connector, "handleOAuthCallback").mockResolvedValue(undefined);
-      jest.spyOn(connector, "isAuthenticated").mockReturnValue(true);
+      vi.spyOn(connector, "handleOAuthCallback").mockResolvedValue(undefined);
+      vi.spyOn(connector, "isAuthenticated").mockReturnValue(true);
       await connector.handleOAuthCallback("auth-code");
 
       const mockEvents = [
@@ -504,7 +504,7 @@ describe("Google Calendar Sync - Workflow Integration Tests", () => {
         }
       ];
 
-      jest.spyOn(connector, "getEvents").mockResolvedValue(mockEvents as any);
+      vi.spyOn(connector, "getEvents").mockResolvedValue(mockEvents as any);
       await importer.fetchEvents();
     });
 
@@ -521,8 +521,8 @@ describe("Google Calendar Sync - Workflow Integration Tests", () => {
 
   describe("Workflow 10: Bulk Import with Partial Failure", () => {
     beforeEach(async () => {
-      jest.spyOn(connector, "handleOAuthCallback").mockResolvedValue(undefined);
-      jest.spyOn(connector, "isAuthenticated").mockReturnValue(true);
+      vi.spyOn(connector, "handleOAuthCallback").mockResolvedValue(undefined);
+      vi.spyOn(connector, "isAuthenticated").mockReturnValue(true);
       await connector.handleOAuthCallback("auth-code");
 
       const mockEvents = [
@@ -546,7 +546,7 @@ describe("Google Calendar Sync - Workflow Integration Tests", () => {
         }
       ];
 
-      jest.spyOn(connector, "getEvents").mockResolvedValue(mockEvents as any);
+      vi.spyOn(connector, "getEvents").mockResolvedValue(mockEvents as any);
       await importer.fetchEvents();
 
       importer.selectEvent("event-1");
@@ -556,7 +556,7 @@ describe("Google Calendar Sync - Workflow Integration Tests", () => {
 
     it("should handle partial import failures gracefully", async () => {
       let callCount = 0;
-      jest.spyOn(serializer, "eventToTask").mockImplementation((event: Event) => {
+      vi.spyOn(serializer, "eventToTask").mockImplementation((event: Event) => {
         callCount++;
         if (callCount === 2) {
           throw new Error("Serialization failed for event-2");

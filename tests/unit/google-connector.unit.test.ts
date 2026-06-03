@@ -10,7 +10,7 @@ describe("GoogleConnector - Unit Tests", () => {
 
   beforeEach(() => {
     connector = new GoogleConnectorImpl("test-client-id", "test-client-secret", "http://localhost:3000/google-callback");
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   describe("OAuth Flow", () => {
@@ -49,7 +49,7 @@ describe("GoogleConnector - Unit Tests", () => {
     });
 
     it("should handle OAuth callback with valid code", async () => {
-      global.fetch = jest.fn((url: string) => {
+      global.fetch = vi.fn((url: string) => {
         if (url.includes("/token")) {
           return Promise.resolve({
             ok: true,
@@ -70,7 +70,7 @@ describe("GoogleConnector - Unit Tests", () => {
     });
 
     it("should throw error on invalid OAuth callback", async () => {
-      global.fetch = jest.fn(() =>
+      global.fetch = vi.fn(() =>
         Promise.resolve({
           ok: false,
           statusText: "Invalid code"
@@ -81,7 +81,7 @@ describe("GoogleConnector - Unit Tests", () => {
     });
 
     it("should handle OAuth callback without refresh token", async () => {
-      global.fetch = jest.fn((url: string) => {
+      global.fetch = vi.fn((url: string) => {
         if (url.includes("/token")) {
           return Promise.resolve({
             ok: true,
@@ -103,7 +103,7 @@ describe("GoogleConnector - Unit Tests", () => {
 
   describe("Token Management", () => {
     it("should store access token securely after authentication", async () => {
-      global.fetch = jest.fn((url: string) => {
+      global.fetch = vi.fn((url: string) => {
         if (url.includes("/token")) {
           return Promise.resolve({
             ok: true,
@@ -130,7 +130,7 @@ describe("GoogleConnector - Unit Tests", () => {
 
     it("should refresh access token when expired", async () => {
       let callCount = 0;
-      global.fetch = jest.fn((url: string) => {
+      global.fetch = vi.fn((url: string) => {
         if (url.includes("/token")) {
           callCount++;
           return Promise.resolve({
@@ -161,7 +161,7 @@ describe("GoogleConnector - Unit Tests", () => {
     });
 
     it("should handle token refresh failure", async () => {
-      global.fetch = jest.fn((url: string) => {
+      global.fetch = vi.fn((url: string) => {
         if (url.includes("/token")) {
           return Promise.resolve({
             ok: true,
@@ -178,7 +178,7 @@ describe("GoogleConnector - Unit Tests", () => {
       await connector.handleOAuthCallback("auth-code");
 
       // Mock refresh failure
-      global.fetch = jest.fn(() =>
+      global.fetch = vi.fn(() =>
         Promise.resolve({
           ok: false,
           statusText: "Invalid refresh token"
@@ -191,7 +191,7 @@ describe("GoogleConnector - Unit Tests", () => {
 
   describe("Disconnection", () => {
     it("should clear tokens and authentication state on disconnect", async () => {
-      global.fetch = jest.fn((url: string) => {
+      global.fetch = vi.fn((url: string) => {
         if (url.includes("/token")) {
           return Promise.resolve({
             ok: true,
@@ -225,7 +225,7 @@ describe("GoogleConnector - Unit Tests", () => {
     });
 
     it("should clear tokens even if revocation fails", async () => {
-      global.fetch = jest.fn((url: string) => {
+      global.fetch = vi.fn((url: string) => {
         if (url.includes("/token")) {
           return Promise.resolve({
             ok: true,
@@ -252,7 +252,7 @@ describe("GoogleConnector - Unit Tests", () => {
 
   describe("Calendar List", () => {
     beforeEach(async () => {
-      global.fetch = jest.fn((url: string) => {
+      global.fetch = vi.fn((url: string) => {
         if (url.includes("/token")) {
           return Promise.resolve({
             ok: true,
@@ -284,7 +284,7 @@ describe("GoogleConnector - Unit Tests", () => {
         }
       ];
 
-      global.fetch = jest.fn((url: string) => {
+      global.fetch = vi.fn((url: string) => {
         if (url.includes("/calendarList")) {
           return Promise.resolve({
             ok: true,
@@ -302,7 +302,7 @@ describe("GoogleConnector - Unit Tests", () => {
     });
 
     it("should return empty array when no calendars found", async () => {
-      global.fetch = jest.fn((url: string) => {
+      global.fetch = vi.fn((url: string) => {
         if (url.includes("/calendarList")) {
           return Promise.resolve({
             ok: true,
@@ -323,7 +323,7 @@ describe("GoogleConnector - Unit Tests", () => {
 
     it("should handle 401 error and retry with refreshed token", async () => {
       let callCount = 0;
-      global.fetch = jest.fn((url: string) => {
+      global.fetch = vi.fn((url: string) => {
         if (url.includes("/calendarList")) {
           callCount++;
           if (callCount === 1) {
@@ -357,7 +357,7 @@ describe("GoogleConnector - Unit Tests", () => {
 
   describe("API Calls", () => {
     beforeEach(async () => {
-      global.fetch = jest.fn((url: string) => {
+      global.fetch = vi.fn((url: string) => {
         if (url.includes("/token")) {
           return Promise.resolve({
             ok: true,
@@ -384,7 +384,7 @@ describe("GoogleConnector - Unit Tests", () => {
         }
       ];
 
-      global.fetch = jest.fn((url: string) => {
+      global.fetch = vi.fn((url: string) => {
         if (url.includes("/events")) {
           return Promise.resolve({
             ok: true,
@@ -412,7 +412,7 @@ describe("GoogleConnector - Unit Tests", () => {
         }
       ];
 
-      global.fetch = jest.fn((url: string) => {
+      global.fetch = vi.fn((url: string) => {
         if (url.includes("/calendars/custom-calendar-id/events")) {
           return Promise.resolve({
             ok: true,
@@ -428,7 +428,7 @@ describe("GoogleConnector - Unit Tests", () => {
     });
 
     it("should return empty array when no events found", async () => {
-      global.fetch = jest.fn((url: string) => {
+      global.fetch = vi.fn((url: string) => {
         if (url.includes("/events")) {
           return Promise.resolve({
             ok: true,
@@ -455,7 +455,7 @@ describe("GoogleConnector - Unit Tests", () => {
         end: { dateTime: "2024-01-15T11:00:00Z" }
       };
 
-      global.fetch = jest.fn((url: string) => {
+      global.fetch = vi.fn((url: string) => {
         if (url.includes("/events/event1")) {
           return Promise.resolve({
             ok: true,
@@ -471,7 +471,7 @@ describe("GoogleConnector - Unit Tests", () => {
 
     it("should handle 401 error and retry with refreshed token", async () => {
       let callCount = 0;
-      global.fetch = jest.fn((url: string) => {
+      global.fetch = vi.fn((url: string) => {
         if (url.includes("/events")) {
           callCount++;
           if (callCount === 1) {
@@ -503,7 +503,7 @@ describe("GoogleConnector - Unit Tests", () => {
     });
 
     it("should throw error on API failure", async () => {
-      global.fetch = jest.fn((url: string) => {
+      global.fetch = vi.fn((url: string) => {
         if (url.includes("/events")) {
           return Promise.resolve({
             ok: false,
@@ -519,13 +519,13 @@ describe("GoogleConnector - Unit Tests", () => {
 
   describe("Error Handling", () => {
     it("should handle network errors gracefully", async () => {
-      global.fetch = jest.fn(() => Promise.reject(new Error("Network error")));
+      global.fetch = vi.fn(() => Promise.reject(new Error("Network error")));
 
       await expect(connector.initiateOAuthFlow()).rejects.toThrow();
     });
 
     it("should handle malformed token response", async () => {
-      global.fetch = jest.fn(() =>
+      global.fetch = vi.fn(() =>
         Promise.resolve({
           ok: true,
           json: () => Promise.resolve({})
@@ -536,7 +536,7 @@ describe("GoogleConnector - Unit Tests", () => {
     });
 
     it("should handle missing event details", async () => {
-      global.fetch = jest.fn((url: string) => {
+      global.fetch = vi.fn((url: string) => {
         if (url.includes("/token")) {
           return Promise.resolve({
             ok: true,
@@ -574,7 +574,7 @@ describe("GoogleConnector - Unit Tests", () => {
     });
 
     it("should handle multiple consecutive authentications", async () => {
-      global.fetch = jest.fn((url: string) => {
+      global.fetch = vi.fn((url: string) => {
         if (url.includes("/token")) {
           return Promise.resolve({
             ok: true,
@@ -598,7 +598,7 @@ describe("GoogleConnector - Unit Tests", () => {
     });
 
     it("should handle rapid token refresh calls", async () => {
-      global.fetch = jest.fn((url: string) => {
+      global.fetch = vi.fn((url: string) => {
         if (url.includes("/token")) {
           return Promise.resolve({
             ok: true,

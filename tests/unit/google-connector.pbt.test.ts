@@ -89,7 +89,7 @@ describe("GoogleConnector - Property-Based Tests", () => {
   describe("Property 2: Secure Token Storage", () => {
     it("should store access token securely after successful OAuth authentication", async () => {
       // Mock fetch for token endpoint
-      global.fetch = jest.fn((url: string) => {
+      global.fetch = vi.fn((url: string) => {
         if (url.includes("/token")) {
           return Promise.resolve({
             ok: true,
@@ -112,7 +112,7 @@ describe("GoogleConnector - Property-Based Tests", () => {
 
     it("should not store token in localStorage or sessionStorage", async () => {
       // Mock fetch
-      global.fetch = jest.fn((url: string) => {
+      global.fetch = vi.fn((url: string) => {
         if (url.includes("/token")) {
           return Promise.resolve({
             ok: true,
@@ -139,7 +139,7 @@ describe("GoogleConnector - Property-Based Tests", () => {
 
     it("should handle token expiration and refresh", async () => {
       let callCount = 0;
-      global.fetch = jest.fn((url: string) => {
+      global.fetch = vi.fn((url: string) => {
         if (url.includes("/token")) {
           callCount++;
           return Promise.resolve({
@@ -167,7 +167,7 @@ describe("GoogleConnector - Property-Based Tests", () => {
 
     it("should include client secret in token request", async () => {
       let capturedBody: string | undefined;
-      global.fetch = jest.fn((url: string, init?: RequestInit) => {
+      global.fetch = vi.fn((url: string, init?: RequestInit) => {
         if (url.includes("/token")) {
           capturedBody = init?.body as string;
           return Promise.resolve({
@@ -191,7 +191,7 @@ describe("GoogleConnector - Property-Based Tests", () => {
   describe("Property 3: Token Cleanup on Disconnect", () => {
     it("should delete all stored tokens and authentication state when user disconnects", async () => {
       // Mock fetch
-      global.fetch = jest.fn((url: string) => {
+      global.fetch = vi.fn((url: string) => {
         if (url.includes("/token")) {
           return Promise.resolve({
             ok: true,
@@ -221,7 +221,7 @@ describe("GoogleConnector - Property-Based Tests", () => {
     });
 
     it("should clear authentication state even if revocation fails", async () => {
-      global.fetch = jest.fn((url: string) => {
+      global.fetch = vi.fn((url: string) => {
         if (url.includes("/token")) {
           return Promise.resolve({
             ok: true,
@@ -254,7 +254,7 @@ describe("GoogleConnector - Property-Based Tests", () => {
     });
 
     it("should clear all caches on disconnect", async () => {
-      global.fetch = jest.fn((url: string) => {
+      global.fetch = vi.fn((url: string) => {
         if (url.includes("/token")) {
           return Promise.resolve({
             ok: true,
@@ -275,7 +275,7 @@ describe("GoogleConnector - Property-Based Tests", () => {
       await connector.handleOAuthCallback("test-auth-code");
 
       // Mock calendar list fetch
-      global.fetch = jest.fn((url: string) => {
+      global.fetch = vi.fn((url: string) => {
         if (url.includes("/calendarList")) {
           return Promise.resolve({
             ok: true,
@@ -297,7 +297,7 @@ describe("GoogleConnector - Property-Based Tests", () => {
 
   describe("Property 4: Calendar List Fetching", () => {
     it("should fetch user's calendar list with proper authentication", async () => {
-      global.fetch = jest.fn((url: string) => {
+      global.fetch = vi.fn((url: string) => {
         if (url.includes("/token")) {
           return Promise.resolve({
             ok: true,
@@ -330,7 +330,7 @@ describe("GoogleConnector - Property-Based Tests", () => {
 
     it("should cache calendar list response", async () => {
       let fetchCount = 0;
-      global.fetch = jest.fn((url: string) => {
+      global.fetch = vi.fn((url: string) => {
         if (url.includes("/token")) {
           return Promise.resolve({
             ok: true,
@@ -368,7 +368,7 @@ describe("GoogleConnector - Property-Based Tests", () => {
 
   describe("Property 5: Event Fetching with Date Range", () => {
     it("should fetch events within specified date range", async () => {
-      global.fetch = jest.fn((url: string) => {
+      global.fetch = vi.fn((url: string) => {
         if (url.includes("/token")) {
           return Promise.resolve({
             ok: true,
@@ -408,7 +408,7 @@ describe("GoogleConnector - Property-Based Tests", () => {
     });
 
     it("should fetch events from custom calendar ID", async () => {
-      global.fetch = jest.fn((url: string) => {
+      global.fetch = vi.fn((url: string) => {
         if (url.includes("/token")) {
           return Promise.resolve({
             ok: true,
@@ -436,7 +436,7 @@ describe("GoogleConnector - Property-Based Tests", () => {
 
     it("should include singleEvents parameter for recurring events", async () => {
       let capturedUrl: string | undefined;
-      global.fetch = jest.fn((url: string, init?: RequestInit) => {
+      global.fetch = vi.fn((url: string, init?: RequestInit) => {
         capturedUrl = url;
         if (url.includes("/token")) {
           return Promise.resolve({

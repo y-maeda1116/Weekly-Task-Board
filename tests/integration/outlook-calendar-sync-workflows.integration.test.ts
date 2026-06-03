@@ -32,7 +32,7 @@ describe("Outlook Calendar Sync - Workflow Integration Tests", () => {
     importer = new CalendarImporterImpl(connector, parser, syncEngine);
     ui = new CalendarSyncUIImpl(importer, syncEngine);
 
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   describe("User Workflow Scenarios", () => {
@@ -43,13 +43,13 @@ describe("Outlook Calendar Sync - Workflow Integration Tests", () => {
      */
     it("should support first-time user setup workflow", async () => {
       // Step 1: User clicks connect button
-      jest.spyOn(connector, "initiateOAuthFlow").mockResolvedValue(undefined);
+      vi.spyOn(connector, "initiateOAuthFlow").mockResolvedValue(undefined);
       await connector.initiateOAuthFlow();
 
       // Step 2: User completes OAuth flow
-      jest.spyOn(connector, "handleOAuthCallback").mockResolvedValue(undefined);
-      jest.spyOn(connector, "isAuthenticated").mockReturnValue(true);
-      jest.spyOn(connector, "getAccessToken").mockReturnValue("new-token");
+      vi.spyOn(connector, "handleOAuthCallback").mockResolvedValue(undefined);
+      vi.spyOn(connector, "isAuthenticated").mockReturnValue(true);
+      vi.spyOn(connector, "getAccessToken").mockReturnValue("new-token");
 
       await connector.handleOAuthCallback("auth-code-from-redirect");
       expect(connector.isAuthenticated()).toBe(true);
@@ -84,7 +84,7 @@ describe("Outlook Calendar Sync - Workflow Integration Tests", () => {
         }
       ];
 
-      jest.spyOn(connector, "getEvents").mockResolvedValue(mockRawEvents);
+      vi.spyOn(connector, "getEvents").mockResolvedValue(mockRawEvents);
       const events = await importer.fetchEvents();
 
       expect(events).toHaveLength(3);
@@ -102,7 +102,7 @@ describe("Outlook Calendar Sync - Workflow Integration Tests", () => {
       expect(selected).toHaveLength(3);
 
       // Step 7: User imports events
-      jest.spyOn(serializer, "eventToTask").mockImplementation((event: Event) => ({
+      vi.spyOn(serializer, "eventToTask").mockImplementation((event: Event) => ({
         id: `task-${event.id}`,
         title: event.title,
         description: event.description,
@@ -130,7 +130,7 @@ describe("Outlook Calendar Sync - Workflow Integration Tests", () => {
      */
     it("should support selective weekly sync", async () => {
       // Setup: User is already authenticated
-      jest.spyOn(connector, "isAuthenticated").mockReturnValue(true);
+      vi.spyOn(connector, "isAuthenticated").mockReturnValue(true);
 
       // Step 1: User selects next week's date range
       const nextMonday = new Date("2024-01-22");
@@ -162,7 +162,7 @@ describe("Outlook Calendar Sync - Workflow Integration Tests", () => {
         }
       ];
 
-      jest.spyOn(connector, "getEvents").mockResolvedValue(mockRawEvents);
+      vi.spyOn(connector, "getEvents").mockResolvedValue(mockRawEvents);
       const events = await importer.fetchEvents();
 
       expect(events).toHaveLength(3);
@@ -176,7 +176,7 @@ describe("Outlook Calendar Sync - Workflow Integration Tests", () => {
       expect(selected).toHaveLength(2);
 
       // Step 4: Import selected events
-      jest.spyOn(serializer, "eventToTask").mockImplementation((event: Event) => ({
+      vi.spyOn(serializer, "eventToTask").mockImplementation((event: Event) => ({
         id: `task-${event.id}`,
         title: event.title,
         description: event.description,
@@ -226,7 +226,7 @@ describe("Outlook Calendar Sync - Workflow Integration Tests", () => {
         }
       ];
 
-      jest.spyOn(connector, "getEvents").mockResolvedValue(mockRawEvents);
+      vi.spyOn(connector, "getEvents").mockResolvedValue(mockRawEvents);
       const events = await importer.fetchEvents();
 
       // Step 3: System detects duplicates
@@ -248,7 +248,7 @@ describe("Outlook Calendar Sync - Workflow Integration Tests", () => {
      * Validates: Requirements 7
      */
     it("should support error recovery during import", async () => {
-      jest.spyOn(connector, "isAuthenticated").mockReturnValue(true);
+      vi.spyOn(connector, "isAuthenticated").mockReturnValue(true);
 
       const monday = new Date("2024-01-15");
       const sunday = new Date("2024-01-21");
@@ -256,7 +256,7 @@ describe("Outlook Calendar Sync - Workflow Integration Tests", () => {
 
       let attemptCount = 0;
 
-      jest.spyOn(connector, "getEvents").mockImplementation(async () => {
+      vi.spyOn(connector, "getEvents").mockImplementation(async () => {
         attemptCount++;
         if (attemptCount === 1) {
           throw new Error("Network timeout");
@@ -292,7 +292,7 @@ describe("Outlook Calendar Sync - Workflow Integration Tests", () => {
      * Validates: Requirements 3, 4, 5
      */
     it("should track progress during bulk import", async () => {
-      jest.spyOn(connector, "isAuthenticated").mockReturnValue(true);
+      vi.spyOn(connector, "isAuthenticated").mockReturnValue(true);
 
       const monday = new Date("2024-01-15");
       const sunday = new Date("2024-01-21");
@@ -307,7 +307,7 @@ describe("Outlook Calendar Sync - Workflow Integration Tests", () => {
         bodyPreview: `Meeting ${i}`
       }));
 
-      jest.spyOn(connector, "getEvents").mockResolvedValue(mockRawEvents);
+      vi.spyOn(connector, "getEvents").mockResolvedValue(mockRawEvents);
       const events = await importer.fetchEvents();
 
       expect(events).toHaveLength(30);
@@ -319,7 +319,7 @@ describe("Outlook Calendar Sync - Workflow Integration Tests", () => {
       expect(selected).toHaveLength(30);
 
       // Import with progress tracking
-      jest.spyOn(serializer, "eventToTask").mockImplementation((event: Event) => ({
+      vi.spyOn(serializer, "eventToTask").mockImplementation((event: Event) => ({
         id: `task-${event.id}`,
         title: event.title,
         description: event.description,
@@ -342,7 +342,7 @@ describe("Outlook Calendar Sync - Workflow Integration Tests", () => {
      * Validates: Requirements 2, 3, 4, 5, 6
      */
     it("should support multi-week sync", async () => {
-      jest.spyOn(connector, "isAuthenticated").mockReturnValue(true);
+      vi.spyOn(connector, "isAuthenticated").mockReturnValue(true);
 
       // Sync 4 weeks at once
       const startDate = new Date("2024-01-15");
@@ -358,7 +358,7 @@ describe("Outlook Calendar Sync - Workflow Integration Tests", () => {
         bodyPreview: `Event ${i}`
       }));
 
-      jest.spyOn(connector, "getEvents").mockResolvedValue(mockRawEvents);
+      vi.spyOn(connector, "getEvents").mockResolvedValue(mockRawEvents);
       const events = await importer.fetchEvents();
 
       expect(events.length).toBeGreaterThan(0);
@@ -376,7 +376,7 @@ describe("Outlook Calendar Sync - Workflow Integration Tests", () => {
      * Validates: Requirements 3, 4, 5
      */
     it("should support selective category-based import", async () => {
-      jest.spyOn(connector, "isAuthenticated").mockReturnValue(true);
+      vi.spyOn(connector, "isAuthenticated").mockReturnValue(true);
 
       const monday = new Date("2024-01-15");
       const sunday = new Date("2024-01-21");
@@ -409,7 +409,7 @@ describe("Outlook Calendar Sync - Workflow Integration Tests", () => {
         }
       ];
 
-      jest.spyOn(connector, "getEvents").mockResolvedValue(mockRawEvents);
+      vi.spyOn(connector, "getEvents").mockResolvedValue(mockRawEvents);
       const events = await importer.fetchEvents();
 
       // Select only work events
@@ -427,21 +427,21 @@ describe("Outlook Calendar Sync - Workflow Integration Tests", () => {
      */
     it("should support disconnect and reconnect workflow", async () => {
       // Initial connection
-      jest.spyOn(connector, "handleOAuthCallback").mockResolvedValue(undefined);
-      jest.spyOn(connector, "isAuthenticated").mockReturnValue(true);
+      vi.spyOn(connector, "handleOAuthCallback").mockResolvedValue(undefined);
+      vi.spyOn(connector, "isAuthenticated").mockReturnValue(true);
 
       await connector.handleOAuthCallback("auth-code");
       expect(connector.isAuthenticated()).toBe(true);
 
       // Disconnect
-      jest.spyOn(connector, "disconnectAccount").mockResolvedValue(undefined);
-      jest.spyOn(connector, "isAuthenticated").mockReturnValue(false);
+      vi.spyOn(connector, "disconnectAccount").mockResolvedValue(undefined);
+      vi.spyOn(connector, "isAuthenticated").mockReturnValue(false);
 
       await connector.disconnectAccount();
       expect(connector.isAuthenticated()).toBe(false);
 
       // Reconnect
-      jest.spyOn(connector, "isAuthenticated").mockReturnValue(true);
+      vi.spyOn(connector, "isAuthenticated").mockReturnValue(true);
       await connector.handleOAuthCallback("new-auth-code");
       expect(connector.isAuthenticated()).toBe(true);
     });
@@ -452,7 +452,7 @@ describe("Outlook Calendar Sync - Workflow Integration Tests", () => {
      * Validates: Requirements 2, 5
      */
     it("should handle modified events on re-import", async () => {
-      jest.spyOn(connector, "isAuthenticated").mockReturnValue(true);
+      vi.spyOn(connector, "isAuthenticated").mockReturnValue(true);
 
       // Original event
       const originalEvent: Event = {
@@ -493,12 +493,12 @@ describe("Outlook Calendar Sync - Workflow Integration Tests", () => {
      */
     it("should complete full sync cycle", async () => {
       // Phase 1: Authentication
-      jest.spyOn(connector, "initiateOAuthFlow").mockResolvedValue(undefined);
+      vi.spyOn(connector, "initiateOAuthFlow").mockResolvedValue(undefined);
       await connector.initiateOAuthFlow();
 
-      jest.spyOn(connector, "handleOAuthCallback").mockResolvedValue(undefined);
-      jest.spyOn(connector, "isAuthenticated").mockReturnValue(true);
-      jest.spyOn(connector, "getAccessToken").mockReturnValue("token");
+      vi.spyOn(connector, "handleOAuthCallback").mockResolvedValue(undefined);
+      vi.spyOn(connector, "isAuthenticated").mockReturnValue(true);
+      vi.spyOn(connector, "getAccessToken").mockReturnValue("token");
 
       await connector.handleOAuthCallback("auth-code");
       expect(connector.isAuthenticated()).toBe(true);
@@ -526,7 +526,7 @@ describe("Outlook Calendar Sync - Workflow Integration Tests", () => {
         }
       ];
 
-      jest.spyOn(connector, "getEvents").mockResolvedValue(mockRawEvents);
+      vi.spyOn(connector, "getEvents").mockResolvedValue(mockRawEvents);
       const events = await importer.fetchEvents();
       expect(events).toHaveLength(2);
 
@@ -536,7 +536,7 @@ describe("Outlook Calendar Sync - Workflow Integration Tests", () => {
       expect(selected).toHaveLength(2);
 
       // Phase 5: Import
-      jest.spyOn(serializer, "eventToTask").mockImplementation((event: Event) => ({
+      vi.spyOn(serializer, "eventToTask").mockImplementation((event: Event) => ({
         id: `task-${event.id}`,
         title: event.title,
         description: event.description,
@@ -557,8 +557,8 @@ describe("Outlook Calendar Sync - Workflow Integration Tests", () => {
       }
 
       // Phase 7: Disconnect
-      jest.spyOn(connector, "disconnectAccount").mockResolvedValue(undefined);
-      jest.spyOn(connector, "isAuthenticated").mockReturnValue(false);
+      vi.spyOn(connector, "disconnectAccount").mockResolvedValue(undefined);
+      vi.spyOn(connector, "isAuthenticated").mockReturnValue(false);
 
       await connector.disconnectAccount();
       expect(connector.isAuthenticated()).toBe(false);

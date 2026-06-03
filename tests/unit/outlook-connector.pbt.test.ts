@@ -65,7 +65,7 @@ describe("OutlookConnector - Property-Based Tests", () => {
   describe("Property 2: Secure Token Storage", () => {
     it("should store access token securely after successful OAuth authentication", async () => {
       // Mock fetch for token endpoint
-      global.fetch = jest.fn((url: string) => {
+      global.fetch = vi.fn((url: string) => {
         if (url.includes("/token")) {
           return Promise.resolve({
             ok: true,
@@ -88,7 +88,7 @@ describe("OutlookConnector - Property-Based Tests", () => {
 
     it("should not store token in localStorage or sessionStorage", async () => {
       // Mock fetch
-      global.fetch = jest.fn((url: string) => {
+      global.fetch = vi.fn((url: string) => {
         if (url.includes("/token")) {
           return Promise.resolve({
             ok: true,
@@ -115,7 +115,7 @@ describe("OutlookConnector - Property-Based Tests", () => {
 
     it("should handle token expiration and refresh", async () => {
       let callCount = 0;
-      global.fetch = jest.fn((url: string) => {
+      global.fetch = vi.fn((url: string) => {
         if (url.includes("/token")) {
           callCount++;
           return Promise.resolve({
@@ -145,7 +145,7 @@ describe("OutlookConnector - Property-Based Tests", () => {
   describe("Property 3: Token Cleanup on Disconnect", () => {
     it("should delete all stored tokens and authentication state when user disconnects", async () => {
       // Mock fetch
-      global.fetch = jest.fn((url: string) => {
+      global.fetch = vi.fn((url: string) => {
         if (url.includes("/token")) {
           return Promise.resolve({
             ok: true,
@@ -175,7 +175,7 @@ describe("OutlookConnector - Property-Based Tests", () => {
     });
 
     it("should clear authentication state even if revocation fails", async () => {
-      global.fetch = jest.fn((url: string) => {
+      global.fetch = vi.fn((url: string) => {
         if (url.includes("/token")) {
           return Promise.resolve({
             ok: true,

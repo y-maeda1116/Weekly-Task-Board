@@ -151,7 +151,7 @@ describe("SyncEngine - Property-Based Tests", () => {
   describe("Property 17: Exponential Backoff Retry Logic", () => {
     it("should retry operation on failure with exponential backoff", async () => {
       let attemptCount = 0;
-      const operation = jest.fn(async () => {
+      const operation = vi.fn(async () => {
         attemptCount++;
         if (attemptCount < 3) {
           throw new Error("Temporary failure");
@@ -166,7 +166,7 @@ describe("SyncEngine - Property-Based Tests", () => {
     });
 
     it("should throw error after max retries exceeded", async () => {
-      const operation = jest.fn(async () => {
+      const operation = vi.fn(async () => {
         throw new Error("Persistent failure");
       });
 
@@ -179,7 +179,7 @@ describe("SyncEngine - Property-Based Tests", () => {
     });
 
     it("should succeed on first attempt without retries", async () => {
-      const operation = jest.fn(async () => "immediate success");
+      const operation = vi.fn(async () => "immediate success");
 
       const result = await syncEngine.retryWithBackoff(operation, 3);
 
@@ -191,7 +191,7 @@ describe("SyncEngine - Property-Based Tests", () => {
       const timings: number[] = [];
       let attemptCount = 0;
 
-      const operation = jest.fn(async () => {
+      const operation = vi.fn(async () => {
         timings.push(Date.now());
         attemptCount++;
         if (attemptCount < 3) {
@@ -219,7 +219,7 @@ describe("SyncEngine - Property-Based Tests", () => {
 
     it("should handle async operations correctly", async () => {
       let callCount = 0;
-      const asyncOperation = jest.fn(async () => {
+      const asyncOperation = vi.fn(async () => {
         callCount++;
         if (callCount < 2) {
           throw new Error("First attempt fails");
@@ -237,7 +237,7 @@ describe("SyncEngine - Property-Based Tests", () => {
 
     it("should preserve error message from final failure", async () => {
       const errorMessage = "Custom error message";
-      const operation = jest.fn(async () => {
+      const operation = vi.fn(async () => {
         throw new Error(errorMessage);
       });
 
@@ -248,7 +248,7 @@ describe("SyncEngine - Property-Based Tests", () => {
 
     it("should handle network errors with retry", async () => {
       let attemptCount = 0;
-      const networkOperation = jest.fn(async () => {
+      const networkOperation = vi.fn(async () => {
         attemptCount++;
         if (attemptCount === 1) {
           throw new Error("Network timeout");
