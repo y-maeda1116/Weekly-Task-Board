@@ -148,7 +148,7 @@ function sortTasks(tasks: Task[], sortBy: SortOption, direction: SortDirection =
         break;
 
       case 'priority':
-        comparison = PRIORITY_VALUES[a.priority] - PRIORITY_VALUES[b.priority];
+        comparison = (PRIORITY_VALUES[a.priority] ?? 0) - (PRIORITY_VALUES[b.priority] ?? 0);
         break;
 
       case 'estimatedTime':
@@ -359,7 +359,7 @@ function getTasksWithTimeOverrun(tasks: Task[]): Task[] {
  * Get tasks due today or earlier
  */
 function getTasksDueSoon(tasks: Task[], today?: string): Task[] {
-  const todayDate = today || new Date().toISOString().split('T')[0];
+  const todayDate = today || new Date().toISOString().slice(0, 10);
 
   return tasks.filter(task => {
     if (!task.due_date) {

@@ -131,7 +131,7 @@ export class TaskBulkMover {
     try {
       const date = new Date(dateString);
       const dayIndex = date.getDay() === 0 ? 6 : date.getDay() - 1;
-      return this.dayNames[dayIndex];
+      return this.dayNames[dayIndex] ?? null;
     } catch {
       return null;
     }

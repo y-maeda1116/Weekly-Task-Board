@@ -74,7 +74,7 @@ export function getCategoryInfo(category: string): {
     'research': { name: '学習・調査', color: '#f1c40f', bgColor: '#fffde7' }
   };
 
-  return categoryMap[category] || categoryMap['task'];
+  return categoryMap[category] || categoryMap['task']!;
 }
 
 /**

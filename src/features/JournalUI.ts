@@ -263,7 +263,8 @@ function appendGapLabelIfNeeded(
 ): void {
   if (index === 0) return;
 
-  const prev = sorted[index - 1];
+  // index === 0 は上記で除外済みのため index-1 >= 0 が保証される
+  const prev = sorted[index - 1]!;
   if (!prev.completedAt) return;
 
   const gapMs = new Date(entry.startedAt).getTime() - new Date(prev.completedAt).getTime();

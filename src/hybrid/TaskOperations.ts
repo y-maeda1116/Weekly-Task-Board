@@ -187,7 +187,8 @@ function updateTask(taskId: string, updates: Partial<Task>): boolean {
       return false;
     }
 
-    tasks[index] = { ...tasks[index], ...updates };
+    // index は上記で -1 が除外済みのため存在が保証される
+    tasks[index] = { ...tasks[index]!, ...updates };
     saveTasks(tasks);
     logger.info(`Task updated: ${taskId}`);
     return true;

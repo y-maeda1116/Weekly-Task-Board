@@ -162,7 +162,8 @@ export class ArchiveComponent {
     const index = this.archivedTasks.findIndex(t => t.id === taskId);
     if (index === -1) return;
 
-    const task = this.archivedTasks[index];
+    // index は上記で -1 が除外済みのため存在が保証される
+    const task = this.archivedTasks[index]!;
 
     // Remove from archive
     this.archivedTasks.splice(index, 1);

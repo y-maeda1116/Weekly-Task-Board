@@ -201,8 +201,10 @@ export class StateManager {
       return false;
     }
 
+    // taskIndex は上記で -1 が除外済みのため存在が保証される
+    const existing = this.state.tasks[taskIndex]!;
     this.state.tasks[taskIndex] = {
-      ...this.state.tasks[taskIndex],
+      ...existing,
       ...updates
     };
 

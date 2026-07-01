@@ -59,7 +59,7 @@ function saveTaskAsTemplate(task: Task, templateName: string): TaskTemplateItem 
       recurrence_pattern: task.recurrence_pattern,
       recurrence_end_date: task.recurrence_end_date,
     },
-    created_date: new Date().toISOString().split('T')[0],
+    created_date: new Date().toISOString().slice(0, 10),
     usage_count: 0,
   };
 
@@ -124,7 +124,7 @@ function duplicateTemplate(
     name: newName,
     description: template.description,
     base_task: { ...template.base_task },
-    created_date: new Date().toISOString().split('T')[0],
+    created_date: new Date().toISOString().slice(0, 10),
     usage_count: 0,
   };
 

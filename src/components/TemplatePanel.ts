@@ -193,7 +193,7 @@ export class TemplatePanel {
    * Use a template to create a new task
    */
   private useTemplate(template: TaskTemplate): void {
-    const today = new Date().toISOString().split('T')[0];
+    const today = new Date().toISOString().slice(0, 10);
     const task = taskManager.createTaskFromTaskTemplate(template, today);
 
     // Add to tasks

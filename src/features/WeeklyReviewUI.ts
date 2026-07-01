@@ -95,7 +95,7 @@ function renderJournalTime(journalStats: JournalTimeStats): void {
   dayList.className = 'review-journal-days';
 
   for (const dateStr of days) {
-    const minutes = journalStats.perDayMinutes[dateStr];
+    const minutes = journalStats.perDayMinutes[dateStr] ?? 0;
     const item = document.createElement('div');
     item.className = 'review-journal-day-item';
     item.textContent = dateStr + ': ' + formatHours(minutes / 60);

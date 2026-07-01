@@ -311,7 +311,7 @@ function renderTimelinePanel(): void {
   sorted.forEach((entry, index) => {
     // 空白時間ラベルの挿入
     if (index > 0) {
-      const prev = sorted[index - 1];
+      const prev = sorted[index - 1]!;
       if (prev.completedAt) {
         const gapMs = new Date(entry.startedAt).getTime() - new Date(prev.completedAt).getTime();
         const gapMin = Math.floor(gapMs / 60000);

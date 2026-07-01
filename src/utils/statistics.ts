@@ -126,7 +126,7 @@ export function calculateDailyWorkTimeForDate(targetDate: Date, tasks: Task[]): 
 
     dailyBreakdown[dateStr] = {
       date: dateStr,
-      day_name: weekdayNames[i],
+      day_name: weekdayNames[i]!,
       estimated_time: 0,
       actual_time: 0,
       completed_count: 0,
@@ -241,7 +241,7 @@ export function calculateDailyWorkTime(tasks: Task[]): DailyWorkTime {
 
     if (!dailyBreakdown[dateStr]) {
       const taskDate = new Date(dateStr);
-      const dayName = ['日', '月', '火', '水', '木', '金', '土'][taskDate.getDay()];
+      const dayName = ['日', '月', '火', '水', '木', '金', '土'][taskDate.getDay()] ?? '';
 
       dailyBreakdown[dateStr] = {
         date: dateStr,
@@ -253,11 +253,13 @@ export function calculateDailyWorkTime(tasks: Task[]): DailyWorkTime {
       };
     }
 
-    dailyBreakdown[dateStr].estimated_time += task.estimated_time;
-    dailyBreakdown[dateStr].actual_time += task.actual_time;
-    dailyBreakdown[dateStr].task_count += 1;
+    // 上記の ensure-block で必ずエントリが作成されるため存在が保証される
+    const entry = dailyBreakdown[dateStr]!;
+    entry.estimated_time += task.estimated_time;
+    entry.actual_time += task.actual_time;
+    entry.task_count += 1;
     if (task.completed) {
-      dailyBreakdown[dateStr].completed_count += 1;
+      entry.completed_count += 1;
     }
 
     totalEstimatedTime += task.estimated_time;

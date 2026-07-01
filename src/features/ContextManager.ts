@@ -64,7 +64,7 @@ function updateWeekdayVisibility(deps: ContextManagerDeps): void {
   dayColumns.forEach((column, index) => {
     if (index >= dayNames.length) return;
 
-    const dayName = dayNames[index];
+    const dayName = dayNames[index]!;
     const isVisible = deps.weekdayManager.isWeekdayVisible(dayName);
 
     if (isVisible) {

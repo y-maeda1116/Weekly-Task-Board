@@ -131,7 +131,7 @@ function createCenterBurst(centerX: number, centerY: number): void {
 }
 
 function showSuccessMessage(): void {
-  const message = SUCCESS_MESSAGES[Math.floor(Math.random() * SUCCESS_MESSAGES.length)];
+  const message = SUCCESS_MESSAGES[Math.floor(Math.random() * SUCCESS_MESSAGES.length)] ?? '';
 
   const el = document.createElement('div');
   el.className = 'success-message';

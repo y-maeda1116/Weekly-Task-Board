@@ -261,7 +261,7 @@ export class WeekdayManager {
    */
   getWeekdayLabel(dayName: Weekday): string {
     const index = this.dayNames.indexOf(dayName);
-    return index !== -1 ? this.dayLabels[index] : '';
+    return index !== -1 ? (this.dayLabels[index] ?? '') : '';
   }
 
   /**
