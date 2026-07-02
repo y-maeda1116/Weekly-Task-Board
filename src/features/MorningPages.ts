@@ -81,14 +81,14 @@ export function extractTodoItems(content: string): string[] {
 
     const bracketMatch = trimmed.match(/\[([^\]]+)\]/);
     if (bracketMatch) {
-      const text = bracketMatch[1].trim();
+      const text = bracketMatch[1]!.trim();
       if (text) items.push(text);
       return items;
     }
 
     const todoMatch = trimmed.match(/^TODO:\s*(.+)$/i);
     if (todoMatch) {
-      const text = todoMatch[1].trim();
+      const text = todoMatch[1]!.trim();
       if (text) items.push(text);
     }
 

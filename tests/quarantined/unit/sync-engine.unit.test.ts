@@ -11,11 +11,11 @@ describe("SyncEngine - Unit Tests", () => {
 
   beforeEach(() => {
     syncEngine = new SyncEngineImpl();
-    jest.useFakeTimers();
+    vi.useFakeTimers();
   });
 
   afterEach(() => {
-    jest.useRealTimers();
+    vi.useRealTimers();
   });
 
   describe("Sync Mapping Recording", () => {
@@ -226,7 +226,7 @@ describe("SyncEngine - Unit Tests", () => {
 
   describe("Retry Logic with Exponential Backoff", () => {
     it("should succeed on first attempt", async () => {
-      const operation = jest.fn().mockResolvedValue("success");
+      const operation = vi.fn().mockResolvedValue("success");
 
       const result = await syncEngine.retryWithBackoff(operation, 3);
 
@@ -259,11 +259,11 @@ describe("SyncEngine - Unit Tests", () => {
       expect(operation).toHaveBeenCalledTimes(3);
 
       // Verify backoff delays
-      expect(jest.advanceTimersByTime).toBeDefined();
+      expect(vi.advanceTimersByTime).toBeDefined();
     });
 
     it("should throw error after max retries exceeded", async () => {
-      const operation = jest.fn().mockRejectedValue(new Error("Persistent error"));
+      const operation = vi.fn().mockRejectedValue(new Error("Persistent error"));
 
       await expect(syncEngine.retryWithBackoff(operation, 2)).rejects.toThrow("Persistent error");
 
@@ -271,7 +271,7 @@ describe("SyncEngine - Unit Tests", () => {
     });
 
     it("should use default max retries of 3", async () => {
-      const operation = jest.fn().mockRejectedValue(new Error("Error"));
+      const operation = vi.fn().mockRejectedValue(new Error("Error"));
 
       await expect(syncEngine.retryWithBackoff(operation)).rejects.toThrow();
 
@@ -279,7 +279,7 @@ describe("SyncEngine - Unit Tests", () => {
     });
 
     it("should handle zero max retries", async () => {
-      const operation = jest.fn().mockRejectedValue(new Error("Error"));
+      const operation = vi.fn().mockRejectedValue(new Error("Error"));
 
       await expect(syncEngine.retryWithBackoff(operation, 0)).rejects.toThrow();
 
@@ -287,7 +287,7 @@ describe("SyncEngine - Unit Tests", () => {
     });
 
     it("should handle operation returning null", async () => {
-      const operation = jest.fn().mockResolvedValue(null);
+      const operation = vi.fn().mockResolvedValue(null);
 
       const result = await syncEngine.retryWithBackoff(operation, 3);
 
@@ -296,7 +296,7 @@ describe("SyncEngine - Unit Tests", () => {
     });
 
     it("should handle operation returning undefined", async () => {
-      const operation = jest.fn().mockResolvedValue(undefined);
+      const operation = vi.fn().mockResolvedValue(undefined);
 
       const result = await syncEngine.retryWithBackoff(operation, 3);
 
@@ -306,7 +306,7 @@ describe("SyncEngine - Unit Tests", () => {
 
     it("should handle operation returning complex object", async () => {
       const complexObject = { data: [1, 2, 3], nested: { value: "test" } };
-      const operation = jest.fn().mockResolvedValue(complexObject);
+      const operation = vi.fn().mockResolvedValue(complexObject);
 
       const result = await syncEngine.retryWithBackoff(operation, 3);
 
@@ -343,7 +343,7 @@ describe("SyncEngine - Unit Tests", () => {
 
     it("should handle operation with side effects", async () => {
       let callCount = 0;
-      const operation = jest.fn(async () => {
+      const operation = vi.fn(async () => {
         callCount++;
         if (callCount < 3) {
           throw new Error("Not ready");
@@ -411,14 +411,14 @@ describe("SyncEngine - Unit Tests", () => {
     });
 
     it("should handle operation that takes long time", async () => {
-      const operation = jest.fn(async () => {
+      const operation = vi.fn(async () => {
         await new Promise(resolve => setTimeout(resolve, 5000));
         return "success";
       });
 
       const promise = syncEngine.retryWithBackoff(operation, 1);
 
-      jest.advanceTimersByTime(5000);
+      vi.advanceTimersByTime(5000);
       const result = await promise;
 
       expect(result).toBe("success");
@@ -435,13 +435,13 @@ describe("SyncEngine - Unit Tests", () => {
     });
 
     it("should handle operation throwing Error with message", async () => {
-      const operation = jest.fn().mockRejectedValue(new Error("Specific error message"));
+      const operation = vi.fn().mockRejectedValue(new Error("Specific error message"));
 
       await expect(syncEngine.retryWithBackoff(operation, 0)).rejects.toThrow("Specific error message");
     });
 
     it("should handle operation throwing Error without message", async () => {
-      const operation = jest.fn().mockRejectedValue(new Error());
+      const operation = vi.fn().mockRejectedValue(new Error());
 
       await expect(syncEngine.retryWithBackoff(operation, 0)).rejects.toThrow();
     });

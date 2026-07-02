@@ -38,7 +38,7 @@ const logger = new HybridLogger();
 
 function cycleSignifier(current: SignifierType | null): SignifierType | null {
   const index = SIGNIFIER_ORDER.indexOf(current);
-  return SIGNIFIER_ORDER[(index + 1) % SIGNIFIER_ORDER.length];
+  return SIGNIFIER_ORDER[(index + 1) % SIGNIFIER_ORDER.length] ?? null;
 }
 
 function getSignifierSymbol(signifier: SignifierType | null): string {

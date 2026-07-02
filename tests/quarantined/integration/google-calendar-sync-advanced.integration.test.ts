@@ -31,7 +31,7 @@ describe("Google Calendar Sync - Advanced Integration Tests", () => {
       syncEngine
     );
 
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   describe("Advanced Feature 1: Recurring Event Expansion", () => {
@@ -291,8 +291,8 @@ describe("Google Calendar Sync - Advanced Integration Tests", () => {
 
   describe("Advanced Feature 10: Multiple Calendar Sync", () => {
     beforeEach(async () => {
-      jest.spyOn(connector, "handleOAuthCallback").mockResolvedValue(undefined);
-      jest.spyOn(connector, "isAuthenticated").mockReturnValue(true);
+      vi.spyOn(connector, "handleOAuthCallback").mockResolvedValue(undefined);
+      vi.spyOn(connector, "isAuthenticated").mockReturnValue(true);
       await connector.handleOAuthCallback("auth-code");
     });
 
@@ -303,7 +303,7 @@ describe("Google Calendar Sync - Advanced Integration Tests", () => {
         { id: "personal", summary: "Personal", accessRole: "owner" }
       ];
 
-      jest.spyOn(connector, "getCalendarList").mockResolvedValue(mockCalendars as any);
+      vi.spyOn(connector, "getCalendarList").mockResolvedValue(mockCalendars as any);
 
       const calendars = await connector.getCalendarList();
 
@@ -335,7 +335,7 @@ describe("Google Calendar Sync - Advanced Integration Tests", () => {
         }
       ];
 
-      jest.spyOn(connector, "getEvents")
+      vi.spyOn(connector, "getEvents")
         .mockResolvedValueOnce(primaryEvents as any)
         .mockResolvedValueOnce(workEvents as any)
         .mockResolvedValueOnce(personalEvents as any);
@@ -391,8 +391,8 @@ describe("Google Calendar Sync - Advanced Integration Tests", () => {
 
   describe("Advanced Feature 12: Large Dataset Handling", () => {
     it("should handle fetching large number of events", async () => {
-      jest.spyOn(connector, "handleOAuthCallback").mockResolvedValue(undefined);
-      jest.spyOn(connector, "isAuthenticated").mockReturnValue(true);
+      vi.spyOn(connector, "handleOAuthCallback").mockResolvedValue(undefined);
+      vi.spyOn(connector, "isAuthenticated").mockReturnValue(true);
       await connector.handleOAuthCallback("auth-code");
 
       // Mock 100 events
@@ -403,7 +403,7 @@ describe("Google Calendar Sync - Advanced Integration Tests", () => {
         end: { dateTime: `2024-01-${String(i + 1).padStart(2, '0')}T11:00:00Z` }
       }));
 
-      jest.spyOn(connector, "getEvents").mockResolvedValue(largeEventSet as any);
+      vi.spyOn(connector, "getEvents").mockResolvedValue(largeEventSet as any);
 
       const events = await connector.getEvents(new Date("2024-01-01"), new Date("2024-01-31"));
 
@@ -461,8 +461,8 @@ describe("Google Calendar Sync - Advanced Integration Tests", () => {
 
   describe("Advanced Feature 15: Concurrent Request Handling", () => {
     it("should handle multiple concurrent event fetches", async () => {
-      jest.spyOn(connector, "handleOAuthCallback").mockResolvedValue(undefined);
-      jest.spyOn(connector, "isAuthenticated").mockReturnValue(true);
+      vi.spyOn(connector, "handleOAuthCallback").mockResolvedValue(undefined);
+      vi.spyOn(connector, "isAuthenticated").mockReturnValue(true);
       await connector.handleOAuthCallback("auth-code");
 
       const mockEvents = [
@@ -474,7 +474,7 @@ describe("Google Calendar Sync - Advanced Integration Tests", () => {
         }
       ];
 
-      jest.spyOn(connector, "getEvents").mockResolvedValue(mockEvents as any);
+      vi.spyOn(connector, "getEvents").mockResolvedValue(mockEvents as any);
 
       // Fetch from multiple calendars concurrently
       const calendars = ["primary", "work", "personal"];
@@ -493,8 +493,8 @@ describe("Google Calendar Sync - Advanced Integration Tests", () => {
 
   describe("Advanced Feature 16: Cache Performance", () => {
     it("should utilize cache for repeated requests", async () => {
-      jest.spyOn(connector, "handleOAuthCallback").mockResolvedValue(undefined);
-      jest.spyOn(connector, "isAuthenticated").mockReturnValue(true);
+      vi.spyOn(connector, "handleOAuthCallback").mockResolvedValue(undefined);
+      vi.spyOn(connector, "isAuthenticated").mockReturnValue(true);
       await connector.handleOAuthCallback("auth-code");
 
       let fetchCount = 0;
@@ -507,7 +507,7 @@ describe("Google Calendar Sync - Advanced Integration Tests", () => {
         }
       ];
 
-      jest.spyOn(connector, "getEvents").mockImplementation(async () => {
+      vi.spyOn(connector, "getEvents").mockImplementation(async () => {
         fetchCount++;
         return mockEvents as any;
       });

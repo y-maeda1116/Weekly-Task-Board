@@ -672,7 +672,7 @@ describe("CalendarSyncUI - Unit Tests", () => {
       const button = ui.renderAuthButton();
       document.body.appendChild(button);
 
-      const clickSpy = jest.fn();
+      const clickSpy = vi.fn();
       button.addEventListener("click", clickSpy);
       button.click();
 

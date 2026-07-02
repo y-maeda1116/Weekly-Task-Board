@@ -132,7 +132,8 @@ export function calculateDailyWorkTimeForDate(
     const completedCount = dayTasks.filter((t) => t.completed).length;
 
     dailyBreakdown[dateStr] = {
-      day_name: dayNames[date.getDay()],
+      // dayNames は7要素固定、date.getDay() は 0-6 のため存在が保証される
+      day_name: dayNames[date.getDay()]!,
       estimated_time: totalEst / 60,
       actual_time: totalAct / 60,
       task_count: dayTasks.length,

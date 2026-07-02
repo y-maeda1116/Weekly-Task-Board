@@ -114,7 +114,8 @@ function getDateForWeekday(weekday: 'monday' | 'tuesday' | 'wednesday' | 'thursd
     sunday: 6
   };
 
-  date.setDate(date.getDate() + weekdayMap[weekday]);
+  // weekday は weekdayMap の全キーと一致するため存在が保証される
+  date.setDate(date.getDate() + weekdayMap[weekday]!);
   return date;
 }
 

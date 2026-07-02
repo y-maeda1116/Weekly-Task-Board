@@ -185,13 +185,13 @@ export function parseTime(timeStr: string): number {
   // Handle decimal format (e.g., "2.5h")
   const decimalMatch = timeStr.match(/^(\d+(?:\.\d+)?)h?$/);
   if (decimalMatch) {
-    return parseFloat(decimalMatch[1]);
+    return parseFloat(decimalMatch[1]!);
   }
 
   // Handle "Xh Ym" format (e.g., "2h 30m")
   const hoursMinutesMatch = timeStr.match(/^(\d+)h\s*(\d+)?m?$/);
   if (hoursMinutesMatch) {
-    const hours = parseInt(hoursMinutesMatch[1], 10);
+    const hours = parseInt(hoursMinutesMatch[1]!, 10);
     const minutes = hoursMinutesMatch[2] ? parseInt(hoursMinutesMatch[2], 10) : 0;
     return hours + minutes / 60;
   }
@@ -199,8 +199,8 @@ export function parseTime(timeStr: string): number {
   // Handle "HH:MM" format (e.g., "2:30")
   const colonMatch = timeStr.match(/^(\d+):(\d+)$/);
   if (colonMatch) {
-    const hours = parseInt(colonMatch[1], 10);
-    const minutes = parseInt(colonMatch[2], 10);
+    const hours = parseInt(colonMatch[1]!, 10);
+    const minutes = parseInt(colonMatch[2]!, 10);
     return hours + minutes / 60;
   }
 

@@ -137,8 +137,9 @@ export function createRenderWeek(deps: RenderWeekDeps) {
       dailyCompletedTotals[dateStr] = 0;
     }
 
-    const startOfWeek = weekDates[0];
-    const endOfWeek = weekDates[6];
+    // weekDates は上記ループで必ず7要素生成されるため [0]/[6] は存在する
+    const startOfWeek = weekDates[0]!;
+    const endOfWeek = weekDates[6]!;
     let weekTitleText = `${startOfWeek.getFullYear()}年${startOfWeek.getMonth() + 1}月${startOfWeek.getDate()}日 - ${endOfWeek.getFullYear()}年${endOfWeek.getMonth() + 1}月${endOfWeek.getDate()}日`;
 
     if (deps.categoryFilter) {
@@ -165,12 +166,13 @@ export function createRenderWeek(deps: RenderWeekDeps) {
 
     dayColumns.forEach((column, index) => {
       const date = weekDates[index];
+      if (!date) return;
       const dateStr = formatDate(date);
       column.dataset.date = dateStr;
 
       const h3 = column.querySelector('h3');
       if (h3) {
-        h3.textContent = `${dayNames[index]} (${date.getMonth() + 1}/${date.getDate()})`;
+        h3.textContent = `${dayNames[index] ?? ''} (${date.getMonth() + 1}/${date.getDate()})`;
         const totalTimeSpan = document.createElement('span');
         totalTimeSpan.className = 'daily-total-time';
         h3.appendChild(totalTimeSpan);
@@ -194,8 +196,8 @@ export function createRenderWeek(deps: RenderWeekDeps) {
     const archivedTasks = w.ArchiveManager?.loadArchivedTasks?.() || [];
     archivedTasks.forEach((task: Task) => {
       if (task.assigned_date && task.assigned_date >= startOfWeekStr && task.assigned_date <= endOfWeekStr && shouldDisplayTask(task, '', deps.categoryFilter)) {
-        dailyCompletedTotals[task.assigned_date] += (task.estimated_time || 0) * 60;
-        dailyTotals[task.assigned_date] += (task.estimated_time || 0) * 60;
+        dailyCompletedTotals[task.assigned_date] = (dailyCompletedTotals[task.assigned_date] ?? 0) + (task.estimated_time || 0) * 60;
+        dailyTotals[task.assigned_date] = (dailyTotals[task.assigned_date] ?? 0) + (task.estimated_time || 0) * 60;
       }
     });
 
@@ -208,7 +210,7 @@ export function createRenderWeek(deps: RenderWeekDeps) {
         const column = document.querySelector(`.day-column[data-date="${task.assigned_date}"]`);
         if (column) {
           column.appendChild(taskElement);
-          dailyTotals[task.assigned_date] += (task.estimated_time || 0) * 60;
+          dailyTotals[task.assigned_date] = (dailyTotals[task.assigned_date] ?? 0) + (task.estimated_time || 0) * 60;
         }
       } else if (task.assigned_date === null && unassignedList) {
         unassignedList.appendChild(taskElement);
@@ -217,9 +219,11 @@ export function createRenderWeek(deps: RenderWeekDeps) {
 
     // Display daily totals
     dayColumns.forEach((column, index) => {
-      const dateStr = formatDate(weekDates[index]);
-      const totalMinutes = dailyTotals[dateStr];
-      const completedMinutes = dailyCompletedTotals[dateStr];
+      const weekDate = weekDates[index];
+      if (!weekDate) return;
+      const dateStr = formatDate(weekDate);
+      const totalMinutes = dailyTotals[dateStr] ?? 0;
+      const completedMinutes = dailyCompletedTotals[dateStr] ?? 0;
       const totalTimeEl = column.querySelector('.daily-total-time');
 
       if (totalTimeEl) {

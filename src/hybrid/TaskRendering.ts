@@ -77,14 +77,14 @@ const PRIORITY_INFO: Record<string, { name: string; icon: string }> = {
  * Get category info
  */
 function getCategoryInfo(category: string): CategoryInfo {
-  return CATEGORY_INFO[category] || CATEGORY_INFO.task;
+  return CATEGORY_INFO[category] || CATEGORY_INFO.task!;
 }
 
 /**
  * Get priority info
  */
 function getPriorityInfo(priority: string): { name: string; icon: string } {
-  return PRIORITY_INFO[priority] || PRIORITY_INFO.medium;
+  return PRIORITY_INFO[priority] || PRIORITY_INFO.medium!;
 }
 
 /**

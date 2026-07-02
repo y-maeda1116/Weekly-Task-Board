@@ -62,7 +62,7 @@ export class BatchProcessor<T, R> {
 
       // Resolve promises
       batch.forEach((entry, index) => {
-        entry.resolve(results[index]);
+        entry.resolve(results[index]!);
       });
     } catch (error) {
       // Reject all promises in batch

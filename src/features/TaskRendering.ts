@@ -45,7 +45,7 @@ function resolveCategoryInfo(category: string): CategoryInfo {
 }
 
 function resolvePriorityInfo(priority: string): PriorityDisplay {
-  return PRIORITY_DISPLAY[priority] ?? PRIORITY_DISPLAY.medium;
+  return PRIORITY_DISPLAY[priority] ?? PRIORITY_DISPLAY.medium!;
 }
 
 export function formatTime(hours: number): string {

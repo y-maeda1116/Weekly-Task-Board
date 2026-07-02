@@ -222,7 +222,8 @@ function showExtractPreview(items: string[]): void {
   registerBtn.addEventListener('click', () => {
     const selectedItems = checkboxes
       .filter((cb) => cb.checked)
-      .map((cb) => items[Number(cb.dataset.index)]);
+      .map((cb) => items[Number(cb.dataset.index)])
+      .filter((item): item is string => item !== undefined);
 
     if (selectedItems.length === 0) {
       showNotification('タスクが選択されていません');

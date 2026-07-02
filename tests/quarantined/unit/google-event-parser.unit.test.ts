@@ -11,7 +11,7 @@ describe("GoogleEventParser - Unit Tests", () => {
 
   beforeEach(() => {
     parser = new GoogleEventParserImpl();
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   describe("Event Parsing", () => {

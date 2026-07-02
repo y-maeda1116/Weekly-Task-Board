@@ -198,7 +198,7 @@ function accumulateCategoryFromTask(
 ): void {
   const category = validateCategory(task.category);
   ensureCategoryEntry(breakdown, category);
-  const entry = breakdown[category];
+  const entry = breakdown[category]!;
   entry.estimated_time += task.estimated_time || 0;
   entry.actual_time += task.actual_time || 0;
   entry.task_count++;
@@ -232,7 +232,7 @@ export function calculateCategoryTimeAnalysis(
     let totalEstimated = 0;
     let totalActual = 0;
     for (const key of Object.keys(categoryBreakdown)) {
-      const entry = categoryBreakdown[key];
+      const entry = categoryBreakdown[key]!;
       entry.variance = roundTo2(entry.actual_time - entry.estimated_time);
       totalEstimated += entry.estimated_time;
       totalActual += entry.actual_time;
@@ -267,7 +267,7 @@ function initDailyBreakdown(monday: Date): Record<string, DailyBreakdownEntry> {
     const dateStr = formatDate(date);
     breakdown[dateStr] = {
       date: dateStr,
-      day_name: DAY_NAMES[i],
+      day_name: DAY_NAMES[i]!,
       estimated_time: 0,
       actual_time: 0,
       variance: 0,
@@ -318,7 +318,7 @@ export function calculateDailyWorkTime(
     let totalEstimated = 0;
     let totalActual = 0;
     for (const key of Object.keys(dailyBreakdown)) {
-      const day = dailyBreakdown[key];
+      const day = dailyBreakdown[key]!;
       day.variance = roundTo2(day.actual_time - day.estimated_time);
       totalEstimated += day.estimated_time;
       totalActual += day.actual_time;

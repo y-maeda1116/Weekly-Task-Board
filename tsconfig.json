@@ -20,7 +20,8 @@
     "noUnusedParameters": false,
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
-    "types": ["jest", "node", "vite/client"],
+    "noUncheckedIndexedAccess": true,
+    "types": ["node", "vite/client"],
     "moduleResolution": "bundler"
   },
   "include": ["src/**/*"],

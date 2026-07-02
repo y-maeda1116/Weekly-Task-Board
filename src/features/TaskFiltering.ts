@@ -187,7 +187,7 @@ export function getTasksWithTimeOverrun(tasks: readonly Task[]): Task[] {
 }
 
 export function getTasksDueSoon(tasks: readonly Task[], today?: string): Task[] {
-  const todayDate = today ?? new Date().toISOString().split('T')[0];
+  const todayDate = today ?? new Date().toISOString().slice(0, 10);
   return tasks.filter(task => task.due_date !== null && task.due_date <= todayDate && !task.completed);
 }
 

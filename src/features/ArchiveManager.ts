@@ -246,7 +246,8 @@ export function restoreTaskFromArchive(
   const taskIndex = archivedTasks.findIndex(task => task.id === taskId);
   if (taskIndex === -1) return;
 
-  const taskToRestore = archivedTasks[taskIndex];
+  // taskIndex は上記で -1 が除外済みのため存在が保証される
+  const taskToRestore = archivedTasks[taskIndex]!;
   taskElement.classList.add('restoring');
 
   setTimeout(() => {
@@ -273,7 +274,7 @@ export function deleteTaskFromArchive(
   const taskIndex = archivedTasks.findIndex(task => task.id === taskId);
   if (taskIndex === -1) return;
 
-  const taskToDelete = archivedTasks[taskIndex];
+  const taskToDelete = archivedTasks[taskIndex]!;
   if (!confirm(`「${taskToDelete.name}」を完全に削除しますか？この操作は取り消せません。`)) return;
 
   taskElement.classList.add('restoring');

@@ -33,7 +33,7 @@ describe("Outlook Calendar Sync - Integration Tests", () => {
     importer = new CalendarImporterImpl(connector, parser, syncEngine);
     ui = new CalendarSyncUIImpl(importer, syncEngine);
 
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   describe("End-to-End Sync Flow Tests", () => {
@@ -47,9 +47,9 @@ describe("Outlook Calendar Sync - Integration Tests", () => {
       const mockAuthCode = "mock-auth-code-12345";
       const mockAccessToken = "mock-access-token-xyz";
 
-      jest.spyOn(connector, "handleOAuthCallback").mockResolvedValue(undefined);
-      jest.spyOn(connector, "isAuthenticated").mockReturnValue(true);
-      jest.spyOn(connector, "getAccessToken").mockReturnValue(mockAccessToken);
+      vi.spyOn(connector, "handleOAuthCallback").mockResolvedValue(undefined);
+      vi.spyOn(connector, "isAuthenticated").mockReturnValue(true);
+      vi.spyOn(connector, "getAccessToken").mockReturnValue(mockAccessToken);
 
       await connector.handleOAuthCallback(mockAuthCode);
       expect(connector.isAuthenticated()).toBe(true);
@@ -76,7 +76,7 @@ describe("Outlook Calendar Sync - Integration Tests", () => {
         }
       ];
 
-      jest.spyOn(connector, "getEvents").mockResolvedValue(mockRawEvents);
+      vi.spyOn(connector, "getEvents").mockResolvedValue(mockRawEvents);
       importer.setDateRange(startDate, endDate);
       const fetchedEvents = await importer.fetchEvents();
 
@@ -93,7 +93,7 @@ describe("Outlook Calendar Sync - Integration Tests", () => {
 
       // Step 4: Import selected events
       const mockTaskStorage: Task[] = [];
-      jest.spyOn(serializer, "eventToTask").mockImplementation((event: Event) => ({
+      vi.spyOn(serializer, "eventToTask").mockImplementation((event: Event) => ({
         id: `task-${event.id}`,
         title: event.title,
         description: event.description,
@@ -156,7 +156,7 @@ describe("Outlook Calendar Sync - Integration Tests", () => {
         }
       ];
 
-      jest.spyOn(importer, "fetchEvents").mockResolvedValue(mockEvents);
+      vi.spyOn(importer, "fetchEvents").mockResolvedValue(mockEvents);
 
       // Select first and third events
       importer.selectEvent(mockEvents[0].id);
@@ -220,7 +220,7 @@ describe("Outlook Calendar Sync - Integration Tests", () => {
       let attemptCount = 0;
       const maxRetries = 3;
 
-      const mockOperation = jest.fn(async () => {
+      const mockOperation = vi.fn(async () => {
         attemptCount++;
         if (attemptCount < 3) {
           throw new Error("Network error");
@@ -243,7 +243,7 @@ describe("Outlook Calendar Sync - Integration Tests", () => {
     it("should handle API failures gracefully", async () => {
       const mockError = new Error("API Error: 401 Unauthorized");
 
-      jest.spyOn(connector, "getEvents").mockRejectedValue(mockError);
+      vi.spyOn(connector, "getEvents").mockRejectedValue(mockError);
 
       const startDate = new Date("2024-01-15");
       const endDate = new Date("2024-01-21");
@@ -297,7 +297,7 @@ describe("Outlook Calendar Sync - Integration Tests", () => {
       importer.selectEvent(mockEvents[0].id);
 
       // Mock serializer to throw error
-      jest.spyOn(serializer, "eventToTask").mockImplementation(() => {
+      vi.spyOn(serializer, "eventToTask").mockImplementation(() => {
         throw new Error("Serialization failed");
       });
 
@@ -415,8 +415,8 @@ describe("Outlook Calendar Sync - Integration Tests", () => {
      */
     it("should complete full weekly sync workflow", async () => {
       // Step 1: Authenticate
-      jest.spyOn(connector, "handleOAuthCallback").mockResolvedValue(undefined);
-      jest.spyOn(connector, "isAuthenticated").mockReturnValue(true);
+      vi.spyOn(connector, "handleOAuthCallback").mockResolvedValue(undefined);
+      vi.spyOn(connector, "isAuthenticated").mockReturnValue(true);
 
       await connector.handleOAuthCallback("auth-code");
       expect(connector.isAuthenticated()).toBe(true);
@@ -452,7 +452,7 @@ describe("Outlook Calendar Sync - Integration Tests", () => {
         }
       ];
 
-      jest.spyOn(connector, "getEvents").mockResolvedValue(mockRawEvents);
+      vi.spyOn(connector, "getEvents").mockResolvedValue(mockRawEvents);
       const events = await importer.fetchEvents();
 
       expect(events).toHaveLength(3);
@@ -464,7 +464,7 @@ describe("Outlook Calendar Sync - Integration Tests", () => {
       expect(selected).toHaveLength(3);
 
       // Step 5: Import events
-      jest.spyOn(serializer, "eventToTask").mockImplementation((event: Event) => ({
+      vi.spyOn(serializer, "eventToTask").mockImplementation((event: Event) => ({
         id: `task-${event.id}`,
         title: event.title,
         description: event.description,
@@ -550,15 +550,15 @@ describe("Outlook Calendar Sync - Integration Tests", () => {
      */
     it("should cleanup tokens and state on disconnect", async () => {
       // Authenticate first
-      jest.spyOn(connector, "handleOAuthCallback").mockResolvedValue(undefined);
-      jest.spyOn(connector, "isAuthenticated").mockReturnValue(true);
+      vi.spyOn(connector, "handleOAuthCallback").mockResolvedValue(undefined);
+      vi.spyOn(connector, "isAuthenticated").mockReturnValue(true);
 
       await connector.handleOAuthCallback("auth-code");
       expect(connector.isAuthenticated()).toBe(true);
 
       // Disconnect
-      jest.spyOn(connector, "disconnectAccount").mockResolvedValue(undefined);
-      jest.spyOn(connector, "isAuthenticated").mockReturnValue(false);
+      vi.spyOn(connector, "disconnectAccount").mockResolvedValue(undefined);
+      vi.spyOn(connector, "isAuthenticated").mockReturnValue(false);
 
       await connector.disconnectAccount();
       expect(connector.isAuthenticated()).toBe(false);
@@ -573,7 +573,7 @@ describe("Outlook Calendar Sync - Integration Tests", () => {
     it("should recover from errors and retry successfully", async () => {
       let callCount = 0;
 
-      jest.spyOn(connector, "getEvents").mockImplementation(async () => {
+      vi.spyOn(connector, "getEvents").mockImplementation(async () => {
         callCount++;
         if (callCount === 1) {
           throw new Error("Network timeout");
@@ -626,7 +626,7 @@ describe("Outlook Calendar Sync - Integration Tests", () => {
         }
       ];
 
-      jest.spyOn(importer, "fetchEvents").mockResolvedValue(mockEvents);
+      vi.spyOn(importer, "fetchEvents").mockResolvedValue(mockEvents);
 
       let uiState = importer.getUIState();
       expect(uiState.isLoading).toBe(false);
@@ -648,7 +648,7 @@ describe("Outlook Calendar Sync - Integration Tests", () => {
     it("should display appropriate error messages", async () => {
       const errorMessage = "Failed to fetch events: Network error";
 
-      jest.spyOn(connector, "getEvents").mockRejectedValue(new Error("Network error"));
+      vi.spyOn(connector, "getEvents").mockRejectedValue(new Error("Network error"));
 
       const startDate = new Date("2024-01-15");
       const endDate = new Date("2024-01-21");
