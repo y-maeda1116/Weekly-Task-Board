@@ -1,6 +1,6 @@
 {
   "name": "weekly-task-board",
-  "version": "1.9.1",
+  "version": "1.9.2",
   "description": "効率的なタスク管理のためのウィークリータスクボード",
   "type": "module",
   "scripts": {
