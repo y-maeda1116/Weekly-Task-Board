@@ -4,7 +4,7 @@
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![TypeScript](https://img.shields.io/badge/TypeScript-7.0%20Beta-blue.svg)
-![Node.js](https://img.shields.io/badge/node.js-18%2B-green.svg)
+![Node.js](https://img.shields.io/badge/node.js-26%2B-green.svg)
 ![Vite](https://img.shields.io/badge/Vite-8-646CFF.svg)
 
 ## 目次
@@ -81,7 +81,7 @@ npm run dev
 |------|-----------|------|
 | **TypeScript** | 7.0 Beta (tsgo) | 型安全な開発 |
 | **Vite** | 8.x | ビルドツール・開発サーバー |
-| **Vitest** | 0.34.x | ユニットテスト |
+| **Vitest** | 4.1.x | ユニットテスト |
 | **Playwright** | 1.59.x | E2E テスト |
 | **LocalStorage** | - | データ永続化 |
 | **Service Worker** | - | PWA オフライン対応 |
