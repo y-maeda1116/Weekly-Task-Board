@@ -32,15 +32,16 @@
     "url": "https://github.com/y-maeda1116/Weekly-Task-Board.git"
   },
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=26.0.0"
   },
   "devDependencies": {
     "@playwright/test": "^1.59.1",
-    "@types/node": "^20.0.0",
+    "@types/node": "^26.0.0",
     "@typescript/native-preview": "^7.0.0-dev.20260421.2",
+    "@vitest/coverage-v8": "^4.1.9",
     "jsdom": "^29.1.1",
     "typescript": "^5.9.3",
     "vite": "^8.0.14",
-    "vitest": "^0.34.0"
+    "vitest": "^4.1.9"
   }
 }
