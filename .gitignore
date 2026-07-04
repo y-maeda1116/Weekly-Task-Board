@@ -52,3 +52,6 @@ sw.js.cache
 # PWA Icons (users can add their own)
 # icons/*.png
 test-results/
+
+# AI tool caches
+.serena/
