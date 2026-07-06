@@ -4,7 +4,7 @@
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![TypeScript](https://img.shields.io/badge/TypeScript-7.0%20Beta-blue.svg)
-![Node.js](https://img.shields.io/badge/node.js-18%2B-green.svg)
+![Node.js](https://img.shields.io/badge/node.js-26%2B-green.svg)
 ![Vite](https://img.shields.io/badge/Vite-8-646CFF.svg)
 
 ## 目次
@@ -81,7 +81,7 @@ npm run dev
 |------|-----------|------|
 | **TypeScript** | 7.0 Beta (tsgo) | 型安全な開発 |
 | **Vite** | 8.x | ビルドツール・開発サーバー |
-| **Vitest** | 0.34.x | ユニットテスト |
+| **Vitest** | 4.1.x | ユニットテスト |
 | **Playwright** | 1.59.x | E2E テスト |
 | **LocalStorage** | - | データ永続化 |
 | **Service Worker** | - | PWA オフライン対応 |
@@ -112,7 +112,7 @@ Weekly-Task-Board/
 │   │   ├── DragDrop.ts         # ドラッグ＆ドロップ
 │   │   ├── storage.ts          # ストレージ操作
 │   │   └── ...
-│   ├── features/               # 機能モジュール（25個）
+│   ├── features/               # 機能モジュール（23個）
 │   │   ├── TaskModal.ts        # タスクモーダル
 │   │   ├── TaskOperations.ts   # タスクCRUD
 │   │   ├── JournalManager.ts   # ジャーナル管理
@@ -123,6 +123,11 @@ Weekly-Task-Board/
 │   │   ├── StateManager.ts     # 状態管理
 │   │   ├── TaskManager.ts      # タスク操作
 │   │   └── DOMManager.ts       # DOM操作
+│   ├── models/                 # ドメインモデル
+│   │   ├── RecurrenceEngine.ts # 繰り返しタスク処理
+│   │   ├── TaskBulkMover.ts    # タスク一括移動
+│   │   └── WeekdayManager.ts   # 曜日管理
+│   ├── hybrid/                 # 移行中のハイブリッド層
 │   ├── types/                  # 型定義
 │   ├── constants/              # 定数
 │   ├── utils/                  # ユーティリティ
@@ -130,7 +135,11 @@ Weekly-Task-Board/
 ├── e2e/                        # Playwright E2E テスト
 ├── tests/                      # Vitest テスト
 │   ├── unit/                   # ユニットテスト
-│   └── integration/            # 統合テスト
+│   ├── quarantined/            # 一時隔離中のテスト（CI グリーン維持のため退避）
+│   │   ├── unit/
+│   │   └── integration/
+│   ├── utils/                  # テストユーティリティ
+│   └── setup.ts                # テスト共通セットアップ
 └── docs/                       # ドキュメント
 ```
 
