@@ -6,7 +6,7 @@
 
 -   **`index.html`**: アプリケーションの基本的なHTML構造を定義します。タスクボードのレイアウト、モーダルウィンドウ、各種ボタンなどが含まれます。
 -   **`style.css`**: アプリケーションのスタイリングを担当します。タスク、カラム、モーダルなどの見た目を定義しています。
--   **`script.js`**: アプリケーションのすべてのロジックを格納する、バニラJavaScriptファイルです。
+-   **`src/`**: アプリケーションのロジックを格納する TypeScript モジュール群です。エントリポイントは `index.html` 末尾の `<script type="module" src="/src/app.ts">` で、Vite がバンドルします。
 
 ## 2. 状態管理
 
@@ -39,6 +39,7 @@
             -   `friday`: `boolean` - 金曜日の表示状態
             -   `saturday`: `boolean` - 土曜日の表示状態
             -   `sunday`: `boolean` - 日曜日の表示状態
+        -   `morningPageEnabled`: `boolean` (optional) - モーニングページ機能の有効状態
     -   この状態は、`localStorage`の`weekly-task-board.settings`キーにJSON形式で保存されます。
     -   `saveSettings()`関数で保存し、`loadSettings()`関数で読み込みます。
 
@@ -94,10 +95,9 @@
 
 ## 5. テスト
 
--   **単体テスト**: `test-weekday-functionality.js` - WeekdayManagerとTaskBulkMoverクラスのテスト
--   **統合テスト**: `test-weekday-integration.html` - UI操作と機能の統合テスト
--   **パフォーマンステスト**: `test-weekday-performance.js` - 応答時間とメモリ使用量のテスト
--   **カテゴリ機能テスト**: `test-category-functionality.js` - カテゴリ機能の動作テスト
+-   **単体・統合・パフォーマンステスト**: `tests/` 配下の `*.test.ts` — Vitest で実行（`npm test`）
+-   **E2Eテスト**: `e2e/*.spec.js` — Playwright で実行（`npm run test:e2e`）
+-   **隔離テスト**: `tests/quarantined/` — jest→vitest 移行が未修復のため CI 対象外
 
 ## 6. アクセシビリティ
 

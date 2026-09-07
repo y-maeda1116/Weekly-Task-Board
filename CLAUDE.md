@@ -4,10 +4,10 @@
 
 - **毎回プッシュ時にバージョンを上げる**（キャッシュ問題防止のため）
 - バージョン上げ対象ファイル:
-  - `index.html` — `?v=X.X.X` のキャッシュバスター、`window.APP_VERSION`
-  - `script.js` — `const APP_VERSION`
-  - `sw.js` — `const CACHE_NAME`
+  - `src/app/init.ts` — `const APP_VERSION`
+  - `public/sw.js` — `const CACHE_NAME`（`weekly-task-board-v1` のバージョン部分）
 - パッチバージョン（1.5.5 → 1.5.6）で増やす
+- バンドルJS/CSSのキャッシュバスターは Vite のビルドハッシュが自動付与するため、`index.html` の手動 `?v=` は不要
 
 ## デプロイ構成
 
