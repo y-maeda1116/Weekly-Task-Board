@@ -3,7 +3,7 @@
  * getShortcutAction のキーマップとガード条件、フォーカス対象判定、オーバーレイ判定のテスト
  */
 
-import { describe, it, expect, afterEach } from "vitest";
+import { describe, it, expect, afterEach, vi, beforeEach } from "vitest";
 import {
   getShortcutAction,
   isEditableTarget,
@@ -202,6 +202,9 @@ describe("initializeKeyboardShortcuts", () => {
     helpModal = document.createElement("div");
     helpModal.id = "keyboard-shortcuts-help";
     helpModal.className = "modal";
+    const closeBtn = document.createElement("span");
+    closeBtn.id = "close-keyboard-shortcuts-help";
+    helpModal.appendChild(closeBtn);
     document.body.appendChild(helpModal);
     dispose = initializeKeyboardShortcuts(deps);
   });
@@ -236,6 +239,28 @@ describe("initializeKeyboardShortcuts", () => {
     expect(notCanceled).toBe(false);
   });
 
+  it("フォーカス中のタスクがなければ Enter はデフォルト動作を抑止しない", () => {
+    const notCanceled = dispatchKey("Enter");
+    expect(notCanceled).toBe(true);
+    expect(deps.toggleTaskCompletion).not.toHaveBeenCalled();
+  });
+
+  it("フォーカス中のタスクがなければ Space はデフォルト動作を抑止しない", () => {
+    const notCanceled = dispatchKey(" ");
+    expect(notCanceled).toBe(true);
+    expect(deps.toggleTaskCompletion).not.toHaveBeenCalled();
+  });
+
+  it("ボタンにフォーカスがあるときの Enter はデフォルト動作を抑止しない", () => {
+    const button = document.createElement("button");
+    document.body.appendChild(button);
+    button.focus();
+    const notCanceled = button.dispatchEvent(
+      new KeyboardEvent("keydown", { key: "Enter", bubbles: true, cancelable: true })
+    );
+    expect(notCanceled).toBe(true);
+  });
+
   it("D キーは確認ダイアログで OK の場合のみ削除する", () => {
     addFocusedTask("task-3");
     vi.stubGlobal("confirm", () => true);
@@ -266,6 +291,15 @@ describe("initializeKeyboardShortcuts", () => {
     dispatchKey("?", { shiftKey: true });
     expect(helpModal.style.display).toBe("block");
     dispatchKey("Escape");
+    expect(helpModal.style.display).toBe("none");
+  });
+
+  it("? キーでヘルプを表示し、閉じボタンで閉じる", () => {
+    dispatchKey("?", { shiftKey: true });
+    expect(helpModal.style.display).toBe("block");
+    document.getElementById("close-keyboard-shortcuts-help")?.dispatchEvent(
+      new MouseEvent("click", { bubbles: true })
+    );
     expect(helpModal.style.display).toBe("none");
   });
 

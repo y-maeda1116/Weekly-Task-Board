@@ -96,50 +96,70 @@ export function initializeKeyboardShortcuts(deps: KeyboardShortcutDeps): () => v
     });
     if (action === null) return;
 
+    let handled = false;
     switch (action) {
       case "createTask":
         deps.openCreateModal();
+        handled = true;
         break;
       case "editTask": {
         const taskId = getFocusedTaskId();
-        if (taskId !== null) deps.openEditModal(taskId);
+        if (taskId !== null) {
+          deps.openEditModal(taskId);
+          handled = true;
+        }
         break;
       }
       case "toggleTask": {
         const taskId = getFocusedTaskId();
-        if (taskId !== null) deps.toggleTaskCompletion(taskId);
+        if (taskId !== null) {
+          deps.toggleTaskCompletion(taskId);
+          handled = true;
+        }
         break;
       }
       case "deleteTask": {
         const taskId = getFocusedTaskId();
         if (taskId !== null && window.confirm("このタスクを削除しますか？")) {
           deps.deleteTask(taskId);
+          handled = true;
         }
         break;
       }
       case "previousWeek":
         deps.navigateWeek(-1);
+        handled = true;
         break;
       case "nextWeek":
         deps.navigateWeek(1);
+        handled = true;
         break;
       case "goToToday":
         deps.goToToday();
+        handled = true;
         break;
       case "showHelp": {
         const help = document.getElementById(HELP_MODAL_ID);
-        if (help) help.style.display = "block";
+        if (help) {
+          help.style.display = "block";
+          handled = true;
+        }
         break;
       }
     }
-    event.preventDefault();
+    if (handled) event.preventDefault();
   };
 
-  document.getElementById("close-keyboard-shortcuts-help")?.addEventListener("click", () => {
+  const closeHelp = (): void => {
     const help = document.getElementById(HELP_MODAL_ID);
     if (help) help.style.display = "none";
-  });
+  };
 
+  const closeButton = document.getElementById("close-keyboard-shortcuts-help");
+  closeButton?.addEventListener("click", closeHelp);
   document.addEventListener("keydown", handler);
-  return () => document.removeEventListener("keydown", handler);
+  return () => {
+    document.removeEventListener("keydown", handler);
+    closeButton?.removeEventListener("click", closeHelp);
+  };
 }
