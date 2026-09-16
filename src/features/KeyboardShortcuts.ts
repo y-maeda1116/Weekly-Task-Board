@@ -62,6 +62,13 @@ export function isAnyOverlayOpen(): boolean {
   );
 }
 
+function getFocusedTaskId(): string | null {
+  const active = document.activeElement;
+  if (!(active instanceof HTMLElement)) return null;
+  const taskElement = active.closest<HTMLElement>("[data-task-id]");
+  return taskElement?.dataset.taskId ?? null;
+}
+
 export interface KeyboardShortcutDeps {
   readonly openCreateModal: () => void;
   readonly openEditModal: (taskId: string) => void;
@@ -127,6 +134,11 @@ export function initializeKeyboardShortcuts(deps: KeyboardShortcutDeps): () => v
     }
     event.preventDefault();
   };
+
+  document.getElementById("close-keyboard-shortcuts-help")?.addEventListener("click", () => {
+    const help = document.getElementById(HELP_MODAL_ID);
+    if (help) help.style.display = "none";
+  });
 
   document.addEventListener("keydown", handler);
   return () => document.removeEventListener("keydown", handler);

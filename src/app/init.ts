@@ -8,6 +8,8 @@ import { SIGNIFIER_ORDER, SIGNIFIER_MAP, SIGNIFIER_LABELS } from '../constants/s
 import { WeekdayManager } from '../models/WeekdayManager';
 import { TaskBulkMover } from '../models/TaskBulkMover';
 import { RecurrenceEngine } from '../models/RecurrenceEngine';
+import { initializeKeyboardShortcuts } from '../features/KeyboardShortcuts';
+import { previousWeek, nextWeek, currentWeek } from '../features/WeekNavigation';
 
 let isRendering = false;
 let migrationNotified = false;
@@ -319,6 +321,27 @@ export function initializeApp(): void {
   w.openEditModal = (task: any) => w.HybridTaskModal?.openEditModal?.(task);
   w.openCreateModal = (date?: string) => w.HybridTaskModal?.openCreateModal?.(date);
   w.closeTaskModal = () => w.HybridTaskModal?.closeModal?.();
+
+  // 17. Keyboard shortcuts
+  try {
+    initializeKeyboardShortcuts({
+      openCreateModal: () => w.openCreateModal?.(),
+      openEditModal: (taskId: string) => w.HybridTaskModal?.openEditModal?.(taskId),
+      toggleTaskCompletion: (taskId: string) => {
+        const checkbox = document.querySelector<HTMLInputElement>(`[data-task-id="${taskId}"] .task-checkbox`);
+        checkbox?.click(); // 既存のチェックボックスハンドラ（アニメーション・保存）を再利用
+      },
+      deleteTask: (taskId: string) => {
+        appContext.tasks = appContext.tasks.filter(t => t.id !== taskId);
+        saveTasksValidated(appContext.tasks);
+        w.tasks = appContext.tasks;
+        renderWeekFn?.();
+        w.updateDashboard?.();
+      },
+      navigateWeek: (direction: -1 | 1) => { direction === -1 ? previousWeek() : nextWeek(); },
+      goToToday: () => currentWeek(),
+    });
+  } catch (e) { console.error('[Init] KeyboardShortcuts failed:', e); }
 
   // Version info
   const APP_VERSION = '1.9.3';
