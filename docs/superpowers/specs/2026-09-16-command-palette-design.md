@@ -93,7 +93,6 @@ combineResults(commands: readonly PaletteItem[], tasks: readonly PaletteItem[], 
 export interface CommandPaletteDeps {
   readonly getTasks: () => readonly Task[];
   readonly goToWeek: (date: Date) => void;
-  readonly openCreateModal: () => void;
 }
 export function initializeCommandPalette(deps: CommandPaletteDeps): () => void; // cleanup を返す
 ```
