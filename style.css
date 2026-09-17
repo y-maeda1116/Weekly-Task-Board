@@ -4784,9 +4784,13 @@ input[type="datetime-local"][readonly]:focus {
 }
 
 /* パレットは show クラスを付与せず display 切替で開くため、
-   .modal-content 既定の opacity:0 を打ち消さないとパネルが不可視になる */
+   .modal-content 既定の opacity:0 を打ち消さないとパネルが不可視になる。
+   base の max-width:500px と margin:5% auto も残存すると width・top の
+   意図を上書きするため併せて打ち消す */
 #command-palette .palette-panel {
     opacity: 1;
+    max-width: none;
+    margin: 0;
 }
 
 #command-palette-input {

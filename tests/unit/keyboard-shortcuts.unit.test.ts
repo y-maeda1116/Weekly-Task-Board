@@ -305,6 +305,22 @@ describe("initializeKeyboardShortcuts", () => {
     expect(helpModal.style.display).toBe("none");
   });
 
+  it("? キーでヘルプに show クラスを付与し、Escape で除去する", () => {
+    dispatchKey("?", { shiftKey: true });
+    expect(helpModal.classList.contains("show")).toBe(true);
+    dispatchKey("Escape");
+    expect(helpModal.classList.contains("show")).toBe(false);
+  });
+
+  it("閉じボタンでも show クラスを除去する", () => {
+    dispatchKey("?", { shiftKey: true });
+    expect(helpModal.classList.contains("show")).toBe(true);
+    document.getElementById("close-keyboard-shortcuts-help")?.dispatchEvent(
+      new MouseEvent("click", { bubbles: true })
+    );
+    expect(helpModal.classList.contains("show")).toBe(false);
+  });
+
   it("入力欄へのキー入力はショートカットとして扱わない", () => {
     const input = document.createElement("input");
     document.body.appendChild(input);

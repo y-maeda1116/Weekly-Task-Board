@@ -93,6 +93,7 @@ export function initializeKeyboardShortcuts(deps: KeyboardShortcutDeps): () => v
     if (event.key === "Escape") {
       const help = document.getElementById(HELP_MODAL_ID);
       if (help && help.style.display === "block") {
+        help.classList.remove("show");
         help.style.display = "none";
       }
       return;
@@ -149,6 +150,7 @@ export function initializeKeyboardShortcuts(deps: KeyboardShortcutDeps): () => v
       case "showHelp": {
         const help = document.getElementById(HELP_MODAL_ID);
         if (help) {
+          help.classList.add("show");
           help.style.display = "block";
           handled = true;
         }
@@ -160,7 +162,10 @@ export function initializeKeyboardShortcuts(deps: KeyboardShortcutDeps): () => v
 
   const closeHelp = (): void => {
     const help = document.getElementById(HELP_MODAL_ID);
-    if (help) help.style.display = "none";
+    if (help) {
+      help.classList.remove("show");
+      help.style.display = "none";
+    }
   };
 
   const closeButton = document.getElementById("close-keyboard-shortcuts-help");
