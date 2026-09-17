@@ -71,6 +71,7 @@
 
             <!-- グループ4: ユーティリティ -->
             <div id="header-group-utility">
+                <button id="palette-toggle" title="検索 (Ctrl+K)">🔎</button>
                 <button id="statistics-toggle" title="統計">📊</button>
                 <button id="template-toggle" title="テンプレート">📄</button>
                 <button id="theme-toggle" title="テーマ切替">🌙</button>
@@ -424,6 +425,14 @@
                 <tr><td style="padding:6px 12px;"><kbd>Ctrl</kbd>+<kbd>K</kbd></td><td>コマンドパレット（検索）</td></tr>
                 <tr><td style="padding:6px 12px;"><kbd>?</kbd></td><td>このヘルプを表示</td></tr>
             </table>
+        </div>
+    </div>
+
+    <!-- コマンドパレットモーダル -->
+    <div id="command-palette" class="modal" style="display:none;">
+        <div class="modal-content palette-panel" role="dialog" aria-modal="true" aria-label="検索パレット">
+            <input type="text" id="command-palette-input" placeholder="タスクやコマンドを検索…" autocomplete="off">
+            <ul id="command-palette-results" role="listbox"></ul>
         </div>
     </div>
 

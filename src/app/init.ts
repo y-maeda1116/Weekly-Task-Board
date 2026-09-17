@@ -8,8 +8,9 @@ import { SIGNIFIER_ORDER, SIGNIFIER_MAP, SIGNIFIER_LABELS } from '../constants/s
 import { WeekdayManager } from '../models/WeekdayManager';
 import { TaskBulkMover } from '../models/TaskBulkMover';
 import { RecurrenceEngine } from '../models/RecurrenceEngine';
+import { initializeCommandPalette } from '../features/CommandPalette';
 import { initializeKeyboardShortcuts } from '../features/KeyboardShortcuts';
-import { previousWeek, nextWeek, currentWeek } from '../features/WeekNavigation';
+import { previousWeek, nextWeek, currentWeek, goToWeek } from '../features/WeekNavigation';
 
 let isRendering = false;
 let migrationNotified = false;
@@ -322,6 +323,12 @@ export function initializeApp(): void {
   w.openCreateModal = (date?: string) => w.HybridTaskModal?.openCreateModal?.(date);
   w.closeTaskModal = () => w.HybridTaskModal?.closeModal?.();
 
+  // Command palette
+  const paletteHandle = initializeCommandPalette({
+    getTasks: () => appContext.tasks,
+    goToWeek: (date: Date) => goToWeek(date),
+  });
+
   // 17. Keyboard shortcuts
   try {
     initializeKeyboardShortcuts({
@@ -340,7 +347,7 @@ export function initializeApp(): void {
       },
       navigateWeek: (direction: -1 | 1) => { direction === -1 ? previousWeek() : nextWeek(); },
       goToToday: () => currentWeek(),
-      openPalette: () => undefined,
+      openPalette: () => paletteHandle.open(),
     });
   } catch (e) { console.error('[Init] KeyboardShortcuts failed:', e); }
 
