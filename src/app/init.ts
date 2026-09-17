@@ -328,6 +328,8 @@ export function initializeApp(): void {
     getTasks: () => appContext.tasks,
     goToWeek: (date: Date) => goToWeek(date),
   });
+  // ヘッダーの検索ボタンからパレットを開く（Ctrl/Cmd+K と対称の入口）
+  document.getElementById("palette-toggle")?.addEventListener("click", () => paletteHandle.open());
 
   // 17. Keyboard shortcuts
   try {
