@@ -76,12 +76,20 @@ export interface KeyboardShortcutDeps {
   readonly deleteTask: (taskId: string) => void;
   readonly navigateWeek: (direction: -1 | 1) => void;
   readonly goToToday: () => void;
+  readonly openPalette: () => void;
 }
 
 const HELP_MODAL_ID = "keyboard-shortcuts-help";
 
 export function initializeKeyboardShortcuts(deps: KeyboardShortcutDeps): () => void {
   const handler = (event: KeyboardEvent): void => {
+    if ((event.ctrlKey || event.metaKey) && (event.key === "k" || event.key === "K")) {
+      if (isAnyOverlayOpen()) return;
+      event.preventDefault();
+      deps.openPalette();
+      return;
+    }
+
     if (event.key === "Escape") {
       const help = document.getElementById(HELP_MODAL_ID);
       if (help && help.style.display === "block") {

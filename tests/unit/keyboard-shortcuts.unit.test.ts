@@ -169,6 +169,7 @@ describe("initializeKeyboardShortcuts", () => {
     deleteTask: ReturnType<typeof vi.fn>;
     navigateWeek: ReturnType<typeof vi.fn>;
     goToToday: ReturnType<typeof vi.fn>;
+    openPalette: ReturnType<typeof vi.fn>;
   }
 
   let deps: ShortcutDeps;
@@ -197,7 +198,8 @@ describe("initializeKeyboardShortcuts", () => {
       toggleTaskCompletion: vi.fn(),
       deleteTask: vi.fn(),
       navigateWeek: vi.fn(),
-      goToToday: vi.fn()
+      goToToday: vi.fn(),
+      openPalette: vi.fn()
     };
     helpModal = document.createElement("div");
     helpModal.id = "keyboard-shortcuts-help";
@@ -324,5 +326,20 @@ describe("initializeKeyboardShortcuts", () => {
     dispose?.();
     dispatchKey("n");
     expect(deps.openCreateModal).not.toHaveBeenCalled();
+  });
+
+  it("Ctrl+K / Cmd+K でコマンドパレットを開く", () => {
+    dispatchKey("k", { ctrlKey: true });
+    dispatchKey("k", { metaKey: true });
+    expect(deps.openPalette).toHaveBeenCalledTimes(2);
+  });
+
+  it("オーバーレイ表示中は Ctrl+K も無視する", () => {
+    const modal = document.createElement("div");
+    modal.className = "modal";
+    modal.style.display = "block";
+    document.body.appendChild(modal);
+    dispatchKey("k", { ctrlKey: true });
+    expect(deps.openPalette).not.toHaveBeenCalled();
   });
 });

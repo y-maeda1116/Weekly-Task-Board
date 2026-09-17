@@ -340,6 +340,7 @@ export function initializeApp(): void {
       },
       navigateWeek: (direction: -1 | 1) => { direction === -1 ? previousWeek() : nextWeek(); },
       goToToday: () => currentWeek(),
+      openPalette: () => undefined,
     });
   } catch (e) { console.error('[Init] KeyboardShortcuts failed:', e); }
 
