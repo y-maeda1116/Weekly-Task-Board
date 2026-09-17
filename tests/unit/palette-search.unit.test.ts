@@ -11,7 +11,7 @@ import {
   combineResults,
   type PaletteItem
 } from "../../src/features/paletteSearch";
-import { PALETTE_COMMANDS, type PaletteCommandDef } from "../../src/features/paletteCommands";
+import { type PaletteCommandDef } from "../../src/features/paletteCommands";
 
 const makeTask = (overrides: Partial<Task> = {}): Task => ({
   id: "t-1",
@@ -84,6 +84,14 @@ describe("searchTasks", () => {
     expect(results.map(r => (r.kind === "task" ? r.task.id : ""))).toEqual(["t-new", "t-old"]);
   });
 
+  it("assigned_date が null のタスクは同スコアの最後尾になる", () => {
+    const results = searchTasks("会議", [
+      makeTask({ id: "t-null", name: "会議A", assigned_date: null }),
+      makeTask({ id: "t-dated", name: "会議B", assigned_date: "2026-09-14" }),
+    ]);
+    expect(results.map(r => (r.kind === "task" ? r.task.id : ""))).toEqual(["t-dated", "t-null"]);
+  });
+
   it("一致ななしは空配列を返す", () => {
     expect(searchTasks("存在しない", [makeTask({ name: "会議" })])).toEqual([]);
   });
@@ -141,8 +149,3 @@ describe("combineResults", () => {
   });
 });
 
-describe("PALETTE_COMMANDS 雛形", () => {
-  it("Task 2 の時点では空配列（Task 3 で充実させる）", () => {
-    expect(PALETTE_COMMANDS).toEqual([]);
-  });
-});
