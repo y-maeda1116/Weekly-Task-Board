@@ -10,7 +10,6 @@ import { TaskBulkMover } from '../models/TaskBulkMover';
 import { RecurrenceEngine } from '../models/RecurrenceEngine';
 import { initializeCommandPalette } from '../features/CommandPalette';
 import { initializeKeyboardShortcuts } from '../features/KeyboardShortcuts';
-import { previousWeek, nextWeek, currentWeek, goToWeek } from '../features/WeekNavigation';
 
 let isRendering = false;
 let migrationNotified = false;
@@ -326,7 +325,11 @@ export function initializeApp(): void {
   // Command palette
   const paletteHandle = initializeCommandPalette({
     getTasks: () => appContext.tasks,
-    goToWeek: (date: Date) => goToWeek(date),
+    goToWeek: (date: Date) => {
+      appContext.currentDate = date;
+      w.currentDate = appContext.currentDate;
+      renderWeekFn?.();
+    },
   });
   // ヘッダーの検索ボタンからパレットを開く（Ctrl/Cmd+K と対称の入口）
   document.getElementById("palette-toggle")?.addEventListener("click", () => paletteHandle.open());
@@ -347,8 +350,18 @@ export function initializeApp(): void {
         renderWeekFn?.();
         w.updateDashboard?.();
       },
-      navigateWeek: (direction: -1 | 1) => { direction === -1 ? previousWeek() : nextWeek(); },
-      goToToday: () => currentWeek(),
+      navigateWeek: (direction: -1 | 1) => {
+        const newMonday = getMonday(appContext.currentDate);
+        newMonday.setDate(newMonday.getDate() + direction * 7);
+        appContext.currentDate = newMonday;
+        w.currentDate = appContext.currentDate;
+        renderWeekFn?.();
+      },
+      goToToday: () => {
+        appContext.currentDate = new Date();
+        w.currentDate = appContext.currentDate;
+        renderWeekFn?.();
+      },
       openPalette: () => paletteHandle.open(),
     });
   } catch (e) { console.error('[Init] KeyboardShortcuts failed:', e); }
