@@ -199,24 +199,17 @@ git push origin main
 
 ## カレンダー同期設定
 
-カレンダー同期を使用するには `config.js` を作成:
-
-```bash
-cp config.example.js config.js
-# config.js に認証情報を設定
-```
+カレンダー同期の認証情報は**アプリ内のカレンダー設定画面**（ヘッダー ≡ メニュー → カレンダー設定）で Client ID を入力します。入力値は LocalStorage に保存され、config ファイルは不要です。
 
 ### Outlook カレンダー
 1. [Azure Portal](https://portal.azure.com) でアプリ登録
-2. Client ID を取得して `config.js` に設定
+2. Client ID を取得してアプリ内のカレンダー設定に入力
 3. `Calendars.Read` パーミッションを追加
 
 ### Google Calendar
 1. [Google Cloud Console](https://console.cloud.google.com/) で OAuth 2.0 クライアント作成
 2. Google Calendar API を有効化
-3. Client ID / Secret を `config.js` に設定
-
-> **注意**: `config.js` は `.gitignore` に含まれています。絶対にコミットしないでください。
+3. Client ID をアプリ内のカレンダー設定に入力
 
 ## セキュリティ
 
