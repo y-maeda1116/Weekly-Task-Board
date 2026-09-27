@@ -8,6 +8,8 @@ import { SIGNIFIER_ORDER, SIGNIFIER_MAP, SIGNIFIER_LABELS } from '../constants/s
 import { WeekdayManager } from '../models/WeekdayManager';
 import { TaskBulkMover } from '../models/TaskBulkMover';
 import { RecurrenceEngine } from '../models/RecurrenceEngine';
+import { initializeCommandPalette } from '../features/CommandPalette';
+import { initializeKeyboardShortcuts } from '../features/KeyboardShortcuts';
 
 let isRendering = false;
 let migrationNotified = false;
@@ -320,8 +322,52 @@ export function initializeApp(): void {
   w.openCreateModal = (date?: string) => w.HybridTaskModal?.openCreateModal?.(date);
   w.closeTaskModal = () => w.HybridTaskModal?.closeModal?.();
 
+  // Command palette
+  const paletteHandle = initializeCommandPalette({
+    getTasks: () => appContext.tasks,
+    goToWeek: (date: Date) => {
+      appContext.currentDate = date;
+      w.currentDate = appContext.currentDate;
+      renderWeekFn?.();
+    },
+  });
+  // ヘッダーの検索ボタンからパレットを開く（Ctrl/Cmd+K と対称の入口）
+  document.getElementById("palette-toggle")?.addEventListener("click", () => paletteHandle.open());
+
+  // 17. Keyboard shortcuts
+  try {
+    initializeKeyboardShortcuts({
+      openCreateModal: () => w.openCreateModal?.(),
+      openEditModal: (taskId: string) => w.HybridTaskModal?.openEditModal?.(taskId),
+      toggleTaskCompletion: (taskId: string) => {
+        const checkbox = document.querySelector<HTMLInputElement>(`[data-task-id="${taskId}"] .task-checkbox`);
+        checkbox?.click(); // 既存のチェックボックスハンドラ（アニメーション・保存）を再利用
+      },
+      deleteTask: (taskId: string) => {
+        appContext.tasks = appContext.tasks.filter(t => t.id !== taskId);
+        saveTasksValidated(appContext.tasks);
+        w.tasks = appContext.tasks;
+        renderWeekFn?.();
+        w.updateDashboard?.();
+      },
+      navigateWeek: (direction: -1 | 1) => {
+        const newMonday = getMonday(appContext.currentDate);
+        newMonday.setDate(newMonday.getDate() + direction * 7);
+        appContext.currentDate = newMonday;
+        w.currentDate = appContext.currentDate;
+        renderWeekFn?.();
+      },
+      goToToday: () => {
+        appContext.currentDate = new Date();
+        w.currentDate = appContext.currentDate;
+        renderWeekFn?.();
+      },
+      openPalette: () => paletteHandle.open(),
+    });
+  } catch (e) { console.error('[Init] KeyboardShortcuts failed:', e); }
+
   // Version info
-  const APP_VERSION = '1.9.3';
+  const APP_VERSION = '1.9.6';
   const BUILD_DATE = '2026-05-28';
   w.APP_VERSION = APP_VERSION;
   w.BUILD_DATE = BUILD_DATE;

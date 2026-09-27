@@ -4765,3 +4765,82 @@ input[type="datetime-local"][readonly]:focus {
   font-style: italic;
 }
 
+/* ===== Command Palette ===== */
+#command-palette {
+    z-index: 2000;
+}
+
+#command-palette .palette-panel {
+    position: absolute;
+    top: 15%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: min(560px, calc(100vw - 32px));
+    padding: 0;
+    max-height: 70vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+/* パレットは show クラスを付与せず display 切替で開くため、
+   .modal-content 既定の opacity:0 を打ち消さないとパネルが不可視になる。
+   base の max-width:500px と margin:5% auto も残存すると width・top の
+   意図を上書きするため併せて打ち消す */
+#command-palette .palette-panel {
+    opacity: 1;
+    max-width: none;
+    margin: 0;
+}
+
+#command-palette-input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 14px 16px;
+    border: none;
+    border-bottom: 1px solid var(--border-color);
+    border-radius: 8px 8px 0 0;
+    font-size: 16px;
+    background: transparent;
+    color: var(--font-color);
+    outline: none;
+}
+
+#command-palette-results {
+    list-style: none;
+    margin: 0;
+    padding: 4px 0;
+    max-height: 320px;
+    overflow-y: auto;
+}
+
+#command-palette-results .palette-item {
+    padding: 10px 16px;
+    cursor: pointer;
+    color: var(--font-color);
+    font-size: 14px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+#command-palette-results .palette-item-selected {
+    background: rgba(74, 144, 226, 0.18);
+}
+
+#command-palette-results .palette-no-result {
+    padding: 14px 16px;
+    color: var(--font-color);
+    opacity: 0.6;
+}
+
+.palette-highlight {
+    outline: 2px solid #4a90e2;
+    outline-offset: 1px;
+    animation: palettePulse 0.6s ease-in-out 3;
+}
+
+@keyframes palettePulse {
+    50% { background-color: rgba(74, 144, 226, 0.25); }
+}
+

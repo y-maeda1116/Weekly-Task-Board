@@ -18,7 +18,8 @@
       "Bash(kill %1)",
       "Bash(python3 *)",
       "mcp__plugin_playwright_playwright__browser_navigate",
-      "Bash(gh run *)"
+      "Bash(gh run *)",
+      "mcp__serena__replace_content"
     ]
   }
 }
