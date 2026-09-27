@@ -178,4 +178,21 @@ describe("initializeCommandPalette", () => {
     vi.advanceTimersByTime(150);
     expect(resultItems().length).toBe(before); // フィルタされずコマンド一覧のまま
   });
+
+  it("選択済み項目への mouseenter では再描画しない", () => {
+    handle!.open();
+    const first = resultItems()[0]!; // index 0 が選択状態
+    first.dispatchEvent(new MouseEvent("mouseenter"));
+    // 再描画されていると DOM が入れ替わり、first は結果リストから外れる
+    expect(resultItems()[0]).toBe(first);
+  });
+
+  it("未選択項目への mouseenter では選択が移動する", () => {
+    handle!.open();
+    const before = resultItems();
+    before[1]!.dispatchEvent(new MouseEvent("mouseenter"));
+    const after = resultItems();
+    expect(after[1]?.classList.contains("palette-item-selected")).toBe(true);
+    expect(after[0]).not.toBe(before[0]); // 再描画で DOM が組み替わる
+  });
 });

@@ -86,6 +86,9 @@ export function initializeCommandPalette(deps: CommandPaletteDeps): CommandPalet
       }
       li.addEventListener("click", () => selectItem(item));
       li.addEventListener("mouseenter", () => {
+        // 既選択の項目に留まっている間は再描画しない（再描画でノードが入れ替わると
+        // mouseenter が連発し、そのたびに全項目が再構築されるため）
+        if (index === selectedIndex) return;
         selectedIndex = index;
         renderResults();
       });
