@@ -17,7 +17,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="タスクボード">
     
-  <script type="module" crossorigin src="/assets/index-DgNQ2pIx.js"></script>
+  <script type="module" crossorigin src="/assets/index-C3Alsdha.js"></script>
   <link rel="stylesheet" crossorigin href="/assets/index-r-sOZX1O.css">
 </head>
 <body>
@@ -436,20 +436,6 @@
             <ul id="command-palette-results" role="listbox"></ul>
         </div>
     </div>
-
-    <!-- カレンダー連携設定（認証情報） - ローカルで config.js を作成してください -->
-    <script>
-        // config.js が存在する場合のみ読み込む
-        const configScript = document.createElement('script');
-        configScript.src = 'config.js';
-        configScript.onerror = function() {
-            console.info('ℹ️ config.js が見つかりません（カレンダー連携は利用できません）');
-            // config.example.js を参考に config.js を作成するとカレンダー連携が有効になります
-            window.CALENDAR_CONFIG = null;
-        };
-        configScript.defer = true;
-        document.head.appendChild(configScript);
-    </script>
 
     <!-- Vite Entry Point - all TypeScript modules bundled here -->
 </body>
