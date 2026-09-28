@@ -28,11 +28,6 @@
   "exclude": [
     "node_modules",
     "dist",
-    "tests",
-    "src/components/CalendarImporter.ts",
-    "src/components/CalendarSyncUI.ts",
-    "src/components/EventSerializer.ts",
-    "src/components/GoogleEventParser.ts",
-    "src/components/SyncEngine.ts"
+    "tests"
   ]
 }
