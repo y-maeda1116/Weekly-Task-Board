@@ -112,32 +112,23 @@ Weekly-Task-Board/
 │   │   ├── DragDrop.ts         # ドラッグ＆ドロップ
 │   │   ├── storage.ts          # ストレージ操作
 │   │   └── ...
-│   ├── features/               # 機能モジュール（23個）
+│   ├── features/               # 機能モジュール（27個）
 │   │   ├── TaskModal.ts        # タスクモーダル
 │   │   ├── TaskOperations.ts   # タスクCRUD
 │   │   ├── JournalManager.ts   # ジャーナル管理
 │   │   ├── ThemeManager.ts     # テーマ管理
 │   │   ├── PWASetup.ts         # PWA設定
 │   │   └── ...
-│   ├── core/                   # コアクラス
-│   │   ├── StateManager.ts     # 状態管理
-│   │   ├── TaskManager.ts      # タスク操作
-│   │   └── DOMManager.ts       # DOM操作
 │   ├── models/                 # ドメインモデル
 │   │   ├── RecurrenceEngine.ts # 繰り返しタスク処理
 │   │   ├── TaskBulkMover.ts    # タスク一括移動
 │   │   └── WeekdayManager.ts   # 曜日管理
-│   ├── hybrid/                 # 移行中のハイブリッド層
 │   ├── types/                  # 型定義
 │   ├── constants/              # 定数
-│   ├── utils/                  # ユーティリティ
-│   └── components/             # UIコンポーネント
+│   └── utils/                  # ユーティリティ
 ├── e2e/                        # Playwright E2E テスト
 ├── tests/                      # Vitest テスト
 │   ├── unit/                   # ユニットテスト
-│   ├── quarantined/            # 一時隔離中のテスト（CI グリーン維持のため退避）
-│   │   ├── unit/
-│   │   └── integration/
 │   ├── utils/                  # テストユーティリティ
 │   └── setup.ts                # テスト共通セットアップ
 └── docs/                       # ドキュメント
