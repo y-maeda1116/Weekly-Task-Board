@@ -1,7 +1,6 @@
 import type { SignifierType, Task } from '../types';
 import { SIGNIFIER_ORDER, SIGNIFIER_MAP, SIGNIFIER_LABELS } from '../constants/signifiers';
-
-const STORAGE_KEY = 'weekly-task-board.tasks';
+import { loadTasksFromStorage, saveTasksToStorage } from '../app/storage';
 
 export function cycleSignifier(current: SignifierType | null): SignifierType | null {
   const index = SIGNIFIER_ORDER.indexOf(current);
@@ -20,17 +19,14 @@ export function getSignifierLabel(signifier: SignifierType | null | undefined): 
 
 export function updateTaskSignifier(taskId: string, signifier: SignifierType | null): boolean {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return false;
-
-    const tasks: Task[] = JSON.parse(raw);
+    const tasks = loadTasksFromStorage();
     const index = tasks.findIndex((t) => t.id === taskId);
     if (index === -1) return false;
 
     const updated = tasks.map((t, i) =>
       i === index ? { ...t, signifier } : t,
     );
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+    saveTasksToStorage(updated);
 
     console.log(`[Signifier] Updated: ${taskId} -> ${signifier}`);
     return true;

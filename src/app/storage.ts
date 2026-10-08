@@ -4,6 +4,20 @@ import type { Settings } from '../types/storage';
 
 const JOURNALS_STORAGE_KEY = 'weekly-task-board.journals';
 
+function loadJsonArray<T>(key: string): T[] {
+  const raw = localStorage.getItem(key);
+  if (!raw) return [];
+  try {
+    return JSON.parse(raw);
+  } catch {
+    return [];
+  }
+}
+
+function saveJson(key: string, value: unknown): void {
+  localStorage.setItem(key, JSON.stringify(value));
+}
+
 export function loadSettings(): Settings {
   const settingsJson = localStorage.getItem(StorageKeys.SETTINGS);
   if (!settingsJson) {
@@ -26,49 +40,39 @@ export function loadSettings(): Settings {
 }
 
 export function saveSettings(settings: Settings): void {
-  localStorage.setItem(StorageKeys.SETTINGS, JSON.stringify(settings));
+  saveJson(StorageKeys.SETTINGS, settings);
 }
 
 export function loadTasksFromStorage(): Task[] {
-  const raw = localStorage.getItem(StorageKeys.TASKS);
-  if (!raw) return [];
-  try {
-    return JSON.parse(raw);
-  } catch {
-    return [];
-  }
+  return loadJsonArray<Task>(StorageKeys.TASKS);
 }
 
 export function saveTasksToStorage(tasks: Task[]): void {
-  localStorage.setItem(StorageKeys.TASKS, JSON.stringify(tasks));
+  saveJson(StorageKeys.TASKS, tasks);
 }
 
-export function loadTemplates(): any[] {
-  const raw = localStorage.getItem(StorageKeys.TEMPLATES);
-  if (!raw) return [];
-  try {
-    return JSON.parse(raw);
-  } catch {
-    return [];
-  }
+export function loadArchivedTasksFromStorage<T extends Task = Task>(): T[] {
+  return loadJsonArray<T>(StorageKeys.ARCHIVE);
 }
 
-export function saveTemplates(templates: any[]): void {
-  localStorage.setItem(StorageKeys.TEMPLATES, JSON.stringify(templates));
+export function saveArchivedTasksToStorage(tasks: Task[]): void {
+  saveJson(StorageKeys.ARCHIVE, tasks);
+}
+
+export function loadTemplates<T = any>(): T[] {
+  return loadJsonArray<T>(StorageKeys.TEMPLATES);
+}
+
+export function saveTemplates<T>(templates: T[]): void {
+  saveJson(StorageKeys.TEMPLATES, templates);
 }
 
 export function loadJournals(): any[] {
-  const raw = localStorage.getItem(JOURNALS_STORAGE_KEY);
-  if (!raw) return [];
-  try {
-    return JSON.parse(raw);
-  } catch {
-    return [];
-  }
+  return loadJsonArray(JOURNALS_STORAGE_KEY);
 }
 
 export function saveJournals(journals: any[]): void {
-  localStorage.setItem(JOURNALS_STORAGE_KEY, JSON.stringify(journals));
+  saveJson(JOURNALS_STORAGE_KEY, journals);
 }
 
 export {

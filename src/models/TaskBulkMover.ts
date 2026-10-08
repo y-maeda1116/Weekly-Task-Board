@@ -5,7 +5,7 @@
 
 import type { Task } from '../types';
 import { formatDate } from '../utils/date';
-import { TaskStorage } from '../utils/storage';
+import { saveTasksToStorage } from '../app/storage';
 import { logger } from '../utils/logger';
 
 /**
@@ -55,7 +55,7 @@ export class TaskBulkMover {
       });
 
       if (movedCount > 0) {
-        TaskStorage.saveTasks(tasks);
+        saveTasksToStorage(tasks);
       }
 
       return movedCount;
@@ -95,7 +95,7 @@ export class TaskBulkMover {
     });
 
     if (movedCount > 0) {
-      TaskStorage.saveTasks(tasks);
+      saveTasksToStorage(tasks);
     }
 
     return movedCount;

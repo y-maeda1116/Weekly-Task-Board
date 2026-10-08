@@ -1,9 +1,7 @@
 import type { Task } from '../types';
 import { getMonday, formatDate } from '../utils/date';
-import { loadTasksFromStorage } from '../app/storage';
+import { loadTasksFromStorage, loadArchivedTasksFromStorage } from '../app/storage';
 import { getCategoryInfo } from '../utils/validation';
-import { StorageService } from '../utils/storage';
-import { StorageKeys } from '../types';
 
 interface CompletionRateResult {
   total_tasks: number;
@@ -38,17 +36,7 @@ interface DailyWorkTime {
 }
 
 function loadAllTasks(): Task[] {
-  const active = loadTasksFromStorage();
-  const archivedRaw = StorageService.getItem<string>(StorageKeys.ARCHIVE);
-  let archived: Task[] = [];
-  if (archivedRaw) {
-    try {
-      archived = JSON.parse(archivedRaw) as Task[];
-    } catch {
-      archived = [];
-    }
-  }
-  return [...active, ...archived];
+  return [...loadTasksFromStorage(), ...loadArchivedTasksFromStorage()];
 }
 
 function filterWeekTasks(tasks: Task[], targetDate: Date): Task[] {

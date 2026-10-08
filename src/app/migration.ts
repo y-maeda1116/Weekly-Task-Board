@@ -2,8 +2,6 @@ import type { Task } from '../types';
 import type { MigrationHistory } from '../types/storage';
 import { StorageKeys } from '../types/storage';
 
-const CURRENT_MIGRATION_VERSION = '1.1';
-
 function getMigrationHistory(): MigrationHistory {
   const raw = localStorage.getItem(StorageKeys.MIGRATION_HISTORY);
   if (!raw) {
@@ -18,16 +16,6 @@ function getMigrationHistory(): MigrationHistory {
 
 function saveMigrationHistory(history: MigrationHistory): void {
   localStorage.setItem(StorageKeys.MIGRATION_HISTORY, JSON.stringify(history));
-}
-
-export function backupTasksBeforeMigration(): string {
-  const timestamp = new Date().toISOString();
-  const backupKey = `weekly-task-board.backup-${timestamp}`;
-  const currentTasks = localStorage.getItem(StorageKeys.TASKS);
-  if (currentTasks) {
-    localStorage.setItem(backupKey, currentTasks);
-  }
-  return backupKey;
 }
 
 function migrateTasksAddActualTime(tasksData: any[]): any[] {
@@ -79,13 +67,4 @@ export function executeMigrations(tasksData: any[]): any[] {
   }
 
   return migrated;
-}
-
-export function getMigrationStatus(): { version: string; lastDate: string | null; count: number } {
-  const history = getMigrationHistory();
-  return {
-    version: history.version,
-    lastDate: history.lastMigrationDate,
-    count: history.migrations.length,
-  };
 }
