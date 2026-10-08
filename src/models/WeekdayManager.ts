@@ -20,8 +20,8 @@ export type WeekdayChangeCallback = (dayName: Weekday, visible: boolean) => void
  * Handles weekday visibility settings and related operations
  */
 export class WeekdayManager {
-  private dayNames: readonly Weekday[];
-  private dayLabels: readonly string[];
+  readonly dayNames: readonly Weekday[];
+  readonly dayLabels: readonly string[];
   private weekdaySettings: WeekdayVisibility = {
     monday: true,
     tuesday: true,

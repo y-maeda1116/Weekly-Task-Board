@@ -4,6 +4,15 @@ import { createTaskElement } from './TaskRenderer';
 import { shouldDisplayTask } from './taskStorage';
 import { getCategoryInfo } from '../utils/validation';
 import { handleDragOver, handleDragLeave, createDropHandler } from './DragDrop';
+import { archiveCallbacks, updateDashboard } from './actions';
+import { loadArchivedTasks } from '../features/ArchiveManager';
+import { updateGridColumns } from '../features/ContextManager';
+import { injectStartButtons } from '../features/JournalUI';
+import { getIncompleteTasksForWeek } from '../features/TaskMigration';
+import type { WeekdayManager } from '../models/WeekdayManager';
+import type { TaskBulkMover } from '../models/TaskBulkMover';
+import type { RecurrenceEngine } from '../models/RecurrenceEngine';
+import type { TaskRendererCallbacks } from './TaskRenderer';
 
 interface RenderWeekDeps {
   tasks: Task[];
@@ -16,9 +25,10 @@ interface RenderWeekDeps {
   setIsRendering: (v: boolean) => void;
   migrationNotified: boolean;
   setMigrationNotified: (v: boolean) => void;
-  recurrenceEngine: any;
-  weekdayManager: any;
-  taskRendererCallbacks: any;
+  recurrenceEngine: RecurrenceEngine;
+  weekdayManager: WeekdayManager;
+  taskBulkMover: TaskBulkMover;
+  taskRendererCallbacks: TaskRendererCallbacks;
 }
 
 function appendDailyTimeSpans(parent: Element, totalMinutes: number, completedMinutes: number): void {
@@ -152,7 +162,7 @@ export function createRenderWeek(deps: RenderWeekDeps) {
     if (deps.weekdayManager) {
       const hiddenDays = deps.weekdayManager.getHiddenWeekdays();
       if (hiddenDays.length > 0) {
-        const hiddenLabels = hiddenDays.map((day: string) =>
+        const hiddenLabels = hiddenDays.map((day) =>
           deps.weekdayManager.dayLabels[deps.weekdayManager.dayNames.indexOf(day)]
         );
         weekTitleText += ` | 非表示: ${hiddenLabels.join('・')}曜日`;
@@ -180,7 +190,7 @@ export function createRenderWeek(deps: RenderWeekDeps) {
       }
 
       if (deps.weekdayManager) {
-        const dayName = deps.weekdayManager.dayNames[index];
+        const dayName = deps.weekdayManager.dayNames[index]!;
         const isVisible = deps.weekdayManager.isWeekdayVisible(dayName);
         if (isVisible) {
           column.classList.remove('hidden', 'hiding');
@@ -193,8 +203,7 @@ export function createRenderWeek(deps: RenderWeekDeps) {
     });
 
     // Archived tasks time
-    const w = window as any;
-    const archivedTasks = w.ArchiveManager?.loadArchivedTasks?.() || [];
+    const archivedTasks = loadArchivedTasks(archiveCallbacks);
     archivedTasks.forEach((task: Task) => {
       if (task.assigned_date && task.assigned_date >= startOfWeekStr && task.assigned_date <= endOfWeekStr && shouldDisplayTask(task, '', deps.categoryFilter)) {
         dailyCompletedTotals[task.assigned_date] = (dailyCompletedTotals[task.assigned_date] ?? 0) + (task.estimated_time || 0) * 60;
@@ -242,24 +251,23 @@ export function createRenderWeek(deps: RenderWeekDeps) {
 
     if (datePicker) datePicker.value = formatDate(currentDate);
 
-    const w2 = window as any;
-    try { w2.updateGridColumns?.(deps.weekdayManager ? {
+    try { updateGridColumns({
       weekdayManager: deps.weekdayManager,
-      taskBulkMover: w2.taskBulkMover,
+      taskBulkMover: deps.taskBulkMover,
       getTasks: () => deps.tasks,
       saveTasks: deps.saveTasks,
       renderWeek: () => renderWeek(),
-    } : undefined); } catch {}
-    w2.updateDashboard?.();
-    w2.HybridJournalUI?.injectStartButtons?.();
+    }); } catch {}
+    updateDashboard();
+    injectStartButtons();
 
     // Check incomplete from previous week
-    if (!deps.migrationNotified && w2.HybridTaskMigration) {
+    if (!deps.migrationNotified) {
       const prevMonday = new Date(monday);
       prevMonday.setDate(prevMonday.getDate() - 7);
       const prevEnd = new Date(prevMonday);
       prevEnd.setDate(prevEnd.getDate() + 6);
-      const incomplete = w2.HybridTaskMigration.getIncompleteTasksForWeek(formatDate(prevMonday), formatDate(prevEnd));
+      const incomplete = getIncompleteTasksForWeek(formatDate(prevMonday), formatDate(prevEnd));
       if (incomplete.length > 0) {
         deps.setMigrationNotified(true);
         const btn = document.getElementById('migration-toggle');

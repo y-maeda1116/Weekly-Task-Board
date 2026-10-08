@@ -1,6 +1,21 @@
 import type { Task } from '../types';
 import type { TaskPriority, TaskCategory } from '../types/task';
 import { formatDate } from '../utils/date';
+import * as TaskOperations from './TaskOperations';
+import { reloadTasks, renderWeek } from '../app/actions';
+
+// TaskOperations keeps its own cache; other modules save through appContext,
+// so drop the cache before each operation to avoid writing back stale tasks.
+function freshOps(): typeof TaskOperations {
+  TaskOperations.invalidateTasksCache();
+  TaskOperations.invalidateTemplatesCache();
+  return TaskOperations;
+}
+
+function refreshBoard(): void {
+  reloadTasks();
+  try { renderWeek(); } catch (e) { logWarn('renderWeek failed:', e); }
+}
 
 type ModalMode = 'create' | 'edit';
 
@@ -232,12 +247,7 @@ function loadRecurrenceIntoForm(taskData: Task): void {
 }
 
 function getTaskDataFromScript(taskId: string): Task | null {
-  const ops = (window as any).HybridTaskOperations;
-  if (ops?.findTaskById) {
-    return ops.findTaskById(taskId);
-  }
-  const tasks: Task[] = (window as any).tasks ?? [];
-  return tasks.find((t) => t.id === taskId) ?? null;
+  return freshOps().findTaskById(taskId) ?? null;
 }
 
 function getFormData(): FormDataType {
@@ -303,84 +313,59 @@ function handleFormSubmit(event: Event): void {
 }
 
 function createNewTask(formData: FormDataType): void {
-  const ops = (window as any).HybridTaskOperations;
-  if (ops?.createTask && ops.addTask) {
-    const newTask = ops.createTask({
-      name: formData.name,
-      estimated_time: formData.estimated_time,
-      priority: formData.priority,
-      category: formData.category,
-      date: formData.date,
-      details: formData.details,
-    });
-    ops.addTask(newTask);
-    hideModal();
-    logInfo('Task created successfully');
-    const w = window as any;
-    if (w.loadTasks) { w.tasks = w.loadTasks(); }
-    try { w.renderWeek?.(); } catch (e) { logWarn('renderWeek failed after create:', e); }
-  } else {
-    logWarn('HybridTaskOperations not available');
-    hideModal();
-  }
+  const ops = freshOps();
+  const newTask = ops.createTask({
+    name: formData.name,
+    estimated_time: formData.estimated_time,
+    priority: formData.priority as TaskPriority,
+    category: formData.category as TaskCategory,
+    date: formData.date,
+    details: formData.details,
+  });
+  ops.addTask(newTask);
+  hideModal();
+  logInfo('Task created successfully');
+  refreshBoard();
 }
 
 function updateExistingTask(taskId: string, formData: FormDataType): void {
-  const ops = (window as any).HybridTaskOperations;
-  if (ops?.updateTask) {
-    ops.updateTask(taskId, {
-      name: formData.name,
-      estimated_time: formData.estimated_time,
-      actual_time: formData.actual_time,
-      priority: formData.priority,
-      category: formData.category,
-      date: formData.date,
-      due_date: formData.due_date,
-      due_time_period: formData.due_time_period,
-      due_hour: formData.due_hour,
-      details: formData.details,
-      is_recurring: formData.is_recurring,
-      recurrence_pattern: formData.recurrence_pattern,
-      recurrence_end_date: formData.recurrence_end_date,
-    });
-    hideModal();
-    logInfo(`Task updated successfully: ${taskId}`);
-    const w = window as any;
-    if (w.loadTasks) { w.tasks = w.loadTasks(); }
-    try { w.renderWeek?.(); } catch (e) { logWarn('renderWeek failed after update:', e); }
-  } else {
-    logWarn('HybridTaskOperations.updateTask not available');
-    hideModal();
-  }
+  freshOps().updateTask(taskId, {
+    name: formData.name,
+    estimated_time: formData.estimated_time,
+    actual_time: formData.actual_time,
+    priority: formData.priority as TaskPriority,
+    category: formData.category as TaskCategory,
+    date: formData.date,
+    due_date: formData.due_date,
+    due_time_period: formData.due_time_period as Task['due_time_period'],
+    due_hour: formData.due_hour,
+    details: formData.details,
+    is_recurring: formData.is_recurring,
+    recurrence_pattern: formData.recurrence_pattern as Task['recurrence_pattern'],
+    recurrence_end_date: formData.recurrence_end_date,
+  });
+  hideModal();
+  logInfo(`Task updated successfully: ${taskId}`);
+  refreshBoard();
 }
 
 function handleDuplicateTask(): void {
   if (!modalState.currentTaskId) return;
-  const ops = (window as any).HybridTaskOperations;
-  if (ops?.duplicateTask) {
-    const newTask = ops.duplicateTask(modalState.currentTaskId);
-    if (newTask) {
-      hideModal();
-      logInfo('Task duplicated successfully');
-      if ((window as any).renderWeek) (window as any).renderWeek();
-    }
-  } else {
-    logInfo('Delegating task duplication to existing script.js');
+  const newTask = freshOps().duplicateTask(modalState.currentTaskId);
+  if (newTask) {
+    hideModal();
+    logInfo('Task duplicated successfully');
+    refreshBoard();
   }
 }
 
 function handleSaveAsTemplate(): void {
   if (!modalState.currentTaskId) return;
-  const ops = (window as any).HybridTaskOperations;
-  if (ops?.findTaskById && ops.saveAsTemplate) {
-    const task = ops.findTaskById(modalState.currentTaskId);
-    if (task) {
-      ops.saveAsTemplate(task);
-      logInfo('Template saved successfully');
-      if ((window as any).toggleTemplatePanel) (window as any).toggleTemplatePanel();
-    }
-  } else {
-    logInfo('Delegating template save to existing script.js');
+  const ops = freshOps();
+  const task = ops.findTaskById(modalState.currentTaskId);
+  if (task) {
+    ops.saveAsTemplate(task);
+    logInfo('Template saved successfully');
   }
 }
 

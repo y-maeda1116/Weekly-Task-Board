@@ -39,12 +39,25 @@ test.describe('Task CRUD', () => {
     // Click the checkbox to complete
     const checkbox = page.locator('.task input[type="checkbox"]').first();
     await checkbox.click();
-    await page.waitForTimeout(1000);
+    // Completion animation runs for 1.8s before the task is archived
+    await page.waitForTimeout(2500);
 
-    // Task should have completed style or be removed (archived)
-    const completedVisible = await page.locator('.task.completed').count();
-    const taskCount = await page.locator('.task').count();
-    expect(completedVisible + taskCount).toBeGreaterThanOrEqual(0);
+    // Task is moved from the board to the archive
+    await expect(page.locator('.task', { hasText: '完了テスト' })).toHaveCount(0);
+    const stored = await page.evaluate(() => ({
+      tasks: JSON.parse(localStorage.getItem('weekly-task-board.tasks') || '[]'),
+      archive: JSON.parse(localStorage.getItem('weekly-task-board.archive') || '[]'),
+    }));
+    expect(stored.tasks.some((t) => t.name === '完了テスト')).toBe(false);
+    expect(stored.archive.some((t) => t.name === '完了テスト' && t.completed)).toBe(true);
+
+    // Archived task stays archived after reload and is listed in the archive view
+    await page.reload();
+    await page.waitForTimeout(500);
+    await expect(page.locator('.task', { hasText: '完了テスト' })).toHaveCount(0);
+    await page.click('#more-menu-btn');
+    await page.click('#archive-toggle');
+    await expect(page.locator('#archive-list')).toContainText('完了テスト');
   });
 
   test('edit a task via click', async ({ page }) => {
@@ -55,12 +68,23 @@ test.describe('Task CRUD', () => {
     await page.click('#task-form button[type="submit"]');
     await page.waitForTimeout(300);
 
+    // Reload so the form no longer holds the values typed above
+    await page.reload();
+    await page.waitForTimeout(500);
+
     // Click task to open edit modal
     await page.locator('.task').first().click();
     await expect(page.locator('#task-modal')).toBeVisible();
 
-    // Name should be populated
+    // Name should be populated from the stored task
     await expect(page.locator('#task-name')).toHaveValue('編集前タスク');
+
+    // Saving updates the task
+    await page.fill('#task-name', '編集後タスク');
+    await page.click('#task-form button[type="submit"]');
+    await page.waitForTimeout(300);
+    await expect(page.locator('.task', { hasText: '編集後タスク' })).toHaveCount(1);
+    await expect(page.locator('.task', { hasText: '編集前タスク' })).toHaveCount(0);
   });
 
   test('category filter works', async ({ page }) => {
