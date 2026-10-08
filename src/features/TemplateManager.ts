@@ -1,7 +1,7 @@
 import type { Task } from '../types';
 import type { TaskPriority, TaskCategory, RecurrencePattern } from '../types/task';
 import { StorageKeys } from '../types/storage';
-import { getCategoryInfo, validateCategory } from '../app/taskStorage';
+import { getCategoryInfo, validateCategory } from '../utils/validation';
 import { showNotification } from '../app/notifications';
 
 interface TemplateBaseTask {

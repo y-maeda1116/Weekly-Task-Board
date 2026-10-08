@@ -1,8 +1,7 @@
 import type { Task } from '../types';
-import type { CategoryInfo } from '../types';
 import { getMonday, formatDate } from '../utils/date';
 import { loadTasksFromStorage } from '../app/storage';
-import { TASK_CATEGORIES } from '../constants/taskCategories';
+import { getCategoryInfo } from '../utils/validation';
 import { StorageService } from '../utils/storage';
 import { StorageKeys } from '../types';
 
@@ -50,11 +49,6 @@ function loadAllTasks(): Task[] {
     }
   }
   return [...active, ...archived];
-}
-
-function getCategoryInfo(categoryKey: string): CategoryInfo {
-  return TASK_CATEGORIES[categoryKey as keyof typeof TASK_CATEGORIES]
-    ?? TASK_CATEGORIES['task'];
 }
 
 function filterWeekTasks(tasks: Task[], targetDate: Date): Task[] {

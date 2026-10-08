@@ -1,6 +1,6 @@
 import type { Task } from '../types';
 import { SIGNIFIER_ORDER, SIGNIFIER_MAP, SIGNIFIER_LABELS } from '../constants/signifiers';
-import { getCategoryInfo, validateCategory } from './taskStorage';
+import { getCategoryInfo, validateCategory } from '../utils/validation';
 import { handleDragStart, handleDragEnd } from './DragDrop';
 
 function getTimeOverrunSeverity(estimated: number, actual: number): 'none' | 'minor' | 'moderate' | 'severe' {

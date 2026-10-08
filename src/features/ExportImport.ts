@@ -2,7 +2,7 @@ import type { Task } from '../types';
 import type { Settings } from '../types/storage';
 import { StorageKeys } from '../types/storage';
 import { saveTasksToStorage, loadTasksFromStorage } from '../app/storage';
-import { validateCategory } from '../app/taskStorage';
+import { validateCategory } from '../utils/validation';
 import { formatDate } from '../utils/date';
 
 interface ExportData {

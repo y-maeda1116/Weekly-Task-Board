@@ -1,6 +1,7 @@
 import type { DOMElements } from '../types';
 import { logger } from '../utils/logger';
 import { getDOMElements } from '../utils/dom';
+import { formatDate } from '../utils/date';
 
 const COMPONENT = 'DOMInitialization';
 
@@ -595,13 +596,6 @@ export function sortTemplates(sortBy: string): void {
 
 export function saveTaskAsTemplate(): void {
   logger.info(COMPONENT, 'Save as template triggered');
-}
-
-export function formatDate(date: Date): string {
-  const y = date.getFullYear();
-  const m = String(date.getMonth() + 1).padStart(2, '0');
-  const d = String(date.getDate()).padStart(2, '0');
-  return `${y}-${m}-${d}`;
 }
 
 export function getRef<K extends keyof DOMRefs>(key: K): DOMRefs[K] {

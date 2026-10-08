@@ -1,6 +1,7 @@
 import type { Task } from '../types';
 import { appContext } from './AppContext';
-import { loadTasksWithMigration, saveTasksValidated, getCategoryInfo } from './taskStorage';
+import { loadTasksWithMigration, saveTasksValidated } from './taskStorage';
+import { getCategoryInfo } from '../utils/validation';
 import { loadSettings, saveSettings as saveSettingsToStorage } from './storage';
 import { getMonday, formatDate } from '../utils/date';
 import { showNotification } from './notifications';
@@ -367,7 +368,7 @@ export function initializeApp(): void {
   } catch (e) { console.error('[Init] KeyboardShortcuts failed:', e); }
 
   // Version info
-  const APP_VERSION = '1.9.9';
+  const APP_VERSION = '1.9.10';
   const BUILD_DATE = '2026-05-28';
   w.APP_VERSION = APP_VERSION;
   w.BUILD_DATE = BUILD_DATE;

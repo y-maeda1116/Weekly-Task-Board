@@ -1,7 +1,8 @@
 import type { Task, Settings } from '../types';
 import { getMonday, formatDate } from '../utils/date';
 import { createTaskElement } from './TaskRenderer';
-import { getCategoryInfo, shouldDisplayTask } from './taskStorage';
+import { shouldDisplayTask } from './taskStorage';
+import { getCategoryInfo } from '../utils/validation';
 import { handleDragOver, handleDragLeave, createDropHandler } from './DragDrop';
 
 interface RenderWeekDeps {

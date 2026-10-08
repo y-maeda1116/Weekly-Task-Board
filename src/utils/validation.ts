@@ -15,7 +15,6 @@ export function validateCategory(category: string | TaskCategory | undefined): T
   if (category && TASK_CATEGORIES[category as TaskCategory]) {
     return category as TaskCategory;
   }
-  console.warn(`Invalid category "${category}", falling back to default "task"`);
   return TaskCategory.TASK;
 }
 
