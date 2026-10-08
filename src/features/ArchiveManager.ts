@@ -48,7 +48,9 @@ function applyMigrations(
 }
 
 export function loadArchivedTasks(callbacks: ArchiveCallbacks): ArchivedTask[] {
-  return applyMigrations(loadArchivedTasksFromStorage<ArchivedTask>(), callbacks.getMigrationHistory);
+  const archivedTasks = loadArchivedTasksFromStorage<ArchivedTask>();
+  if (archivedTasks.length === 0) return [];
+  return applyMigrations(archivedTasks, callbacks.getMigrationHistory);
 }
 
 export function saveArchivedTasks(archivedTasks: ArchivedTask[]): void {
