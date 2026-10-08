@@ -3,6 +3,8 @@ import type { TaskPriority, TaskCategory, RecurrencePattern } from '../types/tas
 import { loadTemplates as loadTemplatesFromStorage, saveTemplates as saveTemplatesToStorage } from '../app/storage';
 import { getCategoryInfo, validateCategory } from '../utils/validation';
 import { showNotification } from '../app/notifications';
+import { appContext } from '../app/AppContext';
+import { saveTasks, renderWeek, updateDashboard } from '../app/actions';
 
 interface TemplateBaseTask {
   name: string;
@@ -281,14 +283,11 @@ function createTemplateFooter(template: TaskTemplateItem): HTMLElement {
 }
 
 function handleUseTemplate(template: TaskTemplateItem): void {
-  const w = window as any;
   const newTask = createTaskFromTemplate(template);
-  if (Array.isArray(w.tasks)) {
-    w.tasks.push(newTask);
-  }
-  if (typeof w.saveTasks === 'function') w.saveTasks();
-  if (typeof w.renderWeek === 'function') w.renderWeek();
-  if (typeof w.updateDashboard === 'function') w.updateDashboard();
+  appContext.tasks.push(newTask);
+  saveTasks();
+  renderWeek();
+  updateDashboard();
 
   const templatePanel = document.getElementById('template-panel');
   if (templatePanel) {
@@ -345,28 +344,10 @@ function renderTemplateList(): void {
   filterAndRenderTemplates('', 'recent');
 }
 
-function handleSaveAsTemplateClick(): void {
-  const w = window as any;
-  const editingTaskId: string | null = w.editingTaskId ?? null;
-  if (!editingTaskId) return;
-
-  const tasks: Task[] = w.tasks ?? [];
-  const task = tasks.find(t => t.id === editingTaskId);
-  if (!task) return;
-
-  const templateName = prompt('テンプレート名を入力してください:', task.name);
-  if (!templateName) return;
-
-  saveTaskAsTemplate(task, templateName);
-  showNotification('テンプレート「' + templateName + '」を保存しました', 'success');
-  if (typeof w.closeTaskModal === 'function') w.closeTaskModal();
-}
-
 function initializeTemplatePanel(): void {
   const templateToggleBtn = document.getElementById('template-toggle');
   const templatePanel = document.getElementById('template-panel');
   const closeTemplatePanelBtn = document.getElementById('close-template-panel');
-  const saveAsTemplateBtn = document.getElementById('save-as-template-btn');
   const templateSearchInput = document.getElementById('template-search') as HTMLInputElement | null;
   const templateSortSelect = document.getElementById('template-sort') as HTMLSelectElement | null;
 
@@ -400,10 +381,6 @@ function initializeTemplatePanel(): void {
       const term = templateSearchInput ? templateSearchInput.value.toLowerCase() : '';
       filterAndRenderTemplates(term, (e.target as HTMLSelectElement).value as SortOption);
     });
-  }
-
-  if (saveAsTemplateBtn) {
-    saveAsTemplateBtn.addEventListener('click', handleSaveAsTemplateClick);
   }
 }
 

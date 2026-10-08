@@ -46,14 +46,6 @@ class AppContext {
   saveCurrentSettings(): void {
     saveSettings(this._settings);
   }
-
-  syncToWindow(): void {
-    const w = window as any;
-    w.tasks = this._tasks;
-    w.settings = this._settings;
-    w.currentDate = this._currentDate;
-    w.currentCategoryFilter = this._categoryFilter;
-  }
 }
 
 export const appContext = new AppContext();

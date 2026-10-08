@@ -2,7 +2,7 @@ import type { Task } from '../types';
 import type { MigrationHistory } from '../types/storage';
 import { StorageKeys } from '../types/storage';
 
-function getMigrationHistory(): MigrationHistory {
+export function getMigrationHistory(): MigrationHistory {
   const raw = localStorage.getItem(StorageKeys.MIGRATION_HISTORY);
   if (!raw) {
     return { version: '0.0', lastMigrationDate: null, migrations: [] };

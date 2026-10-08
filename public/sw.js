@@ -3,7 +3,7 @@
  * Viteビルド後のアセットをキャッシュする戦略
  */
 
-const CACHE_NAME = 'weekly-task-board-v9';
+const CACHE_NAME = 'weekly-task-board-v10';
 const RUNTIME_CACHE = 'weekly-task-board-runtime-v1';
 
 const SHELL_URLS = [

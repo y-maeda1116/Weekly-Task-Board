@@ -2,6 +2,8 @@ import type { Task } from '../types';
 import { SIGNIFIER_ORDER, SIGNIFIER_MAP, SIGNIFIER_LABELS } from '../constants/signifiers';
 import { getCategoryInfo, validateCategory } from '../utils/validation';
 import { handleDragStart, handleDragEnd } from './DragDrop';
+import { getEntryByTaskId } from '../features/JournalManager';
+import { showNextStepModal } from '../features/JournalUI';
 
 function getTimeOverrunSeverity(estimated: number, actual: number): 'none' | 'minor' | 'moderate' | 'severe' {
   if (actual <= estimated) return 'none';
@@ -11,7 +13,7 @@ function getTimeOverrunSeverity(estimated: number, actual: number): 'none' | 'mi
   return 'severe';
 }
 
-interface TaskRendererCallbacks {
+export interface TaskRendererCallbacks {
   saveTasks: () => void;
   renderWeek: () => void;
   openEditModal: (task: Task) => void;
@@ -140,24 +142,21 @@ export function createTaskElement(
     e.stopPropagation();
     const newCompleted = (e.target as HTMLInputElement).checked;
     if (newCompleted) {
-      const w = window as any;
-      if (w.HybridJournalManager && w.HybridJournalUI) {
-        const activeEntry = w.HybridJournalManager.getEntryByTaskId(task.id);
-        if (activeEntry) {
-          e.preventDefault();
-          checkbox.checked = false;
-          w.HybridJournalUI.showNextStepModal(activeEntry, () => {
-            task.completed = true;
-            checkbox.checked = true;
-            callbacks.playTaskCompletionAnimation(taskElement, checkbox);
-            setTimeout(() => {
-              callbacks.archiveCompletedTasks();
-              callbacks.renderWeek();
-              callbacks.updateDashboard();
-            }, 1800);
-          });
-          return;
-        }
+      const activeEntry = getEntryByTaskId(task.id);
+      if (activeEntry) {
+        e.preventDefault();
+        checkbox.checked = false;
+        showNextStepModal(activeEntry, () => {
+          task.completed = true;
+          checkbox.checked = true;
+          callbacks.playTaskCompletionAnimation(taskElement, checkbox);
+          setTimeout(() => {
+            callbacks.archiveCompletedTasks();
+            callbacks.renderWeek();
+            callbacks.updateDashboard();
+          }, 1800);
+        });
+        return;
       }
       task.completed = true;
       callbacks.playTaskCompletionAnimation(taskElement, checkbox);
