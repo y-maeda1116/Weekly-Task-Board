@@ -1,7 +1,13 @@
 import type { Task } from '../types';
 import type { TaskPriority, TaskCategory } from '../types/task';
-import { StorageKeys } from '../types/storage';
-import { saveTasksToStorage, loadTasksFromStorage } from '../app/storage';
+import {
+  saveTasksToStorage,
+  loadTasksFromStorage,
+  loadArchivedTasksFromStorage,
+  saveArchivedTasksToStorage,
+  loadTemplates,
+  saveTemplates,
+} from '../app/storage';
 
 export interface TaskTemplate {
   id: string;
@@ -55,20 +61,13 @@ function saveTasks(tasks: Task[]): void {
 
 function getArchivedTasks(): Task[] {
   if (archivedCache !== null) return archivedCache;
-  try {
-    const data = localStorage.getItem(StorageKeys.ARCHIVE);
-    const parsed: Task[] = data ? JSON.parse(data) : [];
-    archivedCache = parsed;
-    return archivedCache;
-  } catch {
-    archivedCache = [];
-    return archivedCache;
-  }
+  archivedCache = loadArchivedTasksFromStorage();
+  return archivedCache;
 }
 
 function saveArchivedTasks(tasks: Task[]): void {
   archivedCache = tasks;
-  localStorage.setItem(StorageKeys.ARCHIVE, JSON.stringify(tasks));
+  saveArchivedTasksToStorage(tasks);
 }
 
 function findTaskById(taskId: string): Task | undefined {
@@ -231,20 +230,13 @@ function duplicateTask(taskId: string, newDate?: string): Task | null {
 
 function getTemplates(): TaskTemplate[] {
   if (templatesCache !== null) return templatesCache;
-  try {
-    const data = localStorage.getItem(StorageKeys.TEMPLATES);
-    const parsed: TaskTemplate[] = data ? JSON.parse(data) : [];
-    templatesCache = parsed;
-    return templatesCache;
-  } catch {
-    templatesCache = [];
-    return templatesCache;
-  }
+  templatesCache = loadTemplates<TaskTemplate>();
+  return templatesCache;
 }
 
 function saveTemplatesToStorage(templates: TaskTemplate[]): void {
   templatesCache = templates;
-  localStorage.setItem(StorageKeys.TEMPLATES, JSON.stringify(templates));
+  saveTemplates(templates);
 }
 
 function saveAsTemplate(task: Task, templateName?: string): boolean {

@@ -1,6 +1,6 @@
 import type { Task } from '../types';
 import type { TaskPriority, TaskCategory, RecurrencePattern } from '../types/task';
-import { StorageKeys } from '../types/storage';
+import { loadTemplates as loadTemplatesFromStorage, saveTemplates as saveTemplatesToStorage } from '../app/storage';
 import { getCategoryInfo, validateCategory } from '../utils/validation';
 import { showNotification } from '../app/notifications';
 
@@ -33,13 +33,11 @@ const PRIORITY_LABELS: Record<string, string> = {
 };
 
 function loadTemplates(): TaskTemplateItem[] {
-  const raw = localStorage.getItem(StorageKeys.TEMPLATES);
-  if (!raw) return [];
-  return JSON.parse(raw) as TaskTemplateItem[];
+  return loadTemplatesFromStorage<TaskTemplateItem>();
 }
 
 function saveTemplates(templates: TaskTemplateItem[]): void {
-  localStorage.setItem(StorageKeys.TEMPLATES, JSON.stringify(templates));
+  saveTemplatesToStorage(templates);
 }
 
 function saveTaskAsTemplate(task: Task, templateName: string): TaskTemplateItem {

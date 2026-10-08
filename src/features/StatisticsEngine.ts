@@ -4,7 +4,7 @@ import type { CategoryInfo, TaskCategories } from '../types/task';
 import { getMonday, formatDate } from '../utils/date';
 import { TASK_CATEGORIES } from '../constants/taskCategories';
 import { validateCategory, getTimeOverrunSeverity } from '../utils/validation';
-import { TaskStorage } from '../utils/storage';
+import { loadArchivedTasksFromStorage } from '../app/storage';
 
 interface CompletionRateResult {
   week_start: string;
@@ -77,7 +77,7 @@ interface EstimatedVsActualResult {
 }
 
 function loadArchivedTasks(): Task[] {
-  return TaskStorage.loadArchivedTasks() as unknown as Task[];
+  return loadArchivedTasksFromStorage();
 }
 
 function getWeekBounds(monday: Date): { weekStartStr: string; endOfWeekStr: string } {

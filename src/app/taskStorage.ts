@@ -1,15 +1,13 @@
 import type { Task } from '../types';
-import { StorageKeys } from '../types/storage';
+import { loadTasksFromStorage, saveTasksToStorage } from './storage';
 import { executeMigrations } from './migration';
 import { validateCategory } from '../utils/validation';
 
 export function loadTasksWithMigration(): Task[] {
-  const raw = localStorage.getItem(StorageKeys.TASKS);
-  let data: any[] = [];
+  let data: any[] = loadTasksFromStorage();
 
-  if (raw) {
+  if (data.length > 0) {
     try {
-      data = JSON.parse(raw);
       data = executeMigrations(data);
     } catch {
       data = data.map(task => ({
@@ -37,7 +35,7 @@ export function saveTasksValidated(tasks: Task[]): void {
     ...task,
     category: validateCategory(task.category),
   }));
-  localStorage.setItem(StorageKeys.TASKS, JSON.stringify(validated));
+  saveTasksToStorage(validated);
 }
 
 export function shouldDisplayTask(task: Task, filter: string, currentCategoryFilter: string): boolean {

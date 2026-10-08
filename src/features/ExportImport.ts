@@ -1,7 +1,12 @@
 import type { Task } from '../types';
 import type { Settings } from '../types/storage';
-import { StorageKeys } from '../types/storage';
-import { saveTasksToStorage, loadTasksFromStorage } from '../app/storage';
+import {
+  saveTasksToStorage,
+  loadTasksFromStorage,
+  loadArchivedTasksFromStorage,
+  saveArchivedTasksToStorage,
+  saveSettings,
+} from '../app/storage';
 import { validateCategory } from '../utils/validation';
 import { formatDate } from '../utils/date';
 
@@ -18,13 +23,11 @@ interface ExportData {
 }
 
 function loadArchivedTasks(): Task[] {
-  const raw = localStorage.getItem(StorageKeys.ARCHIVE);
-  if (!raw) return [];
-  try { return JSON.parse(raw); } catch { return []; }
+  return loadArchivedTasksFromStorage();
 }
 
 function saveArchivedTasks(tasks: Task[]): void {
-  localStorage.setItem(StorageKeys.ARCHIVE, JSON.stringify(tasks));
+  saveArchivedTasksToStorage(tasks);
 }
 
 export function exportData(
@@ -83,7 +86,7 @@ export function importData(
       if (importedData.settings) {
         const settings = importedData.settings;
         onSettingsUpdate(settings);
-        localStorage.setItem(StorageKeys.SETTINGS, JSON.stringify(settings));
+        saveSettings(settings);
         const input = document.getElementById('ideal-daily-minutes') as HTMLInputElement | null;
         if (input) input.value = String(settings.ideal_daily_minutes);
       }
