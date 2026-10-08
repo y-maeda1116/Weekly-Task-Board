@@ -227,7 +227,7 @@ export function initializeApp(): AppServices {
   });
 
   // 13. Migration modal
-  setupMigrationModal(tasks);
+  setupMigrationModal();
 
   // 14. Initialize features
   try { ThemeManager.initThemeEventListeners(); } catch (e) { console.error('[Init] ThemeListeners failed:', e); }
@@ -299,7 +299,7 @@ export function initializeApp(): AppServices {
   } catch (e) { console.error('[Init] KeyboardShortcuts failed:', e); }
 
   // Version info
-  const APP_VERSION = '1.9.12';
+  const APP_VERSION = '1.9.13';
   const BUILD_DATE = '2026-05-28';
   window.APP_VERSION = APP_VERSION;
   window.BUILD_DATE = BUILD_DATE;
@@ -308,7 +308,7 @@ export function initializeApp(): AppServices {
   return { weekdayManager, taskBulkMover, recurrenceEngine };
 }
 
-function setupMigrationModal(tasks: Task[]): void {
+function setupMigrationModal(): void {
   const migrationToggleBtn = document.getElementById('migration-toggle');
   const migrationModal = document.getElementById('migration-modal');
   const closeBtn = document.getElementById('close-migration-modal');
@@ -325,7 +325,7 @@ function setupMigrationModal(tasks: Task[]): void {
   function renderMigrationList(): void {
     if (!taskListEl) return;
     while (taskListEl.firstChild) taskListEl.removeChild(taskListEl.firstChild);
-    const incomplete = tasks.filter(t => !t.completed && !t.assigned_date);
+    const incomplete = appContext.tasks.filter(t => !t.completed && !t.assigned_date);
     if (incomplete.length === 0) {
       const msg = document.createElement('p');
       msg.textContent = '移行対象の未完了タスクはありません。';
