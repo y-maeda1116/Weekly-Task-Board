@@ -1,15 +1,7 @@
 import type { Task } from '../types';
-import { TaskCategory } from '../types/task';
 import { StorageKeys } from '../types/storage';
 import { executeMigrations } from './migration';
-import { TASK_CATEGORIES } from '../constants/taskCategories';
-
-export function validateCategory(category: string): TaskCategory {
-  if (category && (TASK_CATEGORIES as any)[category]) {
-    return category as TaskCategory;
-  }
-  return TaskCategory.TASK;
-}
+import { validateCategory } from '../utils/validation';
 
 export function loadTasksWithMigration(): Task[] {
   const raw = localStorage.getItem(StorageKeys.TASKS);
@@ -46,10 +38,6 @@ export function saveTasksValidated(tasks: Task[]): void {
     category: validateCategory(task.category),
   }));
   localStorage.setItem(StorageKeys.TASKS, JSON.stringify(validated));
-}
-
-export function getCategoryInfo(categoryKey: string) {
-  return (TASK_CATEGORIES as any)[categoryKey] || (TASK_CATEGORIES as any)['task'];
 }
 
 export function shouldDisplayTask(task: Task, filter: string, currentCategoryFilter: string): boolean {

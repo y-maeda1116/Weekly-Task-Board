@@ -1,7 +1,7 @@
 import type { Task } from '../types';
 import type { MigrationHistory } from '../types/storage';
 import { StorageKeys } from '../types/storage';
-import { validateCategory, getCategoryInfo } from '../app/taskStorage';
+import { validateCategory, getCategoryInfo } from '../utils/validation';
 
 export interface ArchivedTask extends Task {
   archived_date: string;
