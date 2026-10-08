@@ -110,6 +110,12 @@ test.describe('Task Migration', () => {
     const completed = tasks.find(t => t.name.includes('>'));
     expect(completed).toBeTruthy();
     expect(completed.completed).toBe(true);
+
+    // Reopening the modal reflects the migration (no stale list)
+    await page.click('#migration-toggle');
+    await page.waitForTimeout(300);
+    await expect(page.locator('#migration-task-list')).not.toContainText('次週移行テスト');
+    await expect(page.locator('#migration-task-list')).toContainText('移行対象の未完了タスクはありません');
   });
 
   test('migrate to unassigned', async ({ page }) => {

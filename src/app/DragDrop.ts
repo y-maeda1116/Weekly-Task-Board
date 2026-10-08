@@ -28,7 +28,7 @@ export function handleDragLeave(e: DragEvent): void {
 }
 
 export function createDropHandler(
-  tasks: Task[],
+  getTasks: () => Task[],
   saveTasks: () => void,
   renderWeek: () => void,
 ): (e: DragEvent) => void {
@@ -46,7 +46,7 @@ export function createDropHandler(
     const taskId = e.dataTransfer!.getData('text/plain');
     const newDate = targetColumn.dataset.date === 'null' ? null : targetColumn.dataset.date || null;
 
-    const task = tasks.find(t => t.id === taskId);
+    const task = getTasks().find(t => t.id === taskId);
     if (task) {
       task.assigned_date = newDate;
       saveTasks();

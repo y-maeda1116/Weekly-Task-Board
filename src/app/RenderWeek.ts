@@ -68,7 +68,7 @@ export function createRenderWeek(deps: RenderWeekDeps) {
     document.querySelectorAll('.day-column').forEach(col => {
       col.addEventListener('dragover', handleDragOver as EventListener);
       col.addEventListener('dragleave', handleDragLeave as EventListener);
-      col.addEventListener('drop', createDropHandler(deps.tasks, deps.saveTasks, renderWeek) as EventListener);
+      col.addEventListener('drop', createDropHandler(() => deps.tasks, deps.saveTasks, renderWeek) as EventListener);
     });
   }
 
