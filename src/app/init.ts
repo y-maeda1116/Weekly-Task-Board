@@ -15,7 +15,6 @@ import * as ThemeManager from '../features/ThemeManager';
 import * as ContextManager from '../features/ContextManager';
 import * as ExportImport from '../features/ExportImport';
 import * as ArchiveManager from '../features/ArchiveManager';
-import * as CalendarManager from '../features/CalendarManager';
 import * as PWASetup from '../features/PWASetup';
 import * as WeeklyReviewUI from '../features/WeeklyReviewUI';
 import * as MorningPagesUI from '../features/MorningPagesUI';
@@ -232,7 +231,6 @@ export function initializeApp(): AppServices {
   // 14. Initialize features
   try { ThemeManager.initThemeEventListeners(); } catch (e) { console.error('[Init] ThemeListeners failed:', e); }
   try { ArchiveManager.initArchiveEventListeners(archiveCallbacks); } catch (e) { console.error('[Init] ArchiveListeners failed:', e); }
-  try { CalendarManager.initCalendarSettings(); } catch (e) { console.error('[Init] Calendar failed:', e); }
   try { PWASetup.initPWA(); } catch (e) { console.error('[Init] PWA failed:', e); }
   try { WeeklyReviewUI.initialize(); } catch (e) { console.error('[Init] WeeklyReviewUI failed:', e); }
   try { MorningPagesUI.initializeMorningPagesUI(); } catch (e) { console.error('[Init] MorningPagesUI failed:', e); }
@@ -299,7 +297,7 @@ export function initializeApp(): AppServices {
   } catch (e) { console.error('[Init] KeyboardShortcuts failed:', e); }
 
   // Version info
-  const APP_VERSION = '1.9.13';
+  const APP_VERSION = '1.9.14';
   const BUILD_DATE = '2026-05-28';
   window.APP_VERSION = APP_VERSION;
   window.BUILD_DATE = BUILD_DATE;

@@ -52,7 +52,6 @@
 ### その他
 - **繰り返しタスク**: 毎日/毎週/毎月パターン
 - **テンプレート管理**: よく使うタスクを保存・再利用
-- **カレンダー同期**: Outlook / Google Calendar から予定インポート
 - **カテゴリフィルター**: 6種類のカテゴリで分類
 - **ダークモード**: テーマ切替対応
 - **データエクスポート/インポート**: JSON でバックアップ・復元
@@ -187,20 +186,6 @@ git checkout main
 git merge dev
 git push origin main
 ```
-
-## カレンダー同期設定
-
-カレンダー同期の認証情報は**アプリ内のカレンダー設定画面**（ヘッダー ≡ メニュー → カレンダー設定）で Client ID を入力します。入力値は LocalStorage に保存され、config ファイルは不要です。
-
-### Outlook カレンダー
-1. [Azure Portal](https://portal.azure.com) でアプリ登録
-2. Client ID を取得してアプリ内のカレンダー設定に入力
-3. `Calendars.Read` パーミッションを追加
-
-### Google Calendar
-1. [Google Cloud Console](https://console.cloud.google.com/) で OAuth 2.0 クライアント作成
-2. Google Calendar API を有効化
-3. Client ID をアプリ内のカレンダー設定に入力
 
 ## セキュリティ
 
