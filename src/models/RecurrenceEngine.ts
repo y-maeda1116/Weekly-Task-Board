@@ -336,6 +336,19 @@ export class RecurrenceEngine {
     }
 
     const nextDate = new Date(fromDate);
+
+    if (recurringTask.recurrence_pattern === 'monthly') {
+      // Advance by calendar month, anchoring on the task's original day-of-month
+      // (same semantics as generateMonthlyTasks, e.g. Jan 31 -> Feb 28 -> Mar 31)
+      const anchorDate = recurringTask.assigned_date || recurringTask.date;
+      const anchorDay = anchorDate ? new Date(anchorDate).getDate() : fromDate.getDate();
+      nextDate.setDate(1);
+      nextDate.setMonth(nextDate.getMonth() + 1);
+      const lastDayOfMonth = new Date(nextDate.getFullYear(), nextDate.getMonth() + 1, 0).getDate();
+      nextDate.setDate(Math.min(anchorDay, lastDayOfMonth));
+      return nextDate;
+    }
+
     nextDate.setDate(nextDate.getDate() + pattern.interval);
     return nextDate;
   }
