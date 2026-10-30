@@ -11,6 +11,7 @@
     "type-check": "tsgo --noEmit",
     "type-check:tsc": "node node_modules/typescript/bin/tsc --noEmit",
     "type-check:7.1": "node node_modules/typescript-next/bin/tsc --noEmit",
+    "type-check:tsrs": "tsrs --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
@@ -41,8 +42,9 @@
     "@typescript/native-preview": "^7.0.0-dev.20260421.2",
     "@vitest/coverage-v8": "^5.0.0",
     "jsdom": "^29.1.1",
+    "tsrs": "0.20.1-ts7.1.0-beta",
     "typescript": "^5.9.3",
-    "typescript-next": "npm:typescript@^7.1.0-beta",
+    "typescript-next": "npm:typescript@7.1.0-beta",
     "vite": "^8.0.14",
     "vitest": "^5.0.0"
   }
