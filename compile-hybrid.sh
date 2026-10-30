@@ -5,7 +5,7 @@
 
 cd /c/work/git/Weekly-Task-Board
 
-./node_modules/.bin/tsc \
+node node_modules/typescript/bin/tsc \
   --target ES2020 \
   --module esnext \
   --lib DOM,ES2020 \
