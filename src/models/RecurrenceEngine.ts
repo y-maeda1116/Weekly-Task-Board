@@ -369,11 +369,3 @@ export class RecurrenceEngine {
     return occurrences;
   }
 }
-
-/**
- * Create a RecurrenceEngine instance
- * @returns New RecurrenceEngine instance
- */
-export function createRecurrenceEngine(): RecurrenceEngine {
-  return new RecurrenceEngine();
-}

@@ -172,12 +172,3 @@ export class TaskBulkMover {
     }
   }
 }
-
-/**
- * Create a TaskBulkMover instance
- * @param notifyCallback - Optional notification callback
- * @returns New TaskBulkMover instance
- */
-export function createTaskBulkMover(notifyCallback?: NotificationCallback): TaskBulkMover {
-  return new TaskBulkMover(notifyCallback);
-}

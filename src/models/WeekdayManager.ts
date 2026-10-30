@@ -276,16 +276,3 @@ export class WeekdayManager {
     return this.dayLabels;
   }
 }
-
-/**
- * Create a WeekdayManager instance
- * @param settings - Optional initial settings
- * @param changeCallback - Optional callback for weekday changes
- * @returns New WeekdayManager instance
- */
-export function createWeekdayManager(
-  settings?: Settings,
-  changeCallback?: WeekdayChangeCallback
-): WeekdayManager {
-  return new WeekdayManager(settings, changeCallback);
-}
