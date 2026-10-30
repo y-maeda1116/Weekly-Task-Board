@@ -297,7 +297,7 @@ export function initializeApp(): AppServices {
   } catch (e) { console.error('[Init] KeyboardShortcuts failed:', e); }
 
   // Version info
-  const APP_VERSION = '1.9.15';
+  const APP_VERSION = '1.9.16';
   const BUILD_DATE = '2026-05-28';
   window.APP_VERSION = APP_VERSION;
   window.BUILD_DATE = BUILD_DATE;

@@ -43,6 +43,10 @@ jobs:
       run: npm run type-check:7.1
       continue-on-error: true
 
+    - name: Type Check (tsrs, observational)
+      run: npm run type-check:tsrs
+      continue-on-error: true
+
     - name: Run Unit Tests
       run: npm test
 
