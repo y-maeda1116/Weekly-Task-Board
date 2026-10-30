@@ -60,6 +60,15 @@ describe("RecurrenceEngine", () => {
       expect(next!.getTime()).toBe(atMidnight(2027, 2, 7).getTime());
     });
 
+    it("parses the anchor day from the date string without timezone shifts", () => {
+      const engine = new RecurrenceEngine();
+      const task = makeTask("t1", "monthly task");
+      const next = engine.getNextOccurrence(task, atMidnight(2027, 2, 28));
+      // Anchor "2027-01-31" must yield day 31 even if this string is parsed
+      // as UTC midnight (i.e. when the test runs in a UTC− timezone)
+      expect(next!.getTime()).toBe(atMidnight(2027, 3, 31).getTime());
+    });
+
     it("returns null for non-recurring tasks", () => {
       const engine = new RecurrenceEngine();
       const task = makeTask("t1", "one-off", { is_recurring: false, recurrence_pattern: null });
