@@ -39,6 +39,10 @@ jobs:
     - name: Type Check
       run: npm run type-check
 
+    - name: Type Check (TS 7.1 beta)
+      run: npm run type-check:7.1
+      continue-on-error: true
+
     - name: Run Unit Tests
       run: npm test
 
