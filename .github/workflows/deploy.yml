@@ -32,6 +32,7 @@ jobs:
       - name: Build sandboxes (dev)
         if: github.ref_name == 'dev'
         run: |
+          set -e
           (cd ts71 && npm install --no-audit --no-fund && npx vite build)
           mv ts71/dist dist/ts71
           (cd tsrs && npm install --no-audit --no-fund && npx vite build)
