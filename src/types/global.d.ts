@@ -13,7 +13,6 @@ declare global {
     };
     APP_VERSION?: string;
     BUILD_DATE?: string;
-    CALENDAR_CONFIG?: any;
   }
 }
 

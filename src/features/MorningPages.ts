@@ -1,5 +1,6 @@
 import type { Task, TaskCategory, TaskPriority, SignifierType } from '../types';
 import { StorageKeys } from '../types';
+import { loadTasksFromStorage, saveTasksToStorage } from '../app/storage';
 
 const PAGES_KEY = 'weekly-task-board.morning-pages';
 
@@ -99,8 +100,7 @@ export function extractTodoItems(content: string): string[] {
 export function bulkRegisterTasks(items: string[], targetDate?: string): number {
   if (!items || items.length === 0) return 0;
 
-  const raw = localStorage.getItem(StorageKeys.TASKS);
-  const tasks: Task[] = raw ? JSON.parse(raw) : [];
+  const tasks = loadTasksFromStorage();
   const date = targetDate || getTodayString();
 
   const newTasks = items.map(
@@ -125,7 +125,7 @@ export function bulkRegisterTasks(items: string[], targetDate?: string): number 
     }),
   );
 
-  localStorage.setItem(StorageKeys.TASKS, JSON.stringify([...tasks, ...newTasks]));
+  saveTasksToStorage([...tasks, ...newTasks]);
   console.log(`[MorningPages] Registered ${newTasks.length} tasks`);
   return newTasks.length;
 }

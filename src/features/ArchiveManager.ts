@@ -1,7 +1,7 @@
 import type { Task } from '../types';
 import type { MigrationHistory } from '../types/storage';
-import { StorageKeys } from '../types/storage';
-import { validateCategory, getCategoryInfo } from '../app/taskStorage';
+import { loadArchivedTasksFromStorage, saveArchivedTasksToStorage } from '../app/storage';
+import { validateCategory, getCategoryInfo } from '../utils/validation';
 
 export interface ArchivedTask extends Task {
   archived_date: string;
@@ -48,21 +48,15 @@ function applyMigrations(
 }
 
 export function loadArchivedTasks(callbacks: ArchiveCallbacks): ArchivedTask[] {
-  const archivedJson = localStorage.getItem(StorageKeys.ARCHIVE);
-  if (!archivedJson) return [];
-
-  try {
-    const parsed: ArchivedTask[] = JSON.parse(archivedJson);
-    return applyMigrations(parsed, callbacks.getMigrationHistory);
-  } catch {
-    return [];
-  }
+  const archivedTasks = loadArchivedTasksFromStorage<ArchivedTask>();
+  if (archivedTasks.length === 0) return [];
+  return applyMigrations(archivedTasks, callbacks.getMigrationHistory);
 }
 
 export function saveArchivedTasks(archivedTasks: ArchivedTask[]): void {
   let migrated = migrateArchivedTasksAddActualTime(archivedTasks);
   migrated = migrateArchivedTasksAddRecurringFields(migrated);
-  localStorage.setItem(StorageKeys.ARCHIVE, JSON.stringify(migrated));
+  saveArchivedTasksToStorage(migrated);
 }
 
 export function archiveCompletedTasks(callbacks: ArchiveCallbacks): void {

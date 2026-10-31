@@ -5,9 +5,7 @@ export default defineConfig({
     globals: true,
     environment: "jsdom",
     include: ["tests/**/*.test.ts", "tests/**/*.spec.ts"],
-    // tests/quarantined/ は非デプロイ(本番ビルド不含)の Calendar/Sync 系コンポーネントの
-    // テスト群。jest→vitest 移行後に未修復のため CI 対象外とする。別タスクで修復予定。
-    exclude: [...configDefaults.exclude, "tests/quarantined/**"],
+    exclude: [...configDefaults.exclude],
     setupFiles: ["tests/setup.ts"],
     coverage: {
       provider: "v8",

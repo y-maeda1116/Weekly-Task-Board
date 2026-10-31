@@ -8,7 +8,7 @@
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <link rel="apple-touch-icon" sizes="180x180" href="favicon.svg">
-    <link rel="manifest" href="manifest.json">
+    <link rel="manifest" href="/manifest.json">
     
     <!-- PWA Meta Tags -->
     <meta name="theme-color" content="#4a90e2">
@@ -71,6 +71,7 @@
 
             <!-- グループ4: ユーティリティ -->
             <div id="header-group-utility">
+                <button id="palette-toggle" title="検索 (Ctrl+K)">🔎</button>
                 <button id="statistics-toggle" title="統計">📊</button>
                 <button id="template-toggle" title="テンプレート">📄</button>
                 <button id="theme-toggle" title="テーマ切替">🌙</button>
@@ -293,7 +294,7 @@
     <!-- タスク追加モーダル -->
     <div id="task-modal" class="modal">
         <div class="modal-content">
-            <span class="close-btn" onclick="window.closeTaskModal && window.closeTaskModal()">&times;</span>
+            <span class="close-btn">&times;</span>
             <h2>タスクを新規登録</h2>
             <form id="task-form">
                 <label for="task-name">タスク名:</label>
@@ -409,19 +410,31 @@
         </div>
     </div>
 
-    <!-- カレンダー連携設定（認証情報） - ローカルで config.js を作成してください -->
-    <script>
-        // config.js が存在する場合のみ読み込む
-        const configScript = document.createElement('script');
-        configScript.src = 'config.js';
-        configScript.onerror = function() {
-            console.info('ℹ️ config.js が見つかりません（カレンダー連携は利用できません）');
-            // config.example.js を参考に config.js を作成するとカレンダー連携が有効になります
-            window.CALENDAR_CONFIG = null;
-        };
-        configScript.defer = true;
-        document.head.appendChild(configScript);
-    </script>
+    <!-- キーボードショートカットヘルプモーダル -->
+    <div id="keyboard-shortcuts-help" class="modal" style="display:none;">
+        <div class="modal-content" style="max-width:420px;">
+            <span class="close-btn" id="close-keyboard-shortcuts-help">&times;</span>
+            <h2 style="margin-top:0;">キーボードショートカット</h2>
+            <table style="width:100%;border-collapse:collapse;color:var(--font-color);">
+                <tr><td style="padding:6px 12px;"><kbd>N</kbd></td><td>タスクを追加</td></tr>
+                <tr><td style="padding:6px 12px;"><kbd>E</kbd></td><td>フォーカス中のタスクを編集</td></tr>
+                <tr><td style="padding:6px 12px;"><kbd>Enter</kbd> / <kbd>Space</kbd></td><td>完了をトグル</td></tr>
+                <tr><td style="padding:6px 12px;"><kbd>D</kbd></td><td>フォーカス中のタスクを削除</td></tr>
+                <tr><td style="padding:6px 12px;"><kbd>←</kbd> / <kbd>→</kbd></td><td>前週 / 次週</td></tr>
+                <tr><td style="padding:6px 12px;"><kbd>T</kbd></td><td>今週へ戻る</td></tr>
+                <tr><td style="padding:6px 12px;"><kbd>Ctrl</kbd>+<kbd>K</kbd></td><td>コマンドパレット（検索）</td></tr>
+                <tr><td style="padding:6px 12px;"><kbd>?</kbd></td><td>このヘルプを表示</td></tr>
+            </table>
+        </div>
+    </div>
+
+    <!-- コマンドパレットモーダル -->
+    <div id="command-palette" class="modal" style="display:none;">
+        <div class="modal-content palette-panel" role="dialog" aria-modal="true" aria-label="検索パレット">
+            <input type="text" id="command-palette-input" placeholder="タスクやコマンドを検索…" autocomplete="off">
+            <ul id="command-palette-results" role="listbox"></ul>
+        </div>
+    </div>
 
     <!-- Vite Entry Point - all TypeScript modules bundled here -->
     <script type="module" src="/src/app.ts"></script>

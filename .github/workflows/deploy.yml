@@ -29,6 +29,15 @@ jobs:
           VITE_BASE: /dev/
         run: npm run build:vite
 
+      - name: Build sandboxes (dev)
+        if: github.ref_name == 'dev'
+        run: |
+          set -e
+          (cd ts71 && npm install --no-audit --no-fund && npx vite build)
+          mv ts71/dist dist/ts71
+          (cd tsrs && npm install --no-audit --no-fund && npx vite build)
+          mv tsrs/dist dist/tsrs
+
       - name: Deploy (main -> root)
         if: github.ref_name == 'main'
         uses: peaceiris/actions-gh-pages@4f9cc6602d3f66b9c108549d475ec49e8ef4d45e # v4.0.0

@@ -1,20 +1,14 @@
 import type { Task } from '../types';
 import { formatDate, addDays } from '../utils/date';
-
-const STORAGE_KEY = 'weekly-task-board.tasks';
+import { loadTasksFromStorage, saveTasksToStorage } from '../app/storage';
 
 function loadTasks(): Task[] {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? JSON.parse(raw) : [];
-  } catch {
-    return [];
-  }
+  return loadTasksFromStorage();
 }
 
 function saveTasks(tasks: Task[]): void {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+    saveTasksToStorage(tasks);
   } catch {
     // Storage full or unavailable
   }

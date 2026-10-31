@@ -52,7 +52,6 @@
 ### その他
 - **繰り返しタスク**: 毎日/毎週/毎月パターン
 - **テンプレート管理**: よく使うタスクを保存・再利用
-- **カレンダー同期**: Outlook / Google Calendar から予定インポート
 - **カテゴリフィルター**: 6種類のカテゴリで分類
 - **ダークモード**: テーマ切替対応
 - **データエクスポート/インポート**: JSON でバックアップ・復元
@@ -112,32 +111,23 @@ Weekly-Task-Board/
 │   │   ├── DragDrop.ts         # ドラッグ＆ドロップ
 │   │   ├── storage.ts          # ストレージ操作
 │   │   └── ...
-│   ├── features/               # 機能モジュール（23個）
+│   ├── features/               # 機能モジュール（27個）
 │   │   ├── TaskModal.ts        # タスクモーダル
 │   │   ├── TaskOperations.ts   # タスクCRUD
 │   │   ├── JournalManager.ts   # ジャーナル管理
 │   │   ├── ThemeManager.ts     # テーマ管理
 │   │   ├── PWASetup.ts         # PWA設定
 │   │   └── ...
-│   ├── core/                   # コアクラス
-│   │   ├── StateManager.ts     # 状態管理
-│   │   ├── TaskManager.ts      # タスク操作
-│   │   └── DOMManager.ts       # DOM操作
 │   ├── models/                 # ドメインモデル
 │   │   ├── RecurrenceEngine.ts # 繰り返しタスク処理
 │   │   ├── TaskBulkMover.ts    # タスク一括移動
 │   │   └── WeekdayManager.ts   # 曜日管理
-│   ├── hybrid/                 # 移行中のハイブリッド層
 │   ├── types/                  # 型定義
 │   ├── constants/              # 定数
-│   ├── utils/                  # ユーティリティ
-│   └── components/             # UIコンポーネント
+│   └── utils/                  # ユーティリティ
 ├── e2e/                        # Playwright E2E テスト
 ├── tests/                      # Vitest テスト
 │   ├── unit/                   # ユニットテスト
-│   ├── quarantined/            # 一時隔離中のテスト（CI グリーン維持のため退避）
-│   │   ├── unit/
-│   │   └── integration/
 │   ├── utils/                  # テストユーティリティ
 │   └── setup.ts                # テスト共通セットアップ
 └── docs/                       # ドキュメント
@@ -196,27 +186,6 @@ git checkout main
 git merge dev
 git push origin main
 ```
-
-## カレンダー同期設定
-
-カレンダー同期を使用するには `config.js` を作成:
-
-```bash
-cp config.example.js config.js
-# config.js に認証情報を設定
-```
-
-### Outlook カレンダー
-1. [Azure Portal](https://portal.azure.com) でアプリ登録
-2. Client ID を取得して `config.js` に設定
-3. `Calendars.Read` パーミッションを追加
-
-### Google Calendar
-1. [Google Cloud Console](https://console.cloud.google.com/) で OAuth 2.0 クライアント作成
-2. Google Calendar API を有効化
-3. Client ID / Secret を `config.js` に設定
-
-> **注意**: `config.js` は `.gitignore` に含まれています。絶対にコミットしないでください。
 
 ## セキュリティ
 
