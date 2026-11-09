@@ -47,6 +47,9 @@ jobs:
       run: npm run type-check:tsrs
       continue-on-error: true
 
+    - name: Check ts71/index.html sync
+      run: node scripts/generate-ts71-index.mjs --check
+
     - name: Run Unit Tests
       run: npm test
 
